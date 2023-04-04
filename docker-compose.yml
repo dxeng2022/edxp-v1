@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  edxp-database:
+    container_name: edxp-database
+    build:
+      dockerfile: Dockerfile
+      context: dockerfiles/database
+    image: epikeran/edxp-database
+    environment:
+      - MYSQL_DATABASE=edxp
+      - MYSQL_ROOT_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    volumes:
+      - ./dockerfiles/database/config/my.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+      - "3306:3306"
+  edxp-app:
+    container_name: edxp-app
+    build: .
+    depends_on:
+      - edxp-database
+    image: epikeran/edxp-app
+    environment:
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - AWS_DATASOURCE_URL=${AWS_DATASOURCE_URL}
+      - AWS_DATASOURCE_USERNAME=${AWS_DATASOURCE_USERNAME}
+      - AWS_DATASOURCE_PASSWORD=${AWS_DATASOURCE_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+    ports:
+      - "80:8080"
+    restart: always

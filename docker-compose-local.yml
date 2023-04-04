@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  edxp-database:
+    container_name: edxp-database
+    build:
+      dockerfile: Dockerfile
+      context: dockerfiles/database
+    image: epikeran/edxp-database
+    environment:
+      - MYSQL_DATABASE=edxp
+      - MYSQL_ROOT_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    volumes:
+      - ./dockerfiles/database/config/my.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+      - "3306:3306"

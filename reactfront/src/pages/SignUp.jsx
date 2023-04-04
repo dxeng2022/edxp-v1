@@ -177,7 +177,7 @@ function SignUp() {
         'username': email,
     };
 
-    fetch("/check-dupl", {
+    fetch("/api/v1/user/check-dupl", {
         method: "POST",
         headers: {
             "Content-Type": "application/json;charset=UTF-8"
@@ -187,13 +187,13 @@ function SignUp() {
         .then(res => {
           console.log(1, res)
           if (res.status === 200) {
-            alert('사용 중인 이메일입니다.\n다른 이메일을 사용해주세요.');
-          } 
+              alert("사용 가능한 이메일입니다.\n번호발송을 눌러 인증을 진행해주세요.");
+              setCheck(true);
+              setConfirm(false);
+              setNotAllow(true);
+          }
           else {
-            alert("사용 가능한 이메일입니다.\n번호발송을 눌러 인증을 진행해주세요.");
-            setCheck(true);
-            setConfirm(false);
-            setNotAllow(true);
+              alert('사용 중인 이메일입니다.\n다른 이메일을 사용해주세요.');
           }
         })
   }
@@ -204,7 +204,7 @@ function SignUp() {
         'username': email,
     };
 
-    fetch("/signup-auth", {
+    fetch("/api/v1/user/signup-auth", {
         method: "POST",
         headers: {
             "Content-Type": "application/json;charset=UTF-8"
@@ -229,7 +229,7 @@ function SignUp() {
         'authCode': authCode,
     };
     
-    fetch("/signup-authcheck", {
+    fetch("/api/v1/user/signup-authcheck", {
         method: "POST",
         headers: {
             "Content-Type": "application/json;charset=UTF-8"
