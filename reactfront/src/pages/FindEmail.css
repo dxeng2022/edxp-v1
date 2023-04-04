@@ -1,0 +1,89 @@
+.findemail_box {
+    top: 50%;
+    left: 70%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    z-index: 1;
+    width: 40%;
+    height: 70%;
+}
+
+.findemail_tab {
+    width: 23vw;
+    display: flex;
+    justify-content: space-around;
+    font-size: 1.6vw;
+    font-weight: bold;
+    margin-top: 2.5vh;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.findemail_tabemail {
+    text-decoration: underline;
+    text-underline-position : under;
+    cursor: default;
+}
+
+.findemail_inputName {
+    font-size: 1.2vw;
+	font-weight: bold;
+	color: #262626;
+    margin-top: 4vh;
+    cursor: default;
+}
+
+.findemail_inputbox {
+    display: flex;
+    width: 18vw;
+    height: 2.3vh;
+    padding: 1.2vh;
+    padding-right: 4vw;
+    margin-top: 0.3vh;
+    border-bottom: 2px solid #808080;
+    overflow: hidden;
+}
+
+.findemail_inputbox:focus-within {
+    border-bottom: 2px solid #0051ff;
+}
+
+.findemail_input {
+    width: 20vw;
+    outline: none;
+	border: none;
+    height: 2.25vh;
+    font-size: 1vw;
+	font-weight: 500;
+    margin-left: 0.7vw;
+}
+
+.findemail_input::placeholder {
+    color: #dadada;
+}
+
+.findemail_buttons {
+    margin-top: 5.2vh;
+    width: 23vw;
+    display: flex;
+    justify-content: space-around;
+}
+
+.findemail_errorMessageWrap {
+    padding-bottom: 1vh;
+    margin-top: 0.5vh;
+    color: #ef0000;
+    font-size: 0.7vw;
+    height: 0.1vw;
+    margin-left: 1vh;
+    white-space: nowrap;
+}
+
+input[type="date"]::before {
+    content: attr(data-placeholder);
+    width: 100%;
+}
+
+input[type="date"]:valid:before {
+    display: none;
+}

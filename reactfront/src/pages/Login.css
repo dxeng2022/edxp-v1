@@ -1,0 +1,86 @@
+.login_contentWrap {
+    top: 50%;
+    left: 70%;
+    transform: translate(-50%, -50%);
+    flex-direction: column;
+    position: absolute;
+    z-index: 1;
+    width: 40%;
+    height: 70%;
+}
+
+.login_tab {
+    display: flex;
+    justify-content: space-around;
+    font-size: 1.6vw;
+    font-weight: bold;
+    margin-top: 2.5vh;
+    text-decoration: underline;
+    text-underline-position : under;
+}
+
+.login_inputTitle {
+    font-size: 1.2vw;
+	font-weight: bold;
+	color: #262626;
+    margin-top: 4vh;
+    cursor: default;
+}
+
+.login_inputWrap {
+    display: flex;
+    width: 18vw;
+    height: 2.3vh;
+    padding: 1.2vh;
+    padding-right: 4vw;
+    margin-top: 0.3vh;
+    border-bottom: 2px solid #808080;
+    overflow: hidden;
+}
+
+.login_inputWrap:focus-within {
+    border-bottom: 2px solid #0051ff;
+}
+
+
+.login_input {
+    width: 20vw;
+    outline: none;
+	border: none;
+    height: 2.25vh;
+    font-size: 1vw;
+	font-weight: 500;
+    margin-left: 0.7vw;
+}
+
+.login_input::placeholder {
+    color: #dadada;
+}
+
+.login_find {
+    width: 8.5vw;
+    font-size: 0.8vw;
+    position: relative;
+    margin-top: 2vh;
+    text-decoration: underline;
+    text-underline-position : under;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.login_errorMessageWrap {
+    padding-bottom: 1vh;
+    margin-top: 0.5vh;
+    color: #ef0000;
+    font-size: 0.7vw;
+    height: 0.1vw;
+    margin-left: 1vh;
+    white-space: nowrap;
+}
+
+.login_buttons {
+    margin-top: 7.1vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}

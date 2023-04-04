@@ -1,0 +1,145 @@
+.signup_box {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, 30%);
+}
+
+.signup_main {
+  margin-left: 0.5vw;
+}
+
+.signup_email_check_inputName {
+  font-size: 1.2vw;
+  font-weight: 500;
+  color: #262626;
+  margin-top: 2.5vh;
+  margin-bottom: 0.3vh;
+  margin-right: 6vw;
+  white-space: nowrap;
+}
+
+.signup_pw_first_inputName {
+  font-size: 1.2vw;
+  font-weight: 500;
+  color: #262626;
+  margin-top: 2.5vh;
+  margin-bottom: 0.3vh;
+  margin-right: 4.8vw;
+}
+
+.signup_pw_second_inputName {
+  font-size: 1.2vw;
+  font-weight: 500;
+  color: #262626;
+  margin-top: 2.5vh;
+  margin-bottom: 0.3vh;
+  margin-right: 2.1vw;
+}
+
+.signup_email_check {
+  display: flex;
+  flex-direction: row;
+}
+
+.signup_email_confirm {
+  margin-top: 1vh;
+  margin-left: 9.6vw;
+  display: flex;
+  flex-direction: row;
+}
+
+.signup_pw_first {
+  margin-top: 2vh;
+  display: flex;
+  flex-direction: row;
+  white-space: nowrap;
+}
+
+.signup_pw_second {
+  margin-top: 2vh;
+  margin-left: 9.6vw;
+  display: flex;
+  flex-direction: row;
+  white-space: nowrap;
+}
+
+.signup_inputName {
+  font-size: 1.2vw;
+  font-weight: 500;
+  color: #262626;
+  margin-top: 2.5vh;
+  margin-bottom: 0.3vh;
+}
+
+.signup_inputbox {
+  display: flex;
+  /* border-radius: 10vh; */
+  padding: 1.2vh;
+  padding-right: 1.5vw;
+  margin-top: 0.3vh;
+  background-color: rgba(255, 255, 255, 0);
+  border-bottom: 2px solid #808080;
+  width: 18vw;
+  height: 2.3vh;
+  /* box-shadow: 0.2vh 0.2vh 0.2vh 0.2vh rgba(89, 89, 89, 0.565); */
+}
+
+.signup_inputbox:focus-within {
+  border-bottom: 2px solid #0051ff;
+}
+
+.signup_input {
+  width: 20vw;
+  outline: none;
+  border: none;
+  height: 2.5vh;
+  font-size: 0.8vw;
+  font-weight: 500;
+  margin-left: 0.7vw;
+  background-color: rgba(255, 255, 255, 0);
+}
+
+.signup_input::placeholder {
+  color: #787777;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.signup_sub {
+  margin-top: 3vh;
+  display: flex;
+  flex-direction: row;
+}
+
+.signup_sub1 {
+  margin-right: 2.5vw;
+}
+
+.signup_errorMessageWrap {
+  margin-top: 0.5vh;
+  color: #ef0000;
+  font-size: 0.7vw;
+  height: 0.1vh;
+  margin-left: 1vh;
+  white-space: nowrap;
+}
+
+.signup_buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 5vh;
+  margin-bottom: 3vh;
+  white-space: nowrap;
+}
+
+input[type="date"]::before {
+  white-space: nowrap;
+  content: attr(data-placeholder);
+  width: 100%;
+}
+
+input[type="date"]:valid:before {
+  display: none;
+}

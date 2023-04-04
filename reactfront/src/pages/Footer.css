@@ -1,0 +1,51 @@
+.footer {
+    background-color: #263a4e;
+    color: white;
+    height: 5.5vh;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.footerimg {
+    height: 2vh;
+    margin-right: 10px;
+    margin-left: 53px;
+}
+
+.contact {
+    font-size: 1.3vh;
+    display: flex;
+    align-items: center;
+}
+
+.border {
+    position: absolute;
+    border-left : 1px solid rgb(192, 192, 192);
+    height: 4vh;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mail {
+    font-size: 1.3vh;
+    display: flex;
+    align-items: center;
+}
+
+.phone {
+    font-size: 1.3vh;
+    display: flex;
+    align-items: center;
+}

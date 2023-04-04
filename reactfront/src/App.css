@@ -1,0 +1,38 @@
+* {
+    margin: 0;
+    font-family: 'Noto Sans';
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    height: 50%; /* 스크롤바의 길이 */
+    background: #cecece; /* 스크롤바의 색상 */
+    
+    border-radius: 100px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0);  /*스크롤바 뒷 배경 색상*/
+}
+
+.app_app {
+    background-image: url("../public/img/bg.png");
+    background-repeat: no-repeat;
+    /* background-position: center; */
+    background-size: cover;
+    background-attachment: fixed;
+    height: 100vh;
+}
+
+.app_app::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: rgba(245, 245, 245, 0.83);
+}

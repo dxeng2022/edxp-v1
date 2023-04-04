@@ -1,0 +1,35 @@
+.sign_box {
+    height: 85%;
+    width: 54.5%;
+
+    padding: 0 0.2vw;
+    
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    
+    background-color: #ffffffde;
+    
+    position: fixed;
+    overflow-y: overlay;
+    display: flex;
+    flex-direction: column;
+
+    border-radius: 10px;
+    box-shadow: 0.5vh 0.5vh 0.5vh 0.5vh rgba(0, 0, 0, 0.425);
+}
+
+.sign_title {
+    margin-top: 3vh;
+    font-size: 2.5vw;
+    font-weight: bold;
+    color: #262626;
+    text-align: center;
+    white-space: nowrap;
+    margin-top: 2vh;
+}
+
+.sign_subtitle {
+    margin-top: 2vh;
+    font-size: 2vw;
+}
