@@ -8,7 +8,7 @@ services:
       context: dockerfiles/database
     image: epikeran/edxp-database
     environment:
-      - MYSQL_DATABASE=edxp
+      - MYSQL_DATABASE=${AWS_DATASOURCE_DATABASE}
       - MYSQL_ROOT_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
     volumes:
       - ./dockerfiles/database/config/my.cnf:/etc/mysql/conf.d/my.cnf
@@ -21,6 +21,8 @@ services:
       - edxp-database
     image: epikeran/edxp-app
     environment:
+      - MAIL_SENDER_USERNAME=${MAIL_SENDER_USERNAME}
+      - MAIL_SENDER_PASSWORD=${MAIL_SENDER_PASSWORD}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - AWS_DATASOURCE_URL=${AWS_DATASOURCE_URL}
