@@ -265,7 +265,7 @@ function SignUp() {
       'birth' : newBirth
     };
     
-    fetch("/api/user", {
+    fetch("/api/v1/user/sign-up", {
         method: "POST",
         headers: {
             "Content-Type": "application/json;charset=UTF-8"
@@ -275,7 +275,7 @@ function SignUp() {
         .then(res => {
           console.log(1, res)
           //eslint-disable-next-line
-          if (res.status === 201) {
+          if (res.status === 200) {
             navigate('/sign/signup/done');
           } 
           else {

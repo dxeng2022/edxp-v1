@@ -80,7 +80,7 @@ function FindPw() {
             'birth' : newBirth
         };
 
-        fetch("/find-pw", {
+        fetch("/api/v1/user/find-pw", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8"

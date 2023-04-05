@@ -1,7 +1,7 @@
 import './FindEmail.css';
-import React, { useEffect, useState } from 'react'
-import { Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import React, {useEffect, useState} from 'react'
+import {Button} from "@mui/material";
+import {useNavigate} from "react-router-dom";
 
 function FindEmail() {
 
@@ -16,49 +16,47 @@ function FindEmail() {
     const [birthValid, setBirthValid] = useState(false);
     const [notAllow, setNotAllow] = useState(true);
 
-    const [resUser, setResUser] = useState({
-        username: ""
-    });
+    const [response, setResponse] = useState({});
 
     useEffect(() => {
-        if(nameValid && phoneValid && birthValid) {
-        setNotAllow(false);
-        return;
+        if (nameValid && phoneValid && birthValid) {
+            setNotAllow(false);
+            return;
         }
         setNotAllow(true);
     }, [nameValid, phoneValid, birthValid]);
 
     const handleName = (e) => {
         setName(e.target.value);
-        const regex = 
-        /^[가-힣a-zA-Z]{2,20}$/;
+        const regex =
+            /^[가-힣a-zA-Z]{2,20}$/;
         if (regex.test(e.target.value)) {
-        setNameValid(true);
+            setNameValid(true);
         } else {
-        setNameValid(false);
+            setNameValid(false);
         }
     };
 
     const handlePhone = (e) => {
         setPhone(e.target.value);
-        const regex = 
-        /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})-?[0-9]{3,4}-?[0-9]{4}$/;
+        const regex =
+            /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})-?[0-9]{3,4}-?[0-9]{4}$/;
         if (regex.test(e.target.value)) {
-        setPhoneValid(true);
+            setPhoneValid(true);
         } else {
-        setPhoneValid(false);
+            setPhoneValid(false);
         }
     };
 
     const handleBirth = (e) => {
         setBirth(e.target.value);
         if (e.target.value) {
-        setBirthValid(true);
+            setBirthValid(true);
         } else {
-        setBirthValid(false);
+            setBirthValid(false);
         }
     };
-    
+
     const onClickConfirmButton = () => {
 
         const newBirth = birth.replace(/-/g, "")
@@ -66,10 +64,10 @@ function FindEmail() {
         let details = {
             'name': name,
             'phone': phone,
-            'birth' : newBirth
+            'birth': newBirth
         };
 
-        fetch("/find-mail", {
+        fetch("/api/v1/user/find-mail", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json;charset=UTF-8"
@@ -80,26 +78,30 @@ function FindEmail() {
                 console.log(1, res)
                 if (res.status === 200) {
                     return res.json();
-                } else if (res.status === 400) {
+                } else if (res.status === 404) {
+                    alert(' 입력하신 정보와 일치한 Email이 없습니다. ');
                     return null;
                 }
             })
             .then(res => {
-                console.log("정상", res);
-                if (res !== null) {
-                    setResUser(res);
-                    alert('회원님의 이메일은' + JSON.stringify(res.username) + '입니다. ');
-                } else {
-                    alert(' 입력하신 정보와 일치한 Email이 없습니다. ');
-                }})
+                    console.log("정상", res);
+                    if (res !== null) {
+                        setResponse(res);
+                        alert('회원님의 이메일은' + JSON.stringify(res.result.username) + '입니다. ');
+                    }
+                }
+            )
     }
 
     return (
         <div className='findemail_box'>
-            
+
             <div className='findemail_tab'>
                 <div className='findemail_tabemail'>이메일 찾기</div>
-                <div onClick={()=>{ navigate('/findpw') }}>비밀번호 찾기</div>
+                <div onClick={() => {
+                    navigate('/findpw')
+                }}>비밀번호 찾기
+                </div>
             </div>
 
             <div className="findemail_inputName">이름</div>
@@ -110,12 +112,12 @@ function FindEmail() {
                     type="text"
                     placeholder=" 2글자 이상 입력해주세요. "
                     value={name}
-                    onChange={handleName} />
+                    onChange={handleName}/>
             </div>
             <div className="findemail_errorMessageWrap">
-            {!nameValid && name.length > 0 && (
-                <div>올바른 이름을 입력해주세요.</div>
-            )}
+                {!nameValid && name.length > 0 && (
+                    <div>올바른 이름을 입력해주세요.</div>
+                )}
             </div>
 
             <div className="findemail_inputName">전화번호</div>
@@ -125,12 +127,12 @@ function FindEmail() {
                     type="text"
                     placeholder=" '-' 을 제외한 10~11자리 입력해주세요. "
                     value={phone}
-                    onChange={handlePhone} />
+                    onChange={handlePhone}/>
             </div>
             <div className="findemail_errorMessageWrap">
-            {!phoneValid && phone.length > 0 && (
-                <div>올바른 전화번호를 입력해주세요.</div>
-            )}
+                {!phoneValid && phone.length > 0 && (
+                    <div>올바른 전화번호를 입력해주세요.</div>
+                )}
             </div>
 
             <div className="findemail_inputName">생년월일</div>
@@ -143,24 +145,26 @@ function FindEmail() {
                     min="1950-01-01"
                     max="2002-12-31"
                     value={birth}
-                    onChange={handleBirth} />
+                    onChange={handleBirth}/>
             </div>
 
             <div className="findemail_buttons">
                 <Button
-                    onClick={()=>{ navigate('/') }} 
+                    onClick={() => {
+                        navigate('/')
+                    }}
                     className="cancelButton"
-                    type="submit" 
+                    type="submit"
                     variant="contained"
                     sx={{
-                        backgroundColor:'#a8a8a8', 
-                        height: '4.5vh', 
-                        width: '9vw', 
+                        backgroundColor: '#a8a8a8',
+                        height: '4.5vh',
+                        width: '9vw',
                         borderRadius: '10px',
                         fontSize: '1.6vw',
                         fontWeight: 600,
                         '&:hover': {backgroundColor: '#7e7e7e'}
-                        }}>
+                    }}>
                     취 소
                 </Button>
 
@@ -168,11 +172,11 @@ function FindEmail() {
                     onClick={onClickConfirmButton}
                     disabled={notAllow}
                     className="nextButton"
-                    type="submit" 
-                    variant="contained" 
+                    type="submit"
+                    variant="contained"
                     sx={{
-                        backgroundColor:'#7ccc46', 
-                        height: '4.5vh', 
+                        backgroundColor: '#7ccc46',
+                        height: '4.5vh',
                         width: '9vw',
                         borderRadius: '10px',
                         fontSize: '1.6vw',
