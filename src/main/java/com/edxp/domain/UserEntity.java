@@ -1,8 +1,8 @@
 package com.edxp.domain;
 
-import com.edxp.constant.GenderType;
 import com.edxp.constant.RoleType;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
