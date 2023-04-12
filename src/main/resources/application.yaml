@@ -4,8 +4,6 @@ spring:
     group:
       local:
         - common
-      dev:
-        - common
       prod:
         - common
 
@@ -35,7 +33,7 @@ spring:
       on-profile: local
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/${SPRING_DATASOURCE_DATABASE}
+    url: jdbc:mysql://localhost:3306/edxp
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
@@ -51,30 +49,11 @@ spring:
 spring:
   config:
     activate:
-      on-profile: dev
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/${AWS_DATASOURCE_DATABASE}
-    username: ${AWS_DATASOURCE_USERNAME}
-    password: ${AWS_DATASOURCE_PASSWORD}
-  jpa:
-    open-in-view: true
-    hibernate:
-      ddl-auto: update
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    show-sql: true
-
----
-
-spring:
-  config:
-    activate:
       on-profile: prod
   datasource:
-    url: ${AWS_DATASOURCE_URL}/${AWS_DATASOURCE_DATABASE}
-    username: ${AWS_DATASOURCE_USERNAME}
-    password: ${AWS_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     open-in-view: true
