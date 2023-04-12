@@ -12,6 +12,8 @@ jobs:
 
       - name: Set up npm
         uses: actions/setup-node@v3
+        run: npm ci
+             npm test
         with:
           node-version: 16
 
