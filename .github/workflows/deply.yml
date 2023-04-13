@@ -6,14 +6,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
+    env:
+      CI: false
+    strategy:
+      matrix:
+        node-version: [ 16.x ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Set up npm
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
 
       - name: Set up JDK 11
         uses: actions/setup-java@v1
