@@ -25,13 +25,7 @@ jobs:
         shell: bash
 
       - name: Build with Gradle
-        run:
-          ./gradlew wrapper --gradle-version=8.0
-        shell: bash
-
-      - name: Build with Gradle
-        run:
-          ./gradlew clean build -x test
+        run: ./gradlew clean build -x test
         shell: bash
 
       - name: Get current time
