@@ -42,10 +42,10 @@ jobs:
         run: echo "CurrentTime=${{steps.current-time.outputs.formattedTime}}"
         shell: bash
 
-      - name: Executing Remote SSH Commands Using Password - WAS1
+      - name: Executing Remote SSH Commands Using Password
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST_ID }}
+          host: ${{ secrets.EC2_HOST_ID1 }}, ${{ secrets.EC2_HOST_ID2 }}
           sync: true
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
