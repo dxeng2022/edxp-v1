@@ -1,0 +1,238 @@
+.mypage_box {
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  left: 50%;
+  transform: translate(-50%, 20%);
+  height: 75vh;
+  width: 70vw;
+  background-color: #ffffffcb;
+  border-radius: 10px;
+  box-shadow: 0.5vh 0.5vh 0.5vh 0.5vh rgba(0, 0, 0, 0.425);
+  overflow-y: scroll;
+}
+
+.mypage_imgbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70vh;
+  width: 30vw;
+  margin-top: 2.5vh;
+}
+
+.mypage_img {
+  width: 10vw;
+  height: 15vh;
+}
+
+.mypage_userbox {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  /* background-color: blueviolet; */
+  left: 50%;
+  transform: translate(-50%, 13%);
+  width: 55vw;
+}
+
+.mypage_infobox {
+  /* background-color: aquamarine; */
+  display: flex;
+  border-bottom: 2px solid #000000;
+  border-top: 2px solid #000000;
+  justify-content: center;
+  align-items: center;
+  height: 30vh;
+  /* flex-direction: column; */
+}
+
+.mypage_userinfobox {
+  /* background-color: aquamarine; */
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 50vw;
+  height: 25vh;
+}
+
+.mypage_userinfo1 {
+  margin-left: 3vw;
+  font-size: 1.1vw;
+  font-weight: 600;
+  /* background-color: rgb(150, 127, 255); */
+  width: 23vw;
+}
+
+.mypage_userinfo2 {
+  font-size: 1.1vw;
+  font-weight: 600;
+  /* background-color: rgb(150, 127, 255); */
+  width: 18vw;
+}
+
+.mypage_userinfo {
+  padding-bottom: 3vh;
+  cursor: default;
+}
+
+.mypage_class {
+  height: 20vh;
+  /* background-color: cadetblue; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4vh;
+  margin-bottom: 3vh;
+  margin-left: 6vw;
+}
+
+.mypage_name {
+  margin-top: 2vh;
+  font-size: 1vw;
+  font-weight: bold;
+}
+
+.mypage_subtitle {
+  font-size: 1.4vw;
+  font-weight: bold;
+}
+
+.mypage_title {
+  font-size: 2vw;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  width: 70vw;
+  height: 5vh;
+  margin-top: 1.5vh;
+}
+
+
+.mypage_classinfo {
+  font-size: 0.7vw;
+}
+
+.mypage_subtitle2 {
+  margin-top: 7vh;
+  font-size: 1.4vw;
+  font-weight: bold;
+}
+
+.mypage_changebox {
+    /* background-color: aquamarine; */
+    display: flex;
+    border-bottom: 2px solid #000000;
+    border-top: 2px solid #000000;
+    justify-content: space-around;
+    align-items: center;
+    height: 35vh;
+    /* flex-direction: column; */
+}
+
+.mypage_changepw {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* background-color: brown; */
+  width: 25vw;
+  height: 30vh;
+  border-right: 1px solid #000000;
+}
+
+.mypage_confirmpwbox {
+  display: flex;
+  flex-direction: row;
+  /* justify-content: center; */
+  align-items: center;
+  /* background-color: brown; */
+}
+
+.mypage_inputpw {
+  display: flex;
+  flex-direction: column;
+}
+
+.mypage_changenum {
+  display: flex;
+  flex-direction: row;
+  
+  justify-content: center;
+  align-items: center;
+  /* background-color: brown; */
+  width: 20vw;
+  height: 30vh;
+}
+
+.mypage_inputnum {
+  display: flex;
+  flex-direction: column;
+}
+
+.mypage_back {
+  cursor: pointer;
+  position: fixed;
+  width: 3vw;
+  height: 4.5vh;
+  left: 0.5vw;
+  top: 1vh;
+}
+
+.mypage_inputName {
+  font-size: 1vw;
+  font-weight: bolder;
+}
+
+.mypage_inputbox {
+  display: flex;
+  /* border-radius: 10vh; */
+  padding: 1.2vh;
+  padding-right: 1.5vw;
+  background-color: rgba(255, 255, 255, 0);
+  border-bottom: 2px solid #808080;
+  width: 16vw;
+  height: 2.3vh;
+  /* box-shadow: 0.2vh 0.2vh 0.2vh 0.2vh rgba(89, 89, 89, 0.565); */
+}
+
+.mypage_inputbox:focus-within {
+  border-bottom: 2px solid #0051ff;
+}
+
+.mypage_input {
+  width: 20vw;
+  outline: none;
+  border: none;
+  height: 2.25vh;
+  font-size: 0.9vw;
+  font-weight: 500;
+  /* margin-left: 0.7vw; */
+  background-color: rgba(255, 255, 255, 0);
+}
+
+.mypage_errorMessageWrap {
+  margin-top: 0.5vh;
+  color: #ef0000;
+  font-size: 0.85vw;
+  height: 0.1vh;
+  margin-left: 1vh;
+}
+
+.mypage_button {
+  white-space: nowrap;
+}
+
+.mypage_out {
+  font-size: 1vw;
+  color: #969696;
+  white-space: nowrap;
+  width: 4.5vw;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2vh;
+  margin-bottom: 2vh;
+  margin-left: 50vw;
+  border-bottom: 1px solid #969696;
+  cursor: pointer;
+}
