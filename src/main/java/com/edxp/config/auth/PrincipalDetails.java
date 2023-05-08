@@ -2,6 +2,7 @@ package com.edxp.config.auth;
 
 import com.edxp.dto.User;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,8 +11,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 @Getter
+@Setter
 public class PrincipalDetails implements UserDetails {
-    private final User user;
+    private User user;
 
     public PrincipalDetails(User user) { this.user = user; }
 

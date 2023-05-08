@@ -2,6 +2,8 @@ package com.edxp.service;
 
 import com.edxp.constant.ErrorCode;
 import com.edxp.domain.UserEntity;
+import com.edxp.dto.User;
+import com.edxp.dto.request.UserChangeRequest;
 import com.edxp.dto.request.UserCheckRequest;
 import com.edxp.dto.request.UserFindRequest;
 import com.edxp.dto.request.UserSignUpRequest;
@@ -14,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Random;
 
 @Slf4j
@@ -23,7 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final EmailSenderService emailSenderService;
     private final BCryptPasswordEncoder encoder;
-    
+
     // 회원가입
     @Transactional
     public void createUser(UserSignUpRequest request) {
@@ -38,7 +42,21 @@ public class UserService {
                 request.getJob()
         ));
     }
-    
+
+    @Transactional
+    public User updateUser(Long userId, UserChangeRequest request) {
+        UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
+        );
+        if (request.getNewPassword() != null) {
+            entity.setPassword(encoder.encode(request.getNewPassword()));
+        }
+        if (request.getPhone() != null) {
+            entity.setPhone(request.getPhone());
+        }
+        return User.fromEntity(entity);
+    }
+
     // 이메일 중복확인
     @Transactional(readOnly = true)
     public void checkDuplicated(UserCheckRequest request) {
@@ -46,7 +64,7 @@ public class UserService {
             throw new EdxpApplicationException(ErrorCode.DUPLICATED_USER_NAME, String.format("%s is duplicated", request.getUsername()));
         });
     }
-    
+
     // 이메일 찾기
     @Transactional(readOnly = true)
     public UserFindResponse findMail(UserFindRequest request) {
@@ -55,7 +73,7 @@ public class UserService {
         );
         return new UserFindResponse(entity.getUsername());
     }
-    
+
     // 비밀번호 찾기
     @Transactional
     public void findPw(UserFindRequest request) {
@@ -73,6 +91,15 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public void deleteUser(Long userId) {
+        UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
+        );
+        entity.setUsername(entity.getUsername() + "_deleted");
+        entity.setDeletedAt(Timestamp.from(Instant.now()));
+    }
+
     // 신규 비밀번호 생성
     private String createPwKey() {
         StringBuilder key = new StringBuilder();
@@ -83,11 +110,17 @@ public class UserService {
 
             if (i < 6) {
                 switch (index) {
-                    case 0 : key.append((char) ((rnd.nextInt(26)) + 97)); break;
-                    case 1 : key.append((char) ((rnd.nextInt(26)) + 65)); break;
-                    case 2 : key.append(rnd.nextInt(10)); break;
+                    case 0:
+                        key.append((char) ((rnd.nextInt(26)) + 97));
+                        break;
+                    case 1:
+                        key.append((char) ((rnd.nextInt(26)) + 65));
+                        break;
+                    case 2:
+                        key.append(rnd.nextInt(10));
+                        break;
                 }
-            } else  {
+            } else {
                 int[] arr = {33, 64, 35, 36};
                 key.append((char) arr[(rnd.nextInt(4))]);
             }
@@ -95,4 +128,6 @@ public class UserService {
 
         return key.toString();
     }
+
+
 }

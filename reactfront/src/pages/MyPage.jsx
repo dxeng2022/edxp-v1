@@ -52,7 +52,6 @@ function MyPage() {
     });
     
   }, [phoneChanged]);
-  
 
   useEffect(() => {
     if(phoneValid === true) {
@@ -125,10 +124,10 @@ function MyPage() {
     };
 
     if (currentPw === pw_confirm) {
-      alert("입력된 현재 비밀번호와 같습니다.\n현재 비밀번호와 다른 비밀번호를 입력해주세요.")
+      alert("현재 비밀번호와 같습니다.\n현재 비밀번호와 다른 비밀번호를 입력해주세요.")
     } else {
 
-      fetch("/api/user/" + details.id, {
+      fetch("/api/v1/user/" + details.id, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json; charset=utf-8"
@@ -166,10 +165,10 @@ function MyPage() {
     };
     
     if (response.result.phone === phone) {
-      alert("입력된 현재 전화번호와 같습니다.\n현재 전화번호와 다른 전화번호를 입력해주세요.")
+      alert("현재 전화번호와 같습니다.\n현재 전화번호와 다른 전화번호를 입력해주세요.")
     } else {
 
-      fetch("/api/user/" + details.id, {
+      fetch("/api/v1/user/" + details.id, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json; charset=utf-8"
@@ -179,7 +178,7 @@ function MyPage() {
       .then(res => {
         console.log(1, res)
         if (res.status === 200) {
-          alert("전화번호 변경이 완료되었습니다. ");
+          alert("전화번호 변경이 완료되었습니다.");
           setPhoneChanged(!phoneChanged);
         } else {
           alert("Contact Us로 문의바랍니다.");
@@ -198,12 +197,12 @@ function MyPage() {
 
     if (window.confirm("정말 회원 탈퇴를 하시겠습니까?") === true){
       
-      fetch("/api/user/" + details.id, {
-        method: "PUT",
+      fetch("/api/v1/user/" + details.id, {
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json; charset=utf-8"
         },
-        body: JSON.stringify(details)
+        body: ""
       })
       .then(res => {
         console.log(1, res)
@@ -271,7 +270,7 @@ function MyPage() {
                   <form>
                     <input
                       className="mypage_input"
-                      type="text"
+                      type="password"
                       placeholder=" 영문,숫자,특수문자를 포함 8자이상 "
                       value={currentPw}
                       onChange={handleCurrentPw}
@@ -292,7 +291,7 @@ function MyPage() {
                   <form>
                     <input
                       className="mypage_input"
-                      type="text"
+                      type="password"
                       placeholder=" 영문,숫자,특수문자를 포함 8자이상 "
                       value={pw}
                       onChange={handlePw}
@@ -314,7 +313,7 @@ function MyPage() {
                     <form>
                       <input
                         className="mypage_input"
-                        type="text"
+                        type="password"
                         placeholder=" 비밀번호를 한번 더 입력해주세요. "
                         value={pw_confirm}
                         onChange={handlePw_confirm}

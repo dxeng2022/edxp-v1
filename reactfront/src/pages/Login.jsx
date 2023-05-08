@@ -64,7 +64,6 @@ function Login() {
         }
         formBody = formBody.join("&");
 
-        console.log(formBody)
         fetch("/login", {
             method: "POST",
             headers: {
@@ -73,7 +72,6 @@ function Login() {
             body: formBody,
         })
         .then(res => {
-            console.log(1, res)
             const form = res.url.substring(res.url.lastIndexOf(":"));
             //eslint-disable-next-line
             const url = form.slice(form.indexOf("/"));

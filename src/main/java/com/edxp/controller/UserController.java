@@ -4,6 +4,7 @@ import com.edxp.common.response.CommonResponse;
 import com.edxp.config.auth.PrincipalDetails;
 import com.edxp.constant.ErrorCode;
 import com.edxp.dto.User;
+import com.edxp.dto.request.UserChangeRequest;
 import com.edxp.dto.request.UserCheckRequest;
 import com.edxp.dto.request.UserFindRequest;
 import com.edxp.dto.request.UserSignUpRequest;
@@ -14,8 +15,6 @@ import com.edxp.service.EmailSenderService;
 import com.edxp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -82,6 +81,22 @@ public class UserController {
     @PostMapping("/find-pw")
     public CommonResponse<Void> findPw(@RequestBody UserFindRequest request) {
         userService.findPw(request);
+        return CommonResponse.success();
+    }
+
+    // 유저 비밀번호, 전화번호 변경
+    @CrossOrigin
+    @PutMapping("/{userId}")
+    public CommonResponse<Void> changePhone(@PathVariable Long userId, @RequestBody UserChangeRequest request, @AuthenticationPrincipal PrincipalDetails principal) {
+        User user = userService.updateUser(userId, request);
+        principal.setUser(user);
+        return CommonResponse.success();
+    }
+
+    @CrossOrigin
+    @DeleteMapping("/{userId}")
+    public CommonResponse<Void> signOutUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
         return CommonResponse.success();
     }
 }
