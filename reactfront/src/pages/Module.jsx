@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Routes, Route, useNavigate} from "react-router-dom";
 import ModuleHome from "./ModuleHome.jsx";
+import MyPage from "./MyPage.jsx";
 
 
 function Module() {
@@ -71,6 +72,7 @@ function Module() {
 
             <Routes>
                 <Route path="/" element={<ModuleHome/>}/>
+                <Route path="/mypage" element={<MyPage />} />
             </Routes>
 
         </>
