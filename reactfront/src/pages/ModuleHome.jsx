@@ -1,5 +1,5 @@
 import './ModuleHome.css';
-import React, { useEffect, useState }  from 'react';
+import React from 'react';
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -31,7 +31,7 @@ function ModuleHome() {
                 fontWeight: '600',
                 backgroundColor:'#12A3CC', 
                 '&:hover': {backgroundColor: '#0F6983'}}}>
-          이 동 하 기 >
+          이 동 하 기 {'>'}
           </Button>
         </div>
       </div>
@@ -58,7 +58,7 @@ function ModuleHome() {
                 fontWeight: '600',
                 backgroundColor:'#12A3CC', 
                 '&:hover': {backgroundColor: '#0F6983'}}}>
-          이 동 하 기 >
+          이 동 하 기 {'>'}
           </Button>
         </div>
       </div>
@@ -83,9 +83,9 @@ function ModuleHome() {
                 borderRadius: '10px',
                 fontSize: '1.4vw',
                 fontWeight: '600',
-                backgroundColor:'#12A3CC', 
+                backgroundColor:'#12A3CC',
                 '&:hover': {backgroundColor: '#0F6983'}}}>
-          이 동 하 기 >
+          이 동 하 기 {'>'}
           </Button>
         </div>
       </div>
