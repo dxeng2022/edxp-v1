@@ -1,6 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {Routes, Route, useNavigate} from "react-router-dom";
 import ModuleHome from "./ModuleHome.jsx";
+import Draw from "./Draw.jsx";
+import Sheet from "./Sheet.jsx";
+import Doc from "./Doc.jsx";
+import DocChoice from "./DocChoice.jsx";
 import MyPage from "./MyPage.jsx";
 
 
@@ -72,6 +76,10 @@ function Module() {
 
             <Routes>
                 <Route path="/" element={<ModuleHome/>}/>
+                <Route path="/draw" element={<Draw />} />
+                <Route path="/sheet" element={<Sheet />} />
+                <Route path="/doc" element={<Doc />} />
+                <Route path="/doc/choice" element={<DocChoice />} />
                 <Route path="/mypage" element={<MyPage />} />
             </Routes>
 

@@ -80,7 +80,7 @@ function MyPage() {
   const handlePhone = (e) => {
     setPhone(e.target.value);
     const regex = 
-    /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})-?[0-9]{3,4}-?[0-9]{4}$/;
+    /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})[0-9]{3,4}[0-9]{4}$/;
     if (regex.test(e.target.value)) {
     setPhoneValid(true);
     } else {
