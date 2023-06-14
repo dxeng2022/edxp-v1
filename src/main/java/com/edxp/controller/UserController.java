@@ -87,7 +87,11 @@ public class UserController {
     // 유저 비밀번호, 전화번호 변경
     @CrossOrigin
     @PutMapping("/{userId}")
-    public CommonResponse<Void> changePhone(@PathVariable Long userId, @RequestBody UserChangeRequest request, @AuthenticationPrincipal PrincipalDetails principal) {
+    public CommonResponse<Void> changePhone(
+            @PathVariable Long userId,
+            @RequestBody UserChangeRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
         User user = userService.updateUser(userId, request);
         principal.setUser(user);
         return CommonResponse.success();

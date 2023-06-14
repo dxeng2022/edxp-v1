@@ -43,6 +43,7 @@ public class UserService {
         ));
     }
 
+    // 회원정보 변경
     @Transactional
     public User updateUser(Long userId, UserChangeRequest request) {
         UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
