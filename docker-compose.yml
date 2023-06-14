@@ -22,13 +22,8 @@ services:
     restart: always
 
   pinpoint-agent:
-    build:
-      context: ./pinpoint-agent/
-      dockerfile: Dockerfile
-      args:
-        - PINPOINT_VERSION=${PINPOINT_VERSION}
-    container_name: "${PINPOINT_AGENT_NAME}"
-    image: "pinpointdocker/pinpoint-agent:${PINPOINT_VERSION}"
+    container_name: ${PINPOINT_AGENT_NAME}
+    image: pinpointdocker/pinpoint-agent:${PINPOINT_VERSION}
     restart: unless-stopped
     volumes:
       - data-volume:/pinpoint-agent
