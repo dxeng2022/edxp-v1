@@ -9,9 +9,18 @@ function DrawDownload() {
 
   const downloadButton = () => {
     if (window.confirm("도면 모듈 다운로드를 진행할까요?") === true){
-      console.log("완료되었습니다.");
+      let link = document.createElement('a');
+        let downloadUrl = "https://dxeng.s3.ap-northeast-2.amazonaws.com/dxeng/test.xlsx";
+
+        link.href = downloadUrl;
+        // link.download = "your_file_name.ext";
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        console.log("완료되었습니다.");
     } else {
-      return false;      
+        return false;
     }
   }
 

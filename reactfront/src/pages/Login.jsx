@@ -64,7 +64,7 @@ function Login() {
         }
         formBody = formBody.join("&");
 
-        fetch("/login", {
+        fetch("https://dxeng.net/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
