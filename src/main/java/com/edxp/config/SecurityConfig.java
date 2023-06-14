@@ -32,7 +32,7 @@ public class SecurityConfig {
                     .failureUrl("/login-error")
                 .and()
                 .requiresChannel()
-                    .anyRequest()
+                    .antMatchers("/module", "/login-error")
                     .requiresSecure()
                 .and()
                 .build();
