@@ -31,10 +31,6 @@ public class SecurityConfig {
                     .defaultSuccessUrl("/module")
                     .failureUrl("/login-error")
                 .and()
-                .requiresChannel()
-                    .antMatchers("/module", "/login-error")
-                    .requiresSecure()
-                .and()
                 .build();
     }
 
