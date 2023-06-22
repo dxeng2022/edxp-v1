@@ -87,7 +87,7 @@ public class UserController {
     // 유저 비밀번호, 전화번호 변경
     @CrossOrigin
     @PutMapping("/{userId}")
-    public CommonResponse<Void> changePhone(
+    public CommonResponse<Void> changeInfo(
             @PathVariable Long userId,
             @RequestBody UserChangeRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
@@ -97,6 +97,7 @@ public class UserController {
         return CommonResponse.success();
     }
 
+    // 회원 탈퇴
     @CrossOrigin
     @DeleteMapping("/{userId}")
     public CommonResponse<Void> signOutUser(@PathVariable Long userId) {
