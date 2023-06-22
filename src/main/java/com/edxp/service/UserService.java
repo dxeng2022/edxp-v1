@@ -92,6 +92,7 @@ public class UserService {
         }
     }
 
+    // 회원 탈퇴
     @Transactional
     public void deleteUser(Long userId) {
         UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
