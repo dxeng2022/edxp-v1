@@ -25,6 +25,19 @@ spring:
     username: ${MAIL_SENDER_USERNAME}
     password: ${MAIL_SENDER_PASSWORD}
 
+cloud:
+  aws:
+    s3:
+      bucket: dxeng
+    credentials:
+      access-key: ${IAM_ACCESS_KEY}
+      secret-key: ${IAM_SECRET_KEY}
+    region:
+      auto: false
+      static: ap-northeast-2
+    stack:
+      auto: false
+
 ---
 
 spring:
