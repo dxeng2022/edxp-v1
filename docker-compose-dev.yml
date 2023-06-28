@@ -4,8 +4,7 @@ services:
   edxp-app:
     container_name: edxp-app
     build:
-      dockerfile: Dockerfile
-      context: dockerfiles/app
+      dockerfile: Dockerfile-dev
     image: epikeran/edxp-app
     environment:
       - MAIL_SENDER_USERNAME=${MAIL_SENDER_USERNAME}
