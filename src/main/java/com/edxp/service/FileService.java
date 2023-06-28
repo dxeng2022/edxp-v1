@@ -44,7 +44,6 @@ public class FileService {
         do {
             s3Objects = amazonS3Client.listObjects(listObjectsRequest);
             for (S3ObjectSummary s3ObjectSummary : s3Objects.getObjectSummaries()) {
-                System.out.println(s3ObjectSummary);
                 files.add(FileListResponse.from(s3ObjectSummary));
             }
             listObjectsRequest.setMarker(s3Objects.getNextMarker());
