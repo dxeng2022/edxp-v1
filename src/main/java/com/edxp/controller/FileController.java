@@ -1,19 +1,23 @@
 package com.edxp.controller;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.edxp.common.response.CommonResponse;
 import com.edxp.config.auth.PrincipalDetails;
+import com.edxp.constant.ErrorCode;
+import com.edxp.dto.request.FileDeleteRequest;
+import com.edxp.dto.request.FileUploadRequest;
+import com.edxp.dto.response.FileListResponse;
+import com.edxp.exception.EdxpApplicationException;
+import com.edxp.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,14 +25,31 @@ import java.io.IOException;
 @RestController
 public class FileController {
     private final AmazonS3Client amazonS3Client;
+    private final FileService fileService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+//    @GetMapping
+//    public CommonResponse<List<?>> getFileList(
+//            @RequestParam(required = false) String currentPath,
+//            @AuthenticationPrincipal PrincipalDetails principal
+//    ) {
+//        if(principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+//        List<?> files = fileService.getFiles(principal.getUser().getId(), currentPath);
+//        return CommonResponse.success(files);
+//    }
+
     @GetMapping
-    public CommonResponse<Void> getFileList() {
-        return CommonResponse.success();
+    public CommonResponse<List<FileListResponse>> getFileList(
+            @RequestParam(required = false) String currentPath,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        if(principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+        List<FileListResponse> files = fileService.getFiles(principal.getUser().getId(), currentPath);
+        return CommonResponse.success(files);
     }
+
 
     @GetMapping("/image/{filename}")
     public ResponseEntity<?> downloadFile(@PathVariable String filename) {
@@ -41,44 +62,23 @@ public class FileController {
         return ResponseEntity.ok().build();
     }
 
+    @CrossOrigin
     @PostMapping
-    public ResponseEntity<String> uploadFile(
-            @RequestParam("file") MultipartFile file,
+    public CommonResponse<Void> uploadFile(
+            @RequestPart(value = "data")  FileUploadRequest request,
+            @RequestPart(value = "file") MultipartFile file,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        try {
-            String fileName = "test/" + file.getOriginalFilename();
-            String fileUrl = "https://" + bucket + "/" + fileName;
-
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType(file.getContentType());
-            metadata.setContentLength(file.getSize());
-
-            amazonS3Client.putObject(bucket, fileName, file.getInputStream(), metadata);
-
-            return ResponseEntity.ok(fileUrl);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        if(principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+        if(file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
+        fileService.uploadFile(principal.getUser().getId(), new FileUploadRequest(request.getCurrentPath(), file));
+        return CommonResponse.success();
     }
 
+    @CrossOrigin
     @DeleteMapping
-    public ResponseEntity<String> deleteFile(String uploadFilePath, @RequestBody String name) {
-
-        try {
-            String keyName = "test" + "/" + name;
-            log.info("keyName : {}", keyName);
-            boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, keyName);
-            if (isObjectExist) {
-                amazonS3Client.deleteObject(bucket, keyName);
-            } else {
-                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            }
-        } catch (Exception e) {
-            log.debug("Delete File failed", e);
-        }
-
-        return ResponseEntity.ok("success");
+    public CommonResponse<Void> deleteFile(@RequestBody FileDeleteRequest request) {
+        fileService.deleteFile(request);
+        return CommonResponse.success();
     }
 }
