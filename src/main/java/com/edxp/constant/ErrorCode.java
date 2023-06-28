@@ -12,6 +12,8 @@ public enum ErrorCode {
     INVALID_AUTH_CODE(HttpStatus.UNAUTHORIZED, "Auth code is invalid"),
     USER_NOT_LOGIN(HttpStatus.UNAUTHORIZED, "User not login"),
     FILE_NOT_ATTACHED(HttpStatus.INTERNAL_SERVER_ERROR, "File is not attached"),
+    FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File is not founded"),
+    DUPLICATED_FILE_NAME(HttpStatus.CONFLICT, "Filename is duplicated"),
 
 
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error")

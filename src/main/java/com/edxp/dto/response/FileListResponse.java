@@ -1,11 +1,9 @@
 package com.edxp.dto.response;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.edxp.dto.FileDetail;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.sql.Timestamp;
 import java.util.Date;
 
 @Getter
