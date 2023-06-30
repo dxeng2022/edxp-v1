@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  edxp-app:
+    container_name: edxp-app
+    build:
+      dockerfile: Dockerfile-dev
+    image: epikeran/edxp-app
+    environment:
+      - MAIL_SENDER_USERNAME=${MAIL_SENDER_USERNAME}
+      - MAIL_SENDER_PASSWORD=${MAIL_SENDER_PASSWORD}
+      - IAM_ACCESS_KEY=${IAM_ACCESS_KEY}
+      - IAM_SECRET_KEY=${IAM_SECRET_KEY}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+    ports:
+      - "80:8080"
+    restart: always
