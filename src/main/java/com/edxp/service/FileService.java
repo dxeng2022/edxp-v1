@@ -1,12 +1,10 @@
 package com.edxp.service;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.*;
 import com.edxp.constant.ErrorCode;
 import com.edxp.dto.request.FileDeleteRequest;
+import com.edxp.dto.request.FileDownloadRequest;
 import com.edxp.dto.request.FileFolderRequest;
 import com.edxp.dto.request.FileUploadRequest;
 import com.edxp.dto.response.FileListResponse;
@@ -14,6 +12,7 @@ import com.edxp.exception.EdxpApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,6 +81,7 @@ public class FileService {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(request.getFile().getContentType());
             metadata.setContentLength(request.getFile().getSize());
+
             boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
             if (!isObjectExist) {
                 amazonS3Client.putObject(bucket, String.valueOf(filePath), request.getFile().getInputStream(), metadata);
@@ -89,13 +89,32 @@ public class FileService {
                 throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
             }
         } catch (IOException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File upload is failed");
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File upload is failed.");
+        }
+    }
+
+    @Transactional
+    public InputStreamResource downloadFile(FileDownloadRequest request) {
+        log.info("filename: {}", request.getFilePath());
+        S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, request.getFilePath()));
+        S3ObjectInputStream objectInputStream = object.getObjectContent();
+
+        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(request.getFilePath()));
+        if (isObjectExist) {
+            try {
+                return new InputStreamResource(objectInputStream);
+            } catch (Exception e) {
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
+            }
+        } else {
+            throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
         }
     }
 
     @Transactional
     public boolean deleteFile(FileDeleteRequest request) {
         String filePath = request.getFilePath();
+        log.info("path: {}", filePath);
         try {
             boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, filePath);
             if (isObjectExist) {
@@ -105,7 +124,7 @@ public class FileService {
                 return false;
             }
         } catch (Exception e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File delete is failed");
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File delete is failed.");
         }
     }
 }
