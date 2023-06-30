@@ -13,6 +13,7 @@ spring:
   config:
     activate:
       on-profile: common
+  # mail sender setting
   mail:
     host: smtp.gmail.com
     port: 587
@@ -25,6 +26,13 @@ spring:
     username: ${MAIL_SENDER_USERNAME}
     password: ${MAIL_SENDER_PASSWORD}
 
+  # multipart setting
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 3MB
+
+# s3 setting
 cloud:
   aws:
     s3:
@@ -44,11 +52,13 @@ spring:
   config:
     activate:
       on-profile: local
+
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     open-in-view: true
     hibernate:
@@ -63,11 +73,13 @@ spring:
   config:
     activate:
       on-profile: prod
+
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     open-in-view: true
     hibernate:
