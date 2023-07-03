@@ -1,10 +1,5 @@
 package com.edxp.controller;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.util.IOUtils;
 import com.edxp.common.response.CommonResponse;
 import com.edxp.config.auth.PrincipalDetails;
 import com.edxp.constant.ErrorCode;
@@ -17,19 +12,14 @@ import com.edxp.exception.EdxpApplicationException;
 import com.edxp.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -37,11 +27,7 @@ import java.util.List;
 @RequestMapping("/api/v1/file")
 @RestController
 public class FileController {
-    private final AmazonS3Client amazonS3Client;
     private final FileService fileService;
-
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
 
     @GetMapping
     public CommonResponse<List<FileListResponse>> getFileList(
@@ -68,23 +54,26 @@ public class FileController {
     @PostMapping("/upload")
     public CommonResponse<Void> uploadFile(
             @RequestPart(value = "data") FileUploadRequest request,
-            @RequestPart(value = "file") MultipartFile file,
+            @RequestPart(value = "files") List<MultipartFile> files,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-        if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
-        fileService.uploadFile(principal.getUser().getId(), new FileUploadRequest(request.getCurrentPath(), file));
+        if (files == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
+        fileService.uploadFile(principal.getUser().getId(), new FileUploadRequest(request.getCurrentPath(), files));
         return CommonResponse.success();
     }
+
     @CrossOrigin
     @PostMapping("/download")
     public ResponseEntity<?> downloadFile(@RequestBody FileDownloadRequest request) {
         InputStreamResource resource = fileService.downloadFile(request);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename="
-                                + request.getFilePath().substring(request.getFilePath().lastIndexOf("/")))
+                                + request.getFilePath().substring(request.getFilePath().lastIndexOf("/")) + 1
+                )
                 .body(resource);
     }
 
