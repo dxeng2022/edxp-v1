@@ -30,28 +30,6 @@ public class FileService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-//    @Transactional(readOnly = true)
-//    public List<FileListResponse> getFiles(Long userId, String currentPath) {
-//        ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
-//        listObjectsRequest.setBucketName(bucket);
-//        listObjectsRequest.setPrefix("user_" + String.format("%07d", userId) + "/" + currentPath);
-//        log.info("path : {}", currentPath);
-//
-//        ObjectListing s3Objects;
-//
-//        List<FileListResponse> files = new ArrayList<>();
-//
-//        do {
-//            s3Objects = amazonS3Client.listObjects(listObjectsRequest);
-//            for (S3ObjectSummary s3ObjectSummary : s3Objects.getObjectSummaries()) {
-//                files.add(FileListResponse.from(s3ObjectSummary));
-//            }
-//            listObjectsRequest.setMarker(s3Objects.getNextMarker());
-//        } while (s3Objects.isTruncated());
-//
-//        return files;
-//    }
-
     @Transactional(readOnly = true)
     public List<FileListResponse> getFiles(Long userId, String currentPath) {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
