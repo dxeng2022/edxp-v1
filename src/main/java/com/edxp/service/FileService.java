@@ -30,11 +30,35 @@ public class FileService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+//    @Transactional(readOnly = true)
+//    public List<FileListResponse> getFiles(Long userId, String currentPath) {
+//        ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
+//        listObjectsRequest.setBucketName(bucket);
+//        listObjectsRequest.setPrefix("user_" + String.format("%07d", userId) + "/" + currentPath);
+//        log.info("path : {}", currentPath);
+//
+//        ObjectListing s3Objects;
+//
+//        List<FileListResponse> files = new ArrayList<>();
+//
+//        do {
+//            s3Objects = amazonS3Client.listObjects(listObjectsRequest);
+//            for (S3ObjectSummary s3ObjectSummary : s3Objects.getObjectSummaries()) {
+//                files.add(FileListResponse.from(s3ObjectSummary));
+//            }
+//            listObjectsRequest.setMarker(s3Objects.getNextMarker());
+//        } while (s3Objects.isTruncated());
+//
+//        return files;
+//    }
+
     @Transactional(readOnly = true)
     public List<FileListResponse> getFiles(Long userId, String currentPath) {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
         listObjectsRequest.setBucketName(bucket);
         listObjectsRequest.setPrefix("user_" + String.format("%07d", userId) + "/" + currentPath);
+        listObjectsRequest.setDelimiter("/");
+        log.info("path : {}", currentPath);
 
         ObjectListing s3Objects;
 
@@ -42,8 +66,18 @@ public class FileService {
 
         do {
             s3Objects = amazonS3Client.listObjects(listObjectsRequest);
+            for (String commonPrefix : s3Objects.getCommonPrefixes()) { // prefix 경로의 디렉토리를 저장 (ex. v1/)
+                System.out.println(commonPrefix);
+                files.add(FileListResponse.from(commonPrefix));
+            }
+
+            s3Objects = amazonS3Client.listObjects(listObjectsRequest);
             for (S3ObjectSummary s3ObjectSummary : s3Objects.getObjectSummaries()) {
-                files.add(FileListResponse.from(s3ObjectSummary));
+                System.out.println(s3ObjectSummary.toString());
+                String key = s3ObjectSummary.getKey();
+                if (key.charAt(key.length() - 1) != '/') {
+                    files.add(FileListResponse.from(s3ObjectSummary));
+                }
             }
             listObjectsRequest.setMarker(s3Objects.getNextMarker());
         } while (s3Objects.isTruncated());
@@ -69,28 +103,31 @@ public class FileService {
 
     @Transactional
     public void uploadFile(Long userId, FileUploadRequest request) {
-        try {
-            String fileName = request.getFile().getOriginalFilename();
+        request.getFiles().forEach(file -> {
+            try {
+                String fileName = file.getOriginalFilename();
 
-            StringBuilder path = new StringBuilder();
-            path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
-            log.info("path : {}", path);
+                StringBuilder path = new StringBuilder();
+                path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
+                log.info("path : {}", path);
 
-            StringBuilder filePath = path.append(fileName);
+                StringBuilder filePath = path.append(fileName);
 
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType(request.getFile().getContentType());
-            metadata.setContentLength(request.getFile().getSize());
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType(file.getContentType());
+                metadata.setContentLength(file.getSize());
 
-            boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
-            if (!isObjectExist) {
-                amazonS3Client.putObject(bucket, String.valueOf(filePath), request.getFile().getInputStream(), metadata);
-            } else {
-                throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+                boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
+                if (!isObjectExist) {
+                    amazonS3Client.putObject(bucket, String.valueOf(filePath), file.getInputStream(), metadata);
+                } else {
+                    throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+                }
+            } catch (IOException e) {
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File upload is failed.");
             }
-        } catch (IOException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File upload is failed.");
-        }
+        });
+
     }
 
     @Transactional

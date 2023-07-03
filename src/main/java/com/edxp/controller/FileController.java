@@ -54,23 +54,26 @@ public class FileController {
     @PostMapping("/upload")
     public CommonResponse<Void> uploadFile(
             @RequestPart(value = "data") FileUploadRequest request,
-            @RequestPart(value = "file") MultipartFile file,
+            @RequestPart(value = "files") List<MultipartFile> files,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-        if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
-        fileService.uploadFile(principal.getUser().getId(), new FileUploadRequest(request.getCurrentPath(), file));
+        if (files == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
+        fileService.uploadFile(principal.getUser().getId(), new FileUploadRequest(request.getCurrentPath(), files));
         return CommonResponse.success();
     }
+
     @CrossOrigin
     @PostMapping("/download")
     public ResponseEntity<?> downloadFile(@RequestBody FileDownloadRequest request) {
         InputStreamResource resource = fileService.downloadFile(request);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename="
-                                + request.getFilePath().substring(request.getFilePath().lastIndexOf("/")))
+                                + request.getFilePath().substring(request.getFilePath().lastIndexOf("/")) + 1
+                )
                 .body(resource);
     }
 
