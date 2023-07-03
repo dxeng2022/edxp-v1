@@ -52,7 +52,7 @@ public class FileController {
     @CrossOrigin
     @PostMapping("/add-folder")
     public CommonResponse<Void> addFolder(
-            @RequestBody FileFolderRequest request,
+            @RequestBody FolderAddRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);

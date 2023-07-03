@@ -1,7 +1,6 @@
 package com.edxp.dto.response;
 
 import com.edxp.dto.User;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
