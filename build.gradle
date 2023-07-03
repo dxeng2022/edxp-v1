@@ -40,7 +40,7 @@ dependencies {
     implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '1.2.4' // zip util
 }
 
-tasks.named('test') {ls
+tasks.named('test') {
     useJUnitPlatform()
 }
 
