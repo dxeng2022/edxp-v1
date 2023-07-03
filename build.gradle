@@ -36,10 +36,11 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
     // Utils
-    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'org.apache.commons:commons-lang3:3.12.0' // Apache lang utils
+    implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '1.2.4' // zip util
 }
 
-tasks.named('test') {
+tasks.named('test') {ls
     useJUnitPlatform()
 }
 
