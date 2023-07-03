@@ -5,10 +5,12 @@ import com.edxp.config.auth.PrincipalDetails;
 import com.edxp.constant.ErrorCode;
 import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
+import com.edxp.dto.response.FolderListResponse;
 import com.edxp.exception.EdxpApplicationException;
 import com.edxp.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.lingala.zip4j.exception.ZipException;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -34,6 +37,16 @@ public class FileController {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         List<FileListResponse> files = fileService.getFiles(principal.getUser().getId(), currentPath);
         return CommonResponse.success(files);
+    }
+
+    @GetMapping("/get-folder")
+    public CommonResponse<List<FolderListResponse>> getFolder(
+            @RequestParam(required = false) String currentPath,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+        List<FolderListResponse> folders = fileService.getFolders(principal.getUser().getId(), currentPath);
+        return CommonResponse.success(folders);
     }
 
     @CrossOrigin
@@ -74,19 +87,19 @@ public class FileController {
                 .body(resource);
     }
 
-//    @CrossOrigin
-//    @PostMapping("/downloads")
-//    public ResponseEntity<?> downloadFiles(@RequestBody FileDownloadsRequest request) {
-//        InputStreamResource resource = fileService.downloadFiles(request);
-//        return ResponseEntity.ok()
-//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-//                .header(
-//                        HttpHeaders.CONTENT_DISPOSITION,
-//                        "attachment; filename="
-//                                + request.getFilePath().substring(request.getFilePath().lastIndexOf("/")) + 1
-//                )
-//                .body(resource);
-//    }
+    @CrossOrigin
+    @PostMapping("/downloads")
+    public ResponseEntity<?> downloadFiles(@RequestBody FileDownloadsRequest request) throws ZipException, InterruptedException, IOException {
+        InputStreamResource resource = fileService.downloadFiles(request);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename="
+                                + request.getFilePath().substring(request.getFilePath().lastIndexOf("/")) + 1
+                )
+                .body(resource);
+    }
 
     @CrossOrigin
     @DeleteMapping
