@@ -3,10 +3,7 @@ package com.edxp.controller;
 import com.edxp.common.response.CommonResponse;
 import com.edxp.config.auth.PrincipalDetails;
 import com.edxp.constant.ErrorCode;
-import com.edxp.dto.request.FileDeleteRequest;
-import com.edxp.dto.request.FileDownloadRequest;
-import com.edxp.dto.request.FileFolderRequest;
-import com.edxp.dto.request.FileUploadRequest;
+import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
 import com.edxp.exception.EdxpApplicationException;
 import com.edxp.service.FileService;
@@ -76,6 +73,20 @@ public class FileController {
                 )
                 .body(resource);
     }
+
+//    @CrossOrigin
+//    @PostMapping("/downloads")
+//    public ResponseEntity<?> downloadFiles(@RequestBody FileDownloadsRequest request) {
+//        InputStreamResource resource = fileService.downloadFiles(request);
+//        return ResponseEntity.ok()
+//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+//                .header(
+//                        HttpHeaders.CONTENT_DISPOSITION,
+//                        "attachment; filename="
+//                                + request.getFilePath().substring(request.getFilePath().lastIndexOf("/")) + 1
+//                )
+//                .body(resource);
+//    }
 
     @CrossOrigin
     @DeleteMapping

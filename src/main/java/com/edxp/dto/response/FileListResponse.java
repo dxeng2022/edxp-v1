@@ -21,13 +21,14 @@ public class FileListResponse {
         String fileName = commonPrefix.split("/")[commonPrefix.split("/").length - 1];
         String extension = "폴더";
         String fileSize = "-";
+        String filePath = commonPrefix.substring(commonPrefix.indexOf("/") + 1);
         String registeredAt = "-";
 
         return new FileListResponse(
                 fileName,
                 extension,
                 fileSize,
-                commonPrefix,
+                filePath,
                 registeredAt
         );
     }
@@ -35,7 +36,7 @@ public class FileListResponse {
     public static FileListResponse from(S3ObjectSummary s3ObjectSummary) {
         String fileSize = getSizeFormat(s3ObjectSummary.getSize());
         String registeredAt = getDateFormat(s3ObjectSummary.getLastModified());
-        String filePath = s3ObjectSummary.getKey();
+        String filePath = s3ObjectSummary.getKey().substring(s3ObjectSummary.getKey().indexOf("/") + 1);
         String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
 
