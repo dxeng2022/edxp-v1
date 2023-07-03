@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.MultipleFileDownload;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferProgress;
-import com.edxp.common.utils.FileUtil;
 import com.edxp.constant.ErrorCode;
 import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
@@ -17,7 +16,6 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,7 +94,7 @@ public class FileService {
     }
 
     @Transactional
-    public void addFolder(Long userId, FileFolderRequest request) {
+    public void addFolder(Long userId, FolderAddRequest request) {
         StringBuilder path = new StringBuilder();
         path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
         log.info("path : {}", path);
