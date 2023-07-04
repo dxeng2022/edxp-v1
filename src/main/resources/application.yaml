@@ -46,6 +46,10 @@ cloud:
     stack:
       auto: false
 
+# file path
+file:
+  path: ${FILE_PATH}
+
 ---
 
 spring:
