@@ -216,6 +216,7 @@ public class FileService {
 
         // (6)
         // 파일 Resource 리턴
+        log.info("zipPath: {}", zipFile.getFile().getPath());
         return new FileSystemResource(zipFile.getFile().getPath());
     }
 
