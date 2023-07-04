@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.MultipleFileDownload;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferProgress;
+import com.edxp.common.utils.FileUtil;
 import com.edxp.constant.ErrorCode;
 import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
@@ -12,10 +13,11 @@ import com.edxp.dto.response.FolderListResponse;
 import com.edxp.exception.EdxpApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,9 @@ public class FileService {
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
+
+    @Value("${file.path}")
+    private String downloadFolder;
 
     @Transactional(readOnly = true)
     public List<FileListResponse> getFiles(Long userId, String currentPath) {
@@ -174,13 +179,13 @@ public class FileService {
     }
 
     @Transactional
-    public InputStreamResource downloadFiles(FileDownloadsRequest request) throws InterruptedException, ZipException, IOException {
+    public FileSystemResource downloadFiles(FileDownloadsRequest request) throws InterruptedException, ZipException, IOException {
         log.info("filename: {}", request.getFilePath());
         // (1)
         // 서버 로컬에 생성되는 디렉토리, 해당 디렉토리에 파일이 다운로드된다
-        File localDirectory = new File(RandomStringUtils.randomAlphanumeric(6) + "-s3-download");
+        File localDirectory = new File(downloadFolder + RandomStringUtils.randomAlphanumeric(6) + "-s3-download");
         // 서버 로컬에 생성되는 zip 파일
-        ZipFile zipFile = new ZipFile(RandomStringUtils.randomAlphanumeric(6) + "-s3-download.zip");
+        ZipFile zipFile = new ZipFile(downloadFolder +RandomStringUtils.randomAlphanumeric(6) + "-s3-download.zip");
 
         try {
             // (2)
@@ -202,17 +207,16 @@ public class FileService {
             // (4)
             // 로컬 디렉토리 -> 로컬 zip 파일에 압축
             log.info("compressing to zip file...");
-//            zipFile.addFolder(new File(localDirectory.getName() + "/" + prefix));
+            zipFile.addFolder(new File(localDirectory + "/" + request.getFilePath() ));
         } finally {
             // (5)
             // 로컬 디렉토리 삭제
-//            FileUtil.remove(localDirectory);
+            FileUtil.remove(localDirectory);
         }
 
         // (6)
         // 파일 Resource 리턴
-//        return new FileSystemResource(zipFile.getInputStream());
-        return null;
+        return new FileSystemResource(zipFile.getFile().getPath());
     }
 
     @Transactional
