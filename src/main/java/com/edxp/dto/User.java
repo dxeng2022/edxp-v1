@@ -1,8 +1,6 @@
 package com.edxp.dto;
 
 import com.edxp.domain.UserEntity;
-import com.edxp.dto.request.UserCheckRequest;
-import com.edxp.dto.request.UserSignUpRequest;
 import lombok.*;
 
 import java.sql.Timestamp;

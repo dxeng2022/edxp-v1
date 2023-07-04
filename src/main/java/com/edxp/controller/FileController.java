@@ -11,6 +11,7 @@ import com.edxp.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.exception.ZipException;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -52,7 +53,7 @@ public class FileController {
     @CrossOrigin
     @PostMapping("/add-folder")
     public CommonResponse<Void> addFolder(
-            @RequestBody FileFolderRequest request,
+            @RequestBody FolderAddRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
@@ -90,7 +91,7 @@ public class FileController {
     @CrossOrigin
     @PostMapping("/downloads")
     public ResponseEntity<?> downloadFiles(@RequestBody FileDownloadsRequest request) throws ZipException, InterruptedException, IOException {
-        InputStreamResource resource = fileService.downloadFiles(request);
+        FileSystemResource resource = fileService.downloadFiles(request);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(
