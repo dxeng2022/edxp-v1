@@ -106,8 +106,11 @@ public class FileController {
 
     @CrossOrigin
     @DeleteMapping
-    public CommonResponse<Void> deleteFile(@RequestBody FileDeleteRequest request) {
-        boolean isSuccess = fileService.deleteFile(request);
+    public CommonResponse<Void> deleteFile(
+            @RequestBody FileDeleteRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        boolean isSuccess = fileService.deleteFile(request, principal.getUser().getId());
         if (!isSuccess) throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
         return CommonResponse.success();
     }
