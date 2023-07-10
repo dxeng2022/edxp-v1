@@ -111,6 +111,7 @@ public class FileService {
         StringBuilder filePath = path.append(request.getFolderName()).append("/");
 
         boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
+
         if (!isObjectExist) {
             amazonS3Client.putObject(bucket, String.valueOf(filePath), new ByteArrayInputStream(new byte[0]), new ObjectMetadata());
         } else {
@@ -148,13 +149,14 @@ public class FileService {
 
     @Transactional
     public InputStreamResource downloadFile(FileDownloadRequest request, Long userId) {
-        StringBuilder userPath = new StringBuilder();
-        userPath.append("user_").append(String.format("%07d", userId)).append("/");
-        log.info("filename: {}", request.getFilePath());
-        S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, userPath + request.getFilePath()));
+        StringBuilder filePath = new StringBuilder();
+        filePath.append("user_").append(String.format("%07d", userId)).append("/").append(request.getFilePath());
+        log.info("filename: {}", filePath);
+        S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, String.valueOf(filePath)));
         S3ObjectInputStream objectInputStream = object.getObjectContent();
 
-        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(request.getFilePath()));
+        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
+
         if (isObjectExist) {
             try {
                 return new InputStreamResource(objectInputStream);
@@ -251,13 +253,14 @@ public class FileService {
     }
 
     @Transactional
-    public boolean deleteFile(FileDeleteRequest request) {
-        String filePath = request.getFilePath();
-        log.info("path: {}", filePath);
+    public boolean deleteFile(FileDeleteRequest request, Long userId) {
+        StringBuilder filePath = new StringBuilder();
+        filePath.append("user_").append(String.format("%07d", userId)).append("/").append(request.getFilePath());
+        log.info("filename: {}", filePath);
         try {
-            boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, filePath);
+            boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
             if (isObjectExist) {
-                amazonS3Client.deleteObject(bucket, filePath);
+                amazonS3Client.deleteObject(bucket, String.valueOf(filePath));
                 return true;
             } else {
                 return false;
