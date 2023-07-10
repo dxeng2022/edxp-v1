@@ -10,8 +10,6 @@ import com.edxp.exception.EdxpApplicationException;
 import com.edxp.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.lingala.zip4j.exception.ZipException;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
@@ -76,8 +75,11 @@ public class FileController {
 
     @CrossOrigin
     @PostMapping("/download")
-    public ResponseEntity<?> downloadFile(@RequestBody FileDownloadRequest request) {
-        InputStreamResource resource = fileService.downloadFile(request);
+    public ResponseEntity<?> downloadFile(
+            @RequestBody FileDownloadRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        InputStreamResource resource = fileService.downloadFile(request, principal.getUser().getId());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(
@@ -90,17 +92,17 @@ public class FileController {
 
     @CrossOrigin
     @PostMapping("/downloads")
-    public ResponseEntity<?> downloadFiles(@RequestBody FileDownloadsRequest request) throws ZipException, InterruptedException, IOException {
-        FileSystemResource resource = fileService.downloadFiles(request);
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename="
-                                + request.getFilePath().substring(request.getFilePath().lastIndexOf("/")) + 1
-                )
-                .body(resource);
+    public void downloadFiles(
+            @RequestBody FileDownloadsRequest request,
+            HttpServletResponse response,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) throws InterruptedException, IOException {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.addHeader("Content-Disposition", "attachment; filename="
+                + "wait.zip");
+        fileService.downloadFiles(request, response, principal.getUser().getId());
     }
+
 
     @CrossOrigin
     @DeleteMapping

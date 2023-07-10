@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 @Slf4j
 public class FileUtil {
@@ -30,5 +31,22 @@ public class FileUtil {
             return;
         }
         throw new FileNotFoundException("File [" + file.getName() + "] delete fail");
+    }
+
+    public static boolean isDownOver(ArrayList<Boolean> list) {
+        for(boolean done : list) {
+            if(!done) {
+                return false;
+            }
+        }
+        return list.size() > 0;
+    }
+
+    public static double getAverageList(ArrayList<Double> list) {
+        double sum = 0;
+        for(Double value : list) {
+            sum += value;
+        }
+        return sum / list.size();
     }
 }
