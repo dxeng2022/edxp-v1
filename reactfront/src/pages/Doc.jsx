@@ -9,7 +9,7 @@ function Doc() {
 
   return (
     <div className="doc_box">
-      <img src="/img/back.png" alt="img" className="doc_back" onClick={()=>{ navigate(-1) }} />
+      <img src="/img/back.png" alt="img" className="doc_back" onClick={() => { navigate(-1) }} />
       <div className="doc_imgbox">
         <img src="/img/doc.png" alt="img" className="doc_img" />
         <div className="doc_name">문 서</div>
@@ -23,18 +23,19 @@ function Doc() {
           </div>
           <div className="doc_buttons">
             <Button
-              onClick={()=>{ navigate('/module/doc/choice') }} 
-              type="submit" 
+              onClick={() => { navigate('/module/doc/choice') }}
+              type="submit"
               variant="contained"
               sx={{
-                  backgroundColor:'#12A3CC', 
-                  height: '4.5vh', 
-                  width: '17vw', 
-                  borderRadius: '10px',
-                  fontSize: '1.4vw',
-                  fontWeight: 600,
-                  '&:hover': {backgroundColor: '#0F6983'}}}>
-            이 동 하 기 {'>'}
+                backgroundColor: '#12A3CC',
+                height: '4.5vh',
+                width: '17vw',
+                borderRadius: '10px',
+                fontSize: '1.4vw',
+                fontWeight: 600,
+                '&:hover': { backgroundColor: '#0F6983' }
+              }}>
+              이 동 하 기 {'>'}
             </Button>
           </div>
         </div>
@@ -46,18 +47,19 @@ function Doc() {
           </div>
           <div className="doc_buttons">
             <Button
-              onClick={()=>{ navigate(-1) }} 
-              type="submit" 
+              onClick={() => { navigate('/module/doc/cloud') }}
+              type="submit"
               variant="contained"
               sx={{
-                  backgroundColor:'#12A3CC', 
-                  height: '4.5vh', 
-                  width: '17vw', 
-                  borderRadius: '10px',
-                  fontSize: '1.4vw',
-                  fontWeight: 600,
-                  '&:hover': {backgroundColor: '#0F6983'}}}>
-            이 동 하 기 {'>'}
+                backgroundColor: '#12A3CC',
+                height: '4.5vh',
+                width: '17vw',
+                borderRadius: '10px',
+                fontSize: '1.4vw',
+                fontWeight: 600,
+                '&:hover': { backgroundColor: '#0F6983' }
+              }}>
+              이 동 하 기 {'>'}
             </Button>
           </div>
         </div>
