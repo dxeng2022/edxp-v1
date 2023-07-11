@@ -3,17 +3,16 @@ package com.edxp.controller;
 import com.edxp.common.response.CommonResponse;
 import com.edxp.config.auth.PrincipalDetails;
 import com.edxp.constant.ErrorCode;
-import com.edxp.dto.request.*;
+import com.edxp.dto.request.FileDeleteRequest;
+import com.edxp.dto.request.FileDownloadsRequest;
+import com.edxp.dto.request.FileUploadRequest;
+import com.edxp.dto.request.FolderAddRequest;
 import com.edxp.dto.response.FileListResponse;
 import com.edxp.dto.response.FolderListResponse;
 import com.edxp.exception.EdxpApplicationException;
 import com.edxp.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,31 +74,12 @@ public class FileController {
 
     @CrossOrigin
     @PostMapping("/download")
-    public ResponseEntity<?> downloadFile(
-            @RequestBody FileDownloadRequest request,
-            @AuthenticationPrincipal PrincipalDetails principal
-    ) {
-        InputStreamResource resource = fileService.downloadFile(request, principal.getUser().getId());
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename="
-                                + request.getFilePath().substring(request.getFilePath().lastIndexOf("/")) + 1
-                )
-                .body(resource);
-    }
-
-    @CrossOrigin
-    @PostMapping("/downloads")
     public void downloadFiles(
             @RequestBody FileDownloadsRequest request,
             HttpServletResponse response,
             @AuthenticationPrincipal PrincipalDetails principal
-    ) throws InterruptedException, IOException {
+    ) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("Content-Disposition", "attachment; filename="
-                + "wait.zip");
         fileService.downloadFiles(request, response, principal.getUser().getId());
     }
 
@@ -111,7 +91,7 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         boolean isSuccess = fileService.deleteFile(request, principal.getUser().getId());
-        if (!isSuccess) throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
+        if (!isSuccess) throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File delete is failed.");
         return CommonResponse.success();
     }
 }
