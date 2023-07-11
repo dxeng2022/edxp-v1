@@ -8,10 +8,7 @@ import com.amazonaws.services.s3.transfer.Transfer;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.edxp.common.utils.FileUtil;
 import com.edxp.constant.ErrorCode;
-import com.edxp.dto.request.FileDeleteRequest;
-import com.edxp.dto.request.FileDownloadsRequest;
-import com.edxp.dto.request.FileUploadRequest;
-import com.edxp.dto.request.FolderAddRequest;
+import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
 import com.edxp.dto.response.FolderListResponse;
 import com.edxp.exception.EdxpApplicationException;
@@ -121,6 +118,7 @@ public class FileService {
 
     @Transactional
     public void uploadFile(Long userId, FileUploadRequest request) {
+        if (request.getFiles().size() > 5) throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
         request.getFiles().forEach(file -> {
             try {
                 String fileName = file.getOriginalFilename();
@@ -142,7 +140,7 @@ public class FileService {
                     throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
                 }
             } catch (IOException e) {
-                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File upload is failed.");
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, file.getOriginalFilename() + " upload is failed.");
             }
         });
     }
@@ -153,7 +151,7 @@ public class FileService {
         userPath.append("user_").append(String.format("%07d", userId)).append("/");
 
         // 단일 파일 다운로드
-        if(request.getFilePaths().size() == 1 && request.getFilePaths().get(0).charAt(request.getFilePaths().get(0).length() - 1) != '/') {
+        if (request.getFilePaths().size() == 1 && request.getFilePaths().get(0).charAt(request.getFilePaths().get(0).length() - 1) != '/') {
             String filePath = String.valueOf(userPath.append(request.getFilePaths().get(0)));
             response.addHeader("Content-Disposition", "attachment; filename=" + filePath.substring(filePath.lastIndexOf("/") + 1));
             response.setContentType("application/octet-stream");
@@ -250,6 +248,33 @@ public class FileService {
     }
 
     @Transactional
+    public void updateFile(FileUpdateRequest request, Long userId) {
+        StringBuilder path = new StringBuilder();
+        path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
+        String sourceKey = path + request.getCurrentName();
+        String destinationKey = path + request.getUpdateName() + "." + request.getExtension();
+
+        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, sourceKey);
+        boolean isNewObjectExist = amazonS3Client.doesObjectExist(bucket, destinationKey);
+
+        if (isNewObjectExist) {
+            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+        }
+        if (isObjectExist) {
+            CopyObjectRequest copyObjectsRequest = new CopyObjectRequest(bucket, sourceKey, bucket, destinationKey);
+            amazonS3Client.copyObject(copyObjectsRequest);
+        } else {
+            throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
+        }
+
+        try {
+            amazonS3Client.deleteObject(bucket, sourceKey);
+        } catch (Exception e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, " delete is failed.");
+        }
+    }
+
+    @Transactional
     public boolean deleteFile(FileDeleteRequest request, Long userId) {
         AtomicBoolean allPassed = new AtomicBoolean(false);
         request.getFilePaths().forEach(path -> {
@@ -284,7 +309,7 @@ public class FileService {
                 }
             } catch (Exception e) {
                 allPassed.set(false);
-                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File delete is failed.");
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, path + " delete is failed.");
             }
             allPassed.set(true);
         });

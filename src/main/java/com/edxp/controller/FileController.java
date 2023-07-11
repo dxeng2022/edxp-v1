@@ -3,10 +3,7 @@ package com.edxp.controller;
 import com.edxp.common.response.CommonResponse;
 import com.edxp.config.auth.PrincipalDetails;
 import com.edxp.constant.ErrorCode;
-import com.edxp.dto.request.FileDeleteRequest;
-import com.edxp.dto.request.FileDownloadsRequest;
-import com.edxp.dto.request.FileUploadRequest;
-import com.edxp.dto.request.FolderAddRequest;
+import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
 import com.edxp.dto.response.FolderListResponse;
 import com.edxp.exception.EdxpApplicationException;
@@ -83,6 +80,15 @@ public class FileController {
         fileService.downloadFiles(request, response, principal.getUser().getId());
     }
 
+    @CrossOrigin
+    @PutMapping
+    public CommonResponse<Void> updateFile(
+            @RequestBody FileUpdateRequest request,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        fileService.updateFile(request, principal.getUser().getId());
+        return CommonResponse.success();
+    }
 
     @CrossOrigin
     @DeleteMapping
