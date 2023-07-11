@@ -117,7 +117,7 @@ function SheetCloud() {
       const response = await fetch(`/api/v1/file?currentPath=${encodeURIComponent(currentPath)}`);
       const file = await response.json();
       setFiles(file.result);
-      console.log(file);
+      // console.log(file);
     } catch (error) {
       console.error("Error fetching files:", error);
     }
@@ -221,7 +221,7 @@ function SheetCloud() {
           body: JSON.stringify({ currentPath: currentPath, filePaths: selectedFilePaths }),
         });
 
-        console.log(selectedFilePaths);
+        // console.log(selectedFilePaths);
 
         if (response.status === 200) {
           const contentDisposition = response.headers.get("Content-Disposition");
@@ -267,7 +267,7 @@ function SheetCloud() {
       return;
     }
 
-    console.log(selectedFilePaths);
+    // console.log(selectedFilePaths);
 
     if (window.confirm("삭제하시겠습니까?")) {
       try {
@@ -281,7 +281,7 @@ function SheetCloud() {
 
         if (response.status === 200) {
           alert('파일이 삭제되었습니다!');
-          window.location.reload();
+          fetchFiles();
         } else {
           alert('파일 삭제에 실패하였습니다.');
         }
@@ -311,7 +311,7 @@ function SheetCloud() {
 
         if (response.status === 200) {
           alert("새 폴더가 생성되었습니다.");
-          window.location.reload();
+          fetchFiles();
         } else {
           const errorMessage = await response.text();
           alert(`Error: ${errorMessage}`);
@@ -363,7 +363,7 @@ function SheetCloud() {
       <div className="sheetcloud_back" onClick={() => { navigate(-1) }}> 나가기 </div>
 
       <div className='sheetcloud_left'>
-        <div className="sheetcloud_title">도면 데이터 관리</div>
+        <div className="sheetcloud_title">시트 데이터 관리</div>
         <div className="sheetcloud_folder">{renderFolderTree(folders)}</div>
       </div>
 
