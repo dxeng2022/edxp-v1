@@ -1,5 +1,6 @@
 package com.edxp.common.utils;
 
+import com.amazonaws.services.s3.transfer.Transfer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -33,19 +34,19 @@ public class FileUtil {
         throw new FileNotFoundException("File [" + file.getName() + "] delete fail");
     }
 
-    public static boolean isDownOver(ArrayList<Boolean> list) {
-        for(boolean done : list) {
-            if(!done) {
+    public static boolean isDownOver(ArrayList<Transfer> list) {
+        for(Transfer download : list) {
+            if(!download.isDone()) {
                 return false;
             }
         }
         return list.size() > 0;
     }
 
-    public static double getAverageList(ArrayList<Double> list) {
+    public static double getAverageList(ArrayList<Transfer> list) {
         double sum = 0;
-        for(Double value : list) {
-            sum += value;
+        for(Transfer download : list) {
+            sum += download.getProgress().getPercentTransferred();
         }
         return sum / list.size();
     }
