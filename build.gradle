@@ -37,10 +37,10 @@ dependencies {
 
     // Utils
     implementation 'org.apache.commons:commons-lang3:3.12.0' // Apache lang utils
-    implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '1.2.4' // zip util
+    implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '2.10.0' // zip util
 }
 
-tasks.named('test') {ls
+tasks.named('test') {
     useJUnitPlatform()
 }
 

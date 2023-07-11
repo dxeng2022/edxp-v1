@@ -9,7 +9,7 @@ function Draw() {
 
   return (
     <div className="draw_box">
-      <img src="/img/back.png" alt="img" className="draw_back" onClick={()=>{ navigate(-1) }} />
+      <img src="/img/back.png" alt="img" className="draw_back" onClick={() => { navigate(-1) }} />
       <div className="draw_imgbox">
         <img src="/img/draw.png" alt="img" className="draw_img" />
         <div className="draw_name">도 면</div>
@@ -23,18 +23,19 @@ function Draw() {
           </div>
           <div className="draw_buttons">
             <Button
-              onClick={()=>{ navigate('/module/draw/download') }} 
-              type="submit" 
+              onClick={() => { navigate('/module/draw/download') }}
+              type="submit"
               variant="contained"
               sx={{
-                  backgroundColor:'#12A3CC', 
-                  height: '4.5vh', 
-                  width: '17vw', 
-                  borderRadius: '10px',
-                  fontSize: '1.4vw',
-                  fontWeight: 600,
-                  '&:hover': {backgroundColor: '#0F6983'}}}>
-            이 동 하 기 {'>'}
+                backgroundColor: '#12A3CC',
+                height: '4.5vh',
+                width: '17vw',
+                borderRadius: '10px',
+                fontSize: '1.4vw',
+                fontWeight: 600,
+                '&:hover': { backgroundColor: '#0F6983' }
+              }}>
+              이 동 하 기 {'>'}
             </Button>
           </div>
         </div>
@@ -46,18 +47,19 @@ function Draw() {
           </div>
           <div className="draw_buttons">
             <Button
-              onClick={()=>{ navigate(-1) }} 
-              type="submit" 
+              onClick={() => { navigate('/module/draw/cloud') }}
+              type="submit"
               variant="contained"
               sx={{
-                  backgroundColor:'#12A3CC', 
-                  height: '4.5vh', 
-                  width: '17vw', 
-                  borderRadius: '10px',
-                  fontSize: '1.4vw',
-                  fontWeight: 600,
-                  '&:hover': {backgroundColor: '#0F6983'}}}>
-            이 동 하 기 {'>'}
+                backgroundColor: '#12A3CC',
+                height: '4.5vh',
+                width: '17vw',
+                borderRadius: '10px',
+                fontSize: '1.4vw',
+                fontWeight: 600,
+                '&:hover': { backgroundColor: '#0F6983' }
+              }}>
+              이 동 하 기 {'>'}
             </Button>
           </div>
         </div>

@@ -2,9 +2,10 @@ package com.edxp.service;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.MultipleFileDownload;
+import com.amazonaws.services.s3.transfer.Transfer;
 import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferProgress;
 import com.edxp.common.utils.FileUtil;
 import com.edxp.constant.ErrorCode;
 import com.edxp.dto.request.*;
@@ -13,21 +14,21 @@ import com.edxp.dto.response.FolderListResponse;
 import com.edxp.exception.EdxpApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,13 +40,16 @@ public class FileService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    @Value("${file.path}")
+    private String downloadFolder;
+
     @Transactional(readOnly = true)
     public List<FileListResponse> getFiles(Long userId, String currentPath) {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
         listObjectsRequest.setBucketName(bucket);
         listObjectsRequest.setPrefix("user_" + String.format("%07d", userId) + "/" + currentPath);
         listObjectsRequest.setDelimiter("/");
-        log.info("path : {}", currentPath);
+        log.debug("path : {}", currentPath);
 
         ObjectListing s3Objects;
 
@@ -53,7 +57,7 @@ public class FileService {
 
         do {
             s3Objects = amazonS3Client.listObjects(listObjectsRequest);
-            for (String commonPrefix : s3Objects.getCommonPrefixes()) { // prefix 경로의 디렉토리를 저장 (ex. v1/)
+            for (String commonPrefix : s3Objects.getCommonPrefixes()) {
                 files.add(FileListResponse.from(commonPrefix));
             }
 
@@ -75,7 +79,7 @@ public class FileService {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
         listObjectsRequest.setBucketName(bucket);
         listObjectsRequest.setPrefix("user_" + String.format("%07d", userId) + "/" + currentPath);
-        log.info("folderPath : {}", currentPath);
+        log.debug("folderPath : {}", currentPath);
 
         ObjectListing s3Objects;
 
@@ -96,14 +100,15 @@ public class FileService {
     }
 
     @Transactional
-    public void addFolder(Long userId, FileFolderRequest request) {
+    public void addFolder(Long userId, FolderAddRequest request) {
         StringBuilder path = new StringBuilder();
         path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
-        log.info("path : {}", path);
+        log.debug("path : {}", path);
 
         StringBuilder filePath = path.append(request.getFolderName()).append("/");
 
         boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
+
         if (!isObjectExist) {
             amazonS3Client.putObject(bucket, String.valueOf(filePath), new ByteArrayInputStream(new byte[0]), new ObjectMetadata());
         } else {
@@ -113,13 +118,14 @@ public class FileService {
 
     @Transactional
     public void uploadFile(Long userId, FileUploadRequest request) {
+        if (request.getFiles().size() > 5) throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
         request.getFiles().forEach(file -> {
             try {
                 String fileName = file.getOriginalFilename();
 
                 StringBuilder path = new StringBuilder();
                 path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
-                log.info("path : {}", path);
+                log.debug("path : {}", path);
 
                 StringBuilder filePath = path.append(fileName);
 
@@ -134,103 +140,179 @@ public class FileService {
                     throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
                 }
             } catch (IOException e) {
-                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File upload is failed.");
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, file.getOriginalFilename() + " upload is failed.");
             }
         });
     }
 
-//    @Transactional
-//    public InputStreamResource downloadFile(FileDownloadRequest request) {
-//        log.info("filename: {}", request.getFilePath());
-//        S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, request.getFilePath()));
-//        S3ObjectInputStream objectInputStream = object.getObjectContent();
-//
-//        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(request.getFilePath()));
-//        if (isObjectExist) {
-//            try {
-//                return new InputStreamResource(objectInputStream);
-//            } catch (Exception e) {
-//                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
-//            }
-//        } else {
-//            throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
-//        }
-//    }
-
     @Transactional
-    public InputStreamResource downloadFile(FileDownloadRequest request) {
-        log.info("filename: {}", request.getFilePath());
-        S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, request.getFilePath()));
-        S3ObjectInputStream objectInputStream = object.getObjectContent();
+    public void downloadFiles(FileDownloadsRequest request, HttpServletResponse response, Long userId) throws IOException {
+        StringBuilder userPath = new StringBuilder();
+        userPath.append("user_").append(String.format("%07d", userId)).append("/");
 
-        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(request.getFilePath()));
-        if (isObjectExist) {
-            try {
-                return new InputStreamResource(objectInputStream);
-            } catch (Exception e) {
+        // 단일 파일 다운로드
+        if (request.getFilePaths().size() == 1 && request.getFilePaths().get(0).charAt(request.getFilePaths().get(0).length() - 1) != '/') {
+            String filePath = String.valueOf(userPath.append(request.getFilePaths().get(0)));
+            response.addHeader("Content-Disposition", "attachment; filename=" + filePath.substring(filePath.lastIndexOf("/") + 1));
+            response.setContentType("application/octet-stream");
+            S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, filePath));
+
+            try (S3ObjectInputStream objectInputStream = object.getObjectContent();
+                 OutputStream responseOutputStream = response.getOutputStream()) {
+
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = objectInputStream.read(buffer)) != -1) {
+                    responseOutputStream.write(buffer, 0, bytesRead);
+                }
+                return;
+            } catch (Exception ex) {
                 throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
             }
+        }
+
+        // (1) 서버 로컬에 생성되는 디렉토리, 해당 디렉토리에 파일이 다운로드된다
+        File localDirectory = new File(downloadFolder + "/" + RandomStringUtils.randomAlphanumeric(6) + "-download");
+        response.addHeader("Content-Disposition", "attachment; filename=" + localDirectory.getName() + ".zip");
+        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+            // (2) TransferManager -> localDirectory 에 파일 다운로드
+            ArrayList<Transfer> downloadList = new ArrayList<>();
+            for (String path : request.getFilePaths()) {
+                log.debug("path: {}", path);
+                if (path.charAt(path.length() - 1) == '/') {
+                    MultipleFileDownload downloadDirectory = transferManager.downloadDirectory(
+                            bucket, userPath + path, localDirectory
+                    );
+                    downloadList.add(downloadDirectory);
+                } else {
+                    Download download = transferManager.download(
+                            bucket, userPath + path, new File(localDirectory + "/" + userPath + path)
+                    );
+                    downloadList.add(download);
+                }
+            }
+
+            // (3) 다운로드 상태 확인
+            log.info("[" + localDirectory.getName() + "] download progressing... start");
+            DecimalFormat decimalFormat = new DecimalFormat("##0.00");
+            while (!FileUtil.isDownOver(downloadList)) {
+                Thread.sleep(1000);
+
+                double percentTransferred = FileUtil.getAverageList(downloadList);
+                log.info("[" + localDirectory.getName() + "] " + decimalFormat.format(percentTransferred) + "% download progressing...");
+            }
+            log.info("[" + localDirectory.getName() + "] download directory from S3 success!");
+
+            // (4) 로컬 디렉토리 -> 압축하면서 다운로드
+            log.info("compressing to zip file...");
+            log.debug(localDirectory.getPath());
+            addFolderToZip(zipOut, localDirectory + "/" + userPath + request.getCurrentPath());
+        } catch (Exception e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
+        } finally {
+            // (5) 로컬 디렉토리 삭제
+            FileUtil.remove(localDirectory);
+        }
+    }
+
+    private void addFolderToZip(ZipOutputStream zipOut, String filePath) throws IOException {
+        final int INPUT_STREAM_BUFFER_SIZE = 2048;
+        Files.walkFileTree(Paths.get(filePath), new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (attrs.isSymbolicLink()) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                try (FileInputStream fis = new FileInputStream(file.toFile())) {
+                    Path targetFile = Paths.get(filePath).relativize(file);
+                    ZipEntry zipEntry = new ZipEntry(targetFile.toString());
+                    zipOut.putNextEntry(zipEntry);
+
+                    byte[] bytes = new byte[INPUT_STREAM_BUFFER_SIZE];
+                    int length;
+                    while ((length = fis.read(bytes)) >= 0) {
+                        zipOut.write(bytes, 0, length);
+                    }
+                    zipOut.closeEntry();
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                System.err.printf("Unable to zip : %s%n%s%n", file, exc);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    @Transactional
+    public void updateFile(FileUpdateRequest request, Long userId) {
+        StringBuilder path = new StringBuilder();
+        path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
+        String sourceKey = path + request.getCurrentName();
+        String destinationKey = path + request.getUpdateName() + "." + request.getExtension();
+
+        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, sourceKey);
+        boolean isNewObjectExist = amazonS3Client.doesObjectExist(bucket, destinationKey);
+
+        if (isNewObjectExist) {
+            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+        }
+        if (isObjectExist) {
+            CopyObjectRequest copyObjectsRequest = new CopyObjectRequest(bucket, sourceKey, bucket, destinationKey);
+            amazonS3Client.copyObject(copyObjectsRequest);
         } else {
             throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
         }
-    }
-
-    @Transactional
-    public InputStreamResource downloadFiles(FileDownloadsRequest request) throws InterruptedException, ZipException, IOException {
-        log.info("filename: {}", request.getFilePath());
-        // (1)
-        // 서버 로컬에 생성되는 디렉토리, 해당 디렉토리에 파일이 다운로드된다
-        File localDirectory = new File(RandomStringUtils.randomAlphanumeric(6) + "-s3-download");
-        // 서버 로컬에 생성되는 zip 파일
-        ZipFile zipFile = new ZipFile(RandomStringUtils.randomAlphanumeric(6) + "-s3-download.zip");
 
         try {
-            // (2)
-            // TransferManager -> localDirectory 에 파일 다운로드
-            MultipleFileDownload downloadDirectory = transferManager.downloadDirectory(bucket, request.getFilePath(), localDirectory);
-
-            // (3)
-            // 다운로드 상태 확인
-            log.info("[" + request.getFilePath() + "] download progressing... start");
-            DecimalFormat decimalFormat = new DecimalFormat("##0.00");
-            while (!downloadDirectory.isDone()) {
-                Thread.sleep(1000);
-                TransferProgress progress = downloadDirectory.getProgress();
-                double percentTransferred = progress.getPercentTransferred();
-                log.info("[" + request.getFilePath() + "] " + decimalFormat.format(percentTransferred) + "% download progressing...");
-            }
-            log.info("[" + request.getFilePath() + "] download directory from S3 success!");
-
-            // (4)
-            // 로컬 디렉토리 -> 로컬 zip 파일에 압축
-            log.info("compressing to zip file...");
-//            zipFile.addFolder(new File(localDirectory.getName() + "/" + prefix));
-        } finally {
-            // (5)
-            // 로컬 디렉토리 삭제
-//            FileUtil.remove(localDirectory);
-        }
-
-        // (6)
-        // 파일 Resource 리턴
-//        return new FileSystemResource(zipFile.getInputStream());
-        return null;
-    }
-
-    @Transactional
-    public boolean deleteFile(FileDeleteRequest request) {
-        String filePath = request.getFilePath();
-        log.info("path: {}", filePath);
-        try {
-            boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, filePath);
-            if (isObjectExist) {
-                amazonS3Client.deleteObject(bucket, filePath);
-                return true;
-            } else {
-                return false;
-            }
+            amazonS3Client.deleteObject(bucket, sourceKey);
         } catch (Exception e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File delete is failed.");
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, " delete is failed.");
         }
+    }
+
+    @Transactional
+    public boolean deleteFile(FileDeleteRequest request, Long userId) {
+        AtomicBoolean allPassed = new AtomicBoolean(false);
+        request.getFilePaths().forEach(path -> {
+            StringBuilder filePath = new StringBuilder();
+            filePath.append("user_").append(String.format("%07d", userId)).append("/").append(path);
+            log.debug("filename: {}", filePath);
+            try {
+                boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
+
+                ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
+                listObjectsRequest.setBucketName(bucket);
+                listObjectsRequest.setPrefix("user_" + String.format("%07d", userId) + "/" + path);
+
+                ObjectListing s3Objects;
+
+                if (isObjectExist) {
+                    if (path.charAt(path.length() - 1) == '/') {
+                        do {
+                            s3Objects = amazonS3Client.listObjects(listObjectsRequest);
+                            for (S3ObjectSummary s3ObjectSummary : s3Objects.getObjectSummaries()) {
+                                String key = s3ObjectSummary.getKey();
+                                amazonS3Client.deleteObject(bucket, key);
+                            }
+                            listObjectsRequest.setMarker(s3Objects.getNextMarker());
+                        } while (s3Objects.isTruncated());
+                    } else {
+                        amazonS3Client.deleteObject(bucket, String.valueOf(filePath));
+                    }
+                } else {
+                    allPassed.set(false);
+                    throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
+                }
+            } catch (Exception e) {
+                allPassed.set(false);
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, path + " delete is failed.");
+            }
+            allPassed.set(true);
+        });
+        return allPassed.get();
     }
 }

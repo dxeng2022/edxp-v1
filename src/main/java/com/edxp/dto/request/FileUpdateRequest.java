@@ -7,7 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class FileFolderRequest {
+public class FileUpdateRequest {
     private String currentPath;
-    private String folderName;
+    private String currentName;
+    private String updateName;
+    private String extension;
 }

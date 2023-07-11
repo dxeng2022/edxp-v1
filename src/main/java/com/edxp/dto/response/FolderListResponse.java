@@ -7,16 +7,16 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class FolderListResponse {
-    private String fileName;
-    private String filePath;
+    private String folderName;
+    private String folderPath;
 
     public static FolderListResponse from(S3ObjectSummary s3ObjectSummary) {
-        String filePath = s3ObjectSummary.getKey().substring(s3ObjectSummary.getKey().indexOf("/") + 1);
-        String fileName = filePath.split("/")[filePath.split("/").length - 1];
+        String folderPath = s3ObjectSummary.getKey().substring(s3ObjectSummary.getKey().indexOf("/") + 1);
+        String fileName = folderPath.split("/")[folderPath.split("/").length - 1];
 
         return new FolderListResponse(
                 fileName,
-                filePath
+                folderPath
         );
     }
 }
