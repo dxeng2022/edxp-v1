@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
@@ -72,12 +73,13 @@ public class FileController {
     @CrossOrigin
     @PostMapping("/download")
     public void downloadFiles(
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse,
             @RequestBody FileDownloadsRequest request,
-            HttpServletResponse response,
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
-        response.setStatus(HttpServletResponse.SC_OK);
-        fileService.downloadFiles(request, response, principal.getUser().getId());
+        httpResponse.setStatus(HttpServletResponse.SC_OK);
+        fileService.downloadFiles(httpRequest, httpResponse, request, principal.getUser().getId());
     }
 
     @CrossOrigin
