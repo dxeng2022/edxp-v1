@@ -43,11 +43,14 @@ public class FileService {
     @Value("${file.path}")
     private String downloadFolder;
 
+    @Value("${file.location}")
+    private String location;
+
     @Transactional(readOnly = true)
     public List<FileListResponse> getFiles(Long userId, String currentPath) {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
         listObjectsRequest.setBucketName(bucket);
-        listObjectsRequest.setPrefix("user_" + String.format("%07d", userId) + "/" + currentPath);
+        listObjectsRequest.setPrefix("dxeng/" + location + "/" + "user_" + String.format("%06d", userId) + "/" + currentPath);
         listObjectsRequest.setDelimiter("/");
         log.debug("path : {}", currentPath);
 
@@ -78,7 +81,7 @@ public class FileService {
     public List<FolderListResponse> getFolders(Long userId, String currentPath) {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
         listObjectsRequest.setBucketName(bucket);
-        listObjectsRequest.setPrefix("user_" + String.format("%07d", userId) + "/" + currentPath);
+        listObjectsRequest.setPrefix("dxeng/" + location + "/" + "user_" + String.format("%06d", userId) + "/" + currentPath);
         log.debug("folderPath : {}", currentPath);
 
         ObjectListing s3Objects;
@@ -102,7 +105,7 @@ public class FileService {
     @Transactional
     public void addFolder(Long userId, FolderAddRequest request) {
         StringBuilder path = new StringBuilder();
-        path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
+        path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(request.getCurrentPath());
         log.debug("path : {}", path);
 
         StringBuilder filePath = path.append(request.getFolderName()).append("/");
@@ -124,7 +127,7 @@ public class FileService {
                 String fileName = file.getOriginalFilename();
 
                 StringBuilder path = new StringBuilder();
-                path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
+                path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(request.getCurrentPath());
                 log.debug("path : {}", path);
 
                 StringBuilder filePath = path.append(fileName);
@@ -148,7 +151,7 @@ public class FileService {
     @Transactional
     public void downloadFiles(FileDownloadsRequest request, HttpServletResponse response, Long userId) throws IOException {
         StringBuilder userPath = new StringBuilder();
-        userPath.append("user_").append(String.format("%07d", userId)).append("/");
+        userPath.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/");
 
         // 단일 파일 다운로드
         if (request.getFilePaths().size() == 1 && request.getFilePaths().get(0).charAt(request.getFilePaths().get(0).length() - 1) != '/') {
@@ -250,7 +253,7 @@ public class FileService {
     @Transactional
     public void updateFile(FileUpdateRequest request, Long userId) {
         StringBuilder path = new StringBuilder();
-        path.append("user_").append(String.format("%07d", userId)).append("/").append(request.getCurrentPath());
+        path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(request.getCurrentPath());
         String sourceKey = path + request.getCurrentName();
         String destinationKey = path + request.getUpdateName() + "." + request.getExtension();
 
@@ -279,14 +282,14 @@ public class FileService {
         AtomicBoolean allPassed = new AtomicBoolean(false);
         request.getFilePaths().forEach(path -> {
             StringBuilder filePath = new StringBuilder();
-            filePath.append("user_").append(String.format("%07d", userId)).append("/").append(path);
+            filePath.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(path);
             log.debug("filename: {}", filePath);
             try {
                 boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
 
                 ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
                 listObjectsRequest.setBucketName(bucket);
-                listObjectsRequest.setPrefix("user_" + String.format("%07d", userId) + "/" + path);
+                listObjectsRequest.setPrefix(String.valueOf(filePath));
 
                 ObjectListing s3Objects;
 
