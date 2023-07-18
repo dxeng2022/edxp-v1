@@ -12,20 +12,20 @@ function SheetCloud() {
   //왼쪽 폴더 리스트 불러오기
   const [folders, setFolders] = useState([]);
 
-  useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const response = await fetch(`/api/v1/file/get-folder?currentPath=${encodeURIComponent(currentPath)}`);
-        const folder = await response.json();
-        // console.log(folder);
-        const folderTree = buildFolderTree(folder.result); // 폴더 트리 구축
-        setFolders(folderTree); // 폴더 트리를 folders state에 설정
-        // setFolders(folder.result);
-      } catch (error) {
-        console.error("Error fetching files:", error);
-      }
-    };
+  const fetchFolders = async () => {
+    try {
+      const response = await fetch(`/api/v1/file/get-folder?currentPath=${encodeURIComponent(currentPath)}`);
+      const folder = await response.json();
+      // console.log(folder);
+      const folderTree = buildFolderTree(folder.result); // 폴더 트리 구축
+      setFolders(folderTree); // 폴더 트리를 folders state에 설정
+      // setFolders(folder.result);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchFolders();
   }, []);
   //왼쪽 폴더 리스트 불러오기
@@ -282,6 +282,8 @@ function SheetCloud() {
         if (response.status === 200) {
           alert('파일이 삭제되었습니다!');
           fetchFiles();
+          fetchFolders();
+          setSelectedFilePaths([]);
         } else {
           alert('파일 삭제에 실패하였습니다.');
         }
@@ -312,6 +314,7 @@ function SheetCloud() {
         if (response.status === 200) {
           alert("새 폴더가 생성되었습니다.");
           fetchFiles();
+          fetchFolders();
         } else {
           const errorMessage = await response.text();
           alert(`Error: ${errorMessage}`);
