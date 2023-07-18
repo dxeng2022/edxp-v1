@@ -19,8 +19,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
@@ -149,14 +152,15 @@ public class FileService {
     }
 
     @Transactional
-    public void downloadFiles(FileDownloadsRequest request, HttpServletResponse response, Long userId) throws IOException {
+    public void downloadFiles(HttpServletRequest httpRequest, HttpServletResponse response, FileDownloadsRequest request, Long userId) throws IOException {
         StringBuilder userPath = new StringBuilder();
         userPath.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/");
 
         // 단일 파일 다운로드
         if (request.getFilePaths().size() == 1 && request.getFilePaths().get(0).charAt(request.getFilePaths().get(0).length() - 1) != '/') {
             String filePath = String.valueOf(userPath.append(request.getFilePaths().get(0)));
-            response.addHeader("Content-Disposition", "attachment; filename=" + filePath.substring(filePath.lastIndexOf("/") + 1));
+            String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+            response.addHeader("Content-Disposition", "attachment; filename=" + getEncodedFileName(httpRequest, fileName));
             response.setContentType("application/octet-stream");
             S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, filePath));
 
@@ -215,6 +219,21 @@ public class FileService {
         } finally {
             // (5) 로컬 디렉토리 삭제
             FileUtil.remove(localDirectory);
+        }
+    }
+    
+    private String getEncodedFileName(HttpServletRequest httpRequest, String fileName) {
+        String header = httpRequest.getHeader("User-Agent");
+        if (header.contains("Edge")|| header.contains("MSIE") || header.contains("Trident")) {
+            return URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        } else if (header.contains("Chrome") || header.contains("Opera") || header.contains("Firefox")) {
+            return new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+        } else if (header.contains("Postman")) {
+            String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+            System.out.println(test);
+            return test;
+        } else {
+            return  "downloaded_file";
         }
     }
 
