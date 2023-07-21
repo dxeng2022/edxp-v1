@@ -5,6 +5,7 @@ import com.edxp.config.auth.PrincipalDetails;
 import com.edxp.constant.ErrorCode;
 import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
+import com.edxp.dto.response.FileVolumeResponse;
 import com.edxp.dto.response.FolderListResponse;
 import com.edxp.exception.EdxpApplicationException;
 import com.edxp.service.FileService;
@@ -44,6 +45,16 @@ public class FileController {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         List<FolderListResponse> folders = fileService.getFolders(principal.getUser().getId(), currentPath);
         return CommonResponse.success(folders);
+    }
+
+    @GetMapping("/get-volume")
+    public CommonResponse<FileVolumeResponse> getVolume(
+            @RequestParam(required = false) String currentPath,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+        FileVolumeResponse response = fileService.getVolume(principal.getUser().getId(), currentPath);
+        return CommonResponse.success(response);
     }
 
     @CrossOrigin

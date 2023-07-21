@@ -10,6 +10,7 @@ import com.edxp.common.utils.FileUtil;
 import com.edxp.constant.ErrorCode;
 import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
+import com.edxp.dto.response.FileVolumeResponse;
 import com.edxp.dto.response.FolderListResponse;
 import com.edxp.exception.EdxpApplicationException;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -51,29 +51,38 @@ public class FileService {
 
     @Transactional(readOnly = true)
     public List<FileListResponse> getFiles(Long userId, String currentPath) {
-        ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
-        listObjectsRequest.setBucketName(bucket);
-        listObjectsRequest.setPrefix("dxeng/" + location + "/" + "user_" + String.format("%06d", userId) + "/" + currentPath);
-        listObjectsRequest.setDelimiter("/");
         log.debug("path : {}", currentPath);
 
+        ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, currentPath);
+        listObjectsRequest.setDelimiter("/");
         ObjectListing s3Objects;
 
         List<FileListResponse> files = new ArrayList<>();
 
         do {
             s3Objects = amazonS3Client.listObjects(listObjectsRequest);
+
             for (String commonPrefix : s3Objects.getCommonPrefixes()) {
-                files.add(FileListResponse.from(commonPrefix));
+                int startIdx = commonPrefix.indexOf("user");
+                String folderPath = commonPrefix.substring(commonPrefix.indexOf("/", startIdx) + 1);
+
+                ListObjectsRequest folderObjectsRequest = getListObjectsRequest(userId, folderPath);
+                ObjectListing folderObjects = amazonS3Client.listObjects(folderObjectsRequest);
+                List<S3ObjectSummary> folderObjectSummaries = new ArrayList<>(folderObjects.getObjectSummaries());
+                Optional<S3ObjectSummary> latestObject = folderObjectSummaries.stream().max(Comparator.comparing(S3ObjectSummary::getLastModified));
+                Date latModified = latestObject.map(S3ObjectSummary::getLastModified).orElse(new Date(0));
+                long folderSize = folderObjectSummaries.stream().mapToLong(S3ObjectSummary::getSize).sum();
+
+                files.add(FileListResponse.from(commonPrefix, folderPath, latModified, folderSize));
             }
 
-            s3Objects = amazonS3Client.listObjects(listObjectsRequest);
             for (S3ObjectSummary s3ObjectSummary : s3Objects.getObjectSummaries()) {
                 String key = s3ObjectSummary.getKey();
                 if (key.charAt(key.length() - 1) != '/') {
                     files.add(FileListResponse.from(s3ObjectSummary));
                 }
             }
+
             listObjectsRequest.setMarker(s3Objects.getNextMarker());
         } while (s3Objects.isTruncated());
 
@@ -82,11 +91,9 @@ public class FileService {
 
     @Transactional(readOnly = true)
     public List<FolderListResponse> getFolders(Long userId, String currentPath) {
-        ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
-        listObjectsRequest.setBucketName(bucket);
-        listObjectsRequest.setPrefix("dxeng/" + location + "/" + "user_" + String.format("%06d", userId) + "/" + currentPath);
         log.debug("folderPath : {}", currentPath);
 
+        ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, currentPath);
         ObjectListing s3Objects;
 
         List<FolderListResponse> folders = new ArrayList<>();
@@ -99,19 +106,44 @@ public class FileService {
                     folders.add(FolderListResponse.from(s3ObjectSummary));
                 }
             }
+
             listObjectsRequest.setMarker(s3Objects.getNextMarker());
         } while (s3Objects.isTruncated());
 
         return folders;
     }
 
+    @Transactional(readOnly = true)
+    public FileVolumeResponse getVolume(Long userId, String currentPath) {
+        log.debug("folderPath : {}", currentPath);
+
+        ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, currentPath);
+        ObjectListing s3Objects;
+
+        List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
+
+        do {
+            s3Objects = amazonS3Client.listObjects(listObjectsRequest);
+            s3ObjectSummaries.addAll(s3Objects.getObjectSummaries());
+
+            listObjectsRequest.setMarker(s3Objects.getNextMarker());
+        } while (s3Objects.isTruncated());
+
+        return FileVolumeResponse.from(s3ObjectSummaries);
+    }
+
+    private StringBuilder getPath (long userId, String currentPath) {
+        StringBuilder path = new StringBuilder();
+        path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(currentPath);
+
+        return path;
+    }
+
     @Transactional
     public void addFolder(Long userId, FolderAddRequest request) {
-        StringBuilder path = new StringBuilder();
-        path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(request.getCurrentPath());
-        log.debug("path : {}", path);
+        log.debug("path : {}", getPath(userId, request.getCurrentPath()));
 
-        StringBuilder filePath = path.append(request.getFolderName()).append("/");
+        StringBuilder filePath = getPath(userId, request.getCurrentPath()).append(request.getFolderName()).append("/");
 
         boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
 
@@ -129,11 +161,9 @@ public class FileService {
             try {
                 String fileName = file.getOriginalFilename();
 
-                StringBuilder path = new StringBuilder();
-                path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(request.getCurrentPath());
-                log.debug("path : {}", path);
+                log.debug("path : {}", getPath(userId, request.getCurrentPath()));
 
-                StringBuilder filePath = path.append(fileName);
+                StringBuilder filePath = getPath(userId, request.getCurrentPath()).append(fileName);
 
                 ObjectMetadata metadata = new ObjectMetadata();
                 metadata.setContentType(file.getContentType());
@@ -221,58 +251,12 @@ public class FileService {
             FileUtil.remove(localDirectory);
         }
     }
-    
-    private String getEncodedFileName(HttpServletRequest httpRequest, String fileName) {
-        String header = httpRequest.getHeader("User-Agent");
-        if (header.contains("Edge")|| header.contains("MSIE") || header.contains("Trident")) {
-            return URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
-        } else if (header.contains("Chrome") || header.contains("Opera") || header.contains("Firefox")) {
-            return new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-        } else if (header.contains("Postman")) {
-            String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-            System.out.println(test);
-            return test;
-        } else {
-            return  "downloaded_file";
-        }
-    }
-
-    private void addFolderToZip(ZipOutputStream zipOut, String filePath) throws IOException {
-        final int INPUT_STREAM_BUFFER_SIZE = 2048;
-        Files.walkFileTree(Paths.get(filePath), new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                if (attrs.isSymbolicLink()) {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                try (FileInputStream fis = new FileInputStream(file.toFile())) {
-                    Path targetFile = Paths.get(filePath).relativize(file);
-                    ZipEntry zipEntry = new ZipEntry(targetFile.toString());
-                    zipOut.putNextEntry(zipEntry);
-
-                    byte[] bytes = new byte[INPUT_STREAM_BUFFER_SIZE];
-                    int length;
-                    while ((length = fis.read(bytes)) >= 0) {
-                        zipOut.write(bytes, 0, length);
-                    }
-                    zipOut.closeEntry();
-                }
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                System.err.printf("Unable to zip : %s%n%s%n", file, exc);
-                return FileVisitResult.CONTINUE;
-            }
-        });
-    }
 
     @Transactional
     public void updateFile(FileUpdateRequest request, Long userId) {
-        StringBuilder path = new StringBuilder();
-        path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(request.getCurrentPath());
+        StringBuilder path = getPath(userId, request.getCurrentPath());
+        log.debug("path : {}", path);
+
         String sourceKey = path + request.getCurrentName();
         String destinationKey = path + request.getUpdateName() + "." + request.getExtension();
 
@@ -336,5 +320,59 @@ public class FileService {
             allPassed.set(true);
         });
         return allPassed.get();
+    }
+
+    private ListObjectsRequest getListObjectsRequest(Long userId, String currentPath) {
+        ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
+        listObjectsRequest.setBucketName(bucket);
+        listObjectsRequest.setPrefix("dxeng/" + location + "/" + "user_" + String.format("%06d", userId) + "/" + currentPath);
+        return listObjectsRequest;
+    }
+
+    private String getEncodedFileName(HttpServletRequest httpRequest, String fileName) {
+        String header = httpRequest.getHeader("User-Agent");
+        if (header.contains("Edge")|| header.contains("MSIE") || header.contains("Trident")) {
+            return URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        } else if (header.contains("Chrome") || header.contains("Opera") || header.contains("Firefox")) {
+            return new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+        } else if (header.contains("Postman")) {
+            String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+            log.debug(test);
+            return test;
+        } else {
+            return  "downloaded_file";
+        }
+    }
+
+    private void addFolderToZip(ZipOutputStream zipOut, String filePath) throws IOException {
+        final int INPUT_STREAM_BUFFER_SIZE = 2048;
+        Files.walkFileTree(Paths.get(filePath), new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (attrs.isSymbolicLink()) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                try (FileInputStream fis = new FileInputStream(file.toFile())) {
+                    Path targetFile = Paths.get(filePath).relativize(file);
+                    ZipEntry zipEntry = new ZipEntry(targetFile.toString());
+                    zipOut.putNextEntry(zipEntry);
+
+                    byte[] bytes = new byte[INPUT_STREAM_BUFFER_SIZE];
+                    int length;
+                    while ((length = fis.read(bytes)) >= 0) {
+                        zipOut.write(bytes, 0, length);
+                    }
+                    zipOut.closeEntry();
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                System.err.printf("Unable to zip : %s%n%s%n", file, exc);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 }
