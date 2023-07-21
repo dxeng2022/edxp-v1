@@ -6,7 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 @Slf4j
 public class FileUtil {
@@ -20,6 +23,7 @@ public class FileUtil {
 
     public static void removeDirectory(File directory) throws IOException {
         File[] files = directory.listFiles();
+        assert files != null;
         for (File file : files) {
             remove(file);
         }
@@ -49,5 +53,32 @@ public class FileUtil {
             sum += download.getProgress().getPercentTransferred();
         }
         return sum / list.size();
+    }
+
+    public static String getDateFormat(Date date) {
+        Calendar s3Date = Calendar.getInstance();
+        s3Date.setTime(date);
+        s3Date.add(Calendar.HOUR, 9);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy. MM. dd. a hh:mm:ss");
+        return dateFormat.format(date);
+    }
+
+    public static String getSizeFormat(Long size) {
+        StringBuilder fileSize = new StringBuilder();
+        long oneByte = 1024;
+        if (size == 0) {
+            fileSize.append("-");
+        } else if (0 < size && size < Math.pow(oneByte, 2)) {
+            fileSize.append(String.format("%.1f", ((double) size) / 1024)).append(" KB");
+        } else if (Math.pow(oneByte, 2) <= size && size < Math.pow(oneByte, 3)) {
+            fileSize.append(String.format("%.1f", ((double) size) / Math.pow(1024, 2))).append(" MB");
+        } else if (Math.pow(oneByte, 3) <= size && size < Math.pow(oneByte, 4)) {
+            fileSize.append(String.format("%.1f", ((double) size) / Math.pow(1024, 3))).append(" GB");
+        } else if (Math.pow(oneByte, 4) <= size) {
+            fileSize.append(String.format("%.1f", ((double) size) / Math.pow(1024, 4))).append(" TB");
+        } else {
+            fileSize.append(size).append(" byte");
+        }
+        return fileSize.toString();
     }
 }
