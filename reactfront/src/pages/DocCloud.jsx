@@ -205,13 +205,15 @@ function DocCloud() {
         alert('업로드가 완료되었습니다!');
         fetchFiles(); // 업로드 완료 후 파일 목록 업데이트
         fetchVolume();
+      } else if (response.status === 409) {
+        alert("파일 이름이 중복되었습니다.");
       } else {
-        alert('업로드에 실패하였습니다.');
+        alert("업로드에 실패하였습니다.");
       }
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   const handleClick = () => {
     fileInputRef.current.click();
@@ -452,13 +454,13 @@ function DocCloud() {
   };
   // 폴더 및 파일 이름에 대한 제한 확인
 
+
   //폴더 이동
   const handleFolderClick = (folderPath) => {
     setCurrentPath(folderPath);
     setSelectedFilePaths([]); // 폴더 이동 시 선택한 체크박스 초기화
   };
   //폴더 이동
-
 
   //이전 폴더 이동
   const handleGoBack = () => {
@@ -538,6 +540,7 @@ function DocCloud() {
   // console.log(currentVolume, originalVolume);
   //용량
 
+
   return (
     <div className={cloud.cloud_box}>
 
@@ -548,10 +551,10 @@ function DocCloud() {
         variant="contained"
         sx={{
           backgroundColor: '#cc3712',
-          height: '4.5vh',
-          width: '8vw',
+          height: '45px',
+          width: '120px',
           borderRadius: '10px',
-          fontSize: '1.4vw',
+          fontSize: '25px',
           fontWeight: 600,
           '&:hover': { backgroundColor: '#85240c' }
         }}>
@@ -574,7 +577,22 @@ function DocCloud() {
 
         <div className={cloud.cloud_currentPath}>
           현재 폴더 위치 : {currentPath}
-          <img src="/img/back.png" alt="img" className={cloud.cloud_goback} onClick={() => handleGoBack()} />
+          <Button
+            className={cloud.cloud_goback}
+            onClick={() => handleGoBack()}
+            type="submit"
+            variant="contained"
+            sx={{
+              backgroundColor: '#808080',
+              height: '25px',
+              width: '20px',
+              marginLeft: '10px',
+              borderRadius: '10px',
+              fontSize: '12px',
+              '&:hover': { backgroundColor: '#464646' }
+            }}>
+            상위폴더
+          </Button>
         </div>
 
         <div className={cloud.cloud_buttons}>
@@ -586,10 +604,10 @@ function DocCloud() {
             variant="contained"
             sx={{
               backgroundColor: '#12A3CC',
-              height: '4.5vh',
-              width: '8vw',
+              height: '45px',
+              width: '120px',
               borderRadius: '10px',
-              fontSize: '1.4vw',
+              fontSize: '25px',
               fontWeight: 600,
               '&:hover': { backgroundColor: '#0F6983' }
             }}>
@@ -609,11 +627,11 @@ function DocCloud() {
               type="button"
               variant="contained"
               sx={{
-                backgroundColor: '#12A3CC',
-                height: '4.5vh',
-                width: '8vw',
+                backgroundColor: '#14c4f5',
+                height: '45px',
+                width: '120px',
                 borderRadius: '10px',
-                fontSize: '1.4vw',
+                fontSize: '25px',
                 fontWeight: 600,
                 '&:hover': { backgroundColor: '#0F6983' }
               }}>
@@ -626,10 +644,10 @@ function DocCloud() {
             variant="contained"
             sx={{
               backgroundColor: '#12A3CC',
-              height: '4.5vh',
-              width: '8vw',
+              height: '45px',
+              width: '120px',
               borderRadius: '10px',
-              fontSize: '1.4vw',
+              fontSize: '25px',
               fontWeight: 600,
               '&:hover': { backgroundColor: '#0F6983' }
             }}>
@@ -640,11 +658,11 @@ function DocCloud() {
             onClick={handleChangeName}
             variant="contained"
             sx={{
-              backgroundColor: '#12A3CC',
-              height: '4.5vh',
-              width: '8vw',
+              backgroundColor: '#14c4f5',
+              height: '45px',
+              width: '120px',
               borderRadius: '10px',
-              fontSize: '1.4vw',
+              fontSize: '25px',
               fontWeight: 600,
               '&:hover': { backgroundColor: '#0F6983' }
             }}>
@@ -656,10 +674,10 @@ function DocCloud() {
             variant="contained"
             sx={{
               backgroundColor: '#808080',
-              height: '4.5vh',
-              width: '8vw',
+              height: '45px',
+              width: '120px',
               borderRadius: '10px',
-              fontSize: '1.4vw',
+              fontSize: '25px',
               fontWeight: 600,
               '&:hover': { backgroundColor: '#464646' }
             }}>
@@ -685,7 +703,7 @@ function DocCloud() {
             </table>
             <div className={cloud.cell}>
               <table className={cloud.table}>
-                <tbody className={cloud.body}>
+                <tbody className={cloud.tbody}>
                   {files.map((file) => (
                     <tr className={cloud.tr} key={file.path}>
                       <td className={cloud.td}>
@@ -706,7 +724,6 @@ function DocCloud() {
             </div>
           </div>
         </div>
-        <span className={cloud.cloud_warning}> * 5MB 초과, 파일 5개 이상 불가 </span>
       </div>
     </div>
   )
