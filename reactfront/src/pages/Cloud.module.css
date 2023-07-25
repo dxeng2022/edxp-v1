@@ -4,8 +4,8 @@
   flex-direction: row;
   left: 50%;
   transform: translate(-50%, 20%);
-  height: 75vh;
-  width: 95vw;
+  height: 750px;
+  width: 1830px;
 }
 
 .cloud_left {
@@ -13,8 +13,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 65vh;
-  width: 15vw;
+  height: 650px;
+  width: 290px;
   background-color: #ffffffcb;
   border-radius: 10px;
   box-shadow: 0.5vh 0.5vh 0.5vh 0.5vh rgba(0, 0, 0, 0.425);
@@ -25,14 +25,14 @@
   width: 90%;
   text-align: center;
   position: absolute;
-  top: 2vh;
-  font-size: 1.7vw;
+  top: 15px;
+  font-size: xx-large;
   font-weight: bold;
   padding-bottom: 5px;
   border-bottom: 1.5px solid #808080;
 }
 
-.cloud_folder {
+.cloud_folderlist {
   width: 100%;
   height: 550px;
   align-self: flex-start;
@@ -47,8 +47,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 8vh;
-  width: 15vw;
+  height: 80px;
+  width: 290px;
   background-color: #ffffffcb;
   border-radius: 10px;
   box-shadow: 0.5vh 0.5vh 0.5vh 0.5vh rgba(0, 0, 0, 0.425);
@@ -59,9 +59,8 @@
 .cloud_linearprogress {
   position: relative;
   width: 90%;
-  margin-top: 2vh;
+  margin-top: 20px;
 }
-
 
 
 .cloud_right {
@@ -69,8 +68,8 @@
   display: flex;
   flex-direction: column;
   left: 18%;
-  height: 75vh;
-  width: 78vw;
+  height: 750px;
+  width: 1500px;
   background-color: #ffffffcb;
   border-radius: 10px;
   box-shadow: 0.5vh 0.5vh 0.5vh 0.5vh rgba(0, 0, 0, 0.425);
@@ -85,9 +84,9 @@
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
-  height: 8vh;
-  width: 45vw;
-  right: 0px;
+  height: 80px;
+  width: 700px;
+  right: 15px;
   white-space: nowrap;
 }
 
@@ -95,82 +94,49 @@
   padding-top: 20px;
   position: absolute;
   height: 650px;
-  width: 78vw;
-  left: 20px;
+  width: 1450px;
+  left: 30px;
   bottom: 20px;
   position: absolute;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-.cloud_list_info {
-  position: absolute;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 4vh;
-  width: 98%;
-  left: 10px;
-  white-space: nowrap;
-}
-
-.cloud_list_info_name {
-  margin-right: 10px;
-  padding-right: 300px;
-  border-right: 1px solid #dadada;
-}
-
-.cloud_list_info_date {
-  margin-right: 10px;
-  padding-right: 300px;
-  border-right: 1px solid #dadada;
-}
-
 .cloud_back {
-  position: absolute;
-  width: 3vw;
-  height: 5vh;
-  cursor: pointer;
   top: -13%;
   white-space: nowrap;
   text-decoration: underline;
 }
 
 .cloud_currentPath {
-  width: 15vw;
-  height: 5vh;
-  margin-top: 1.7vh;
-  margin-left: 1.5vw;
+  width: 750px;
+  height: 50px;
+  margin-top: 17px;
+  margin-left: 20px;
   display: flex;
   align-items: center;
-  white-space: nowrap;
   font-size: larger;
+  white-space: nowrap;
 }
 
-.cloud_goback {
-  transform: rotate(90deg);
-  width: 2vw;
-  height: 3vh;
-  cursor: pointer;
-  margin-left: 1vw;
-  position: relative;
-}
-
-.cloud_warning {
-  position: absolute;
-  left: 5px;
-  bottom: 5px;
-  font-size: smaller;
+.cloud_currentPathContent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .clickable {
   cursor: pointer;
 }
 
-
+.foldername {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .folder-node {
-  margin-left: 1.5vw;
+  margin-left: 30px;
   display: flex;
   align-items: center;
 }
@@ -191,7 +157,9 @@
 }
 
 .depth-1 .icon {
+  padding-right: 10px;
   padding-left: 15px;
+  margin-top: 5px;
   background-image: url('../images/folderarrow.png'), url('../images/folder.png');
   background-position: left 0px center, left 15px center;
   background-size: 16px 16px, 25px 25px;
@@ -246,19 +214,22 @@
 
 .category {
   position: relative;
+  bottom: 0;
   height: 650px;
-  width: 1460px;
+  width: 1440px;
   overflow: hidden;
   overflow-x: hidden;
 }
 
 .cell {
+  overflow-x: hidden;
   overflow-y: auto;
   height: 595px;
-  width: 1460px;
+  width: 1440px;
 }
 
 .table {
+  font-size: medium;
   border: none;
   width: 1450px;
   border-collapse: collapse;
@@ -269,21 +240,13 @@
   display: block;
 }
 
-/* .table,
-.table th,
-.table td {
-  border: none;
-  padding: 0;
-  overflow-y: auto;
-} */
-
 .table th,
 .table td {
   width: 240px;
   max-width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* white-space: nowrap; */
+  white-space: nowrap;
 }
 
 .table tbody {
@@ -292,6 +255,10 @@
 
 .table tr:nth-child(even) {
   background-color: #eeeeee;
+}
+
+.cell tr:hover {
+  background-color: #c2c2c2;
 }
 
 .scroll-container table {
