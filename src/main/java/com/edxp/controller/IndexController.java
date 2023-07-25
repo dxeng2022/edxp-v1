@@ -10,12 +10,17 @@ public class IndexController {
         return "index.html";
     }
 
-    @GetMapping(value = {
-            "/module/**", "/mypage/**",
-            "/module/draw/**", "/module/sheet/**", "/module/doc/**",
-            "/module/draw/download", "/module/sheet/download", "/module/doc/choice",
-            "/module/draw/cloud", "/module/sheet/cloud", "/module/doc/cloud"
-    })
+//    @GetMapping(value = {
+//            "/module/**", "/mypage/**",
+//            "/module/draw/**", "/module/sheet/**", "/module/doc/**",
+//            "/module/draw/download", "/module/sheet/download", "/module/doc/choice",
+//            "/module/draw/cloud", "/module/sheet/cloud", "/module/doc/cloud"
+//    })
+//    public String modulePage() {
+//        return "index.html";
+//    }
+
+    @GetMapping(value = {"/module/**", "/mypage/**"})
     public String modulePage() {
         return "index.html";
     }
