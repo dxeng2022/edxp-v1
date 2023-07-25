@@ -1,6 +1,6 @@
-import './SheetCloud.css';
+import cloud from './Cloud.module.css';
 import React, { useEffect, useRef, useState } from 'react';
-import { Button } from "@mui/material";
+import { Button, LinearProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 function SheetCloud() {
@@ -84,10 +84,10 @@ function SheetCloud() {
       const folderNode = (
         <div
           key={index}
-          className={`folder-node depth-${folderDepth}`} // 각 깊이에 해당하는 클래스 이름을 추가합니다.
+          className={`${cloud[`folder-node`]} ${cloud[`depth-${folderDepth}`]}`} // 각 깊이에 해당하는 클래스 이름을 추가합니다.
           onClick={() => handleFolderClick(folderPath)} // 폴더 클릭 시, 해당 폴더 경로로 이동하는 함수를 호출합니다.
         >
-          <span className={`icon depth-${folderDepth}`}></span>
+          <span className={`${cloud.icon} ${cloud[`depth-${folderDepth}`]}`}></span>
           <span>{folderName}</span>
         </div>
       );
@@ -106,6 +106,7 @@ function SheetCloud() {
     });
   };
   //
+
 
 
 
@@ -175,6 +176,18 @@ function SheetCloud() {
   };
 
   const handleSubmit = async (filesToUpload) => {
+    const filesSize = filesToUpload.reduce((total, file) => {
+      return total + file.size;
+    }, 0);
+
+    const filesSizeMB = filesSize / (1024 * 1024);
+
+    if (filesSizeMB + (originalVolume / (1024 * 1024)) > 10) {
+      alert("파일 용량 합과 원래 볼륨을 합한 값이 10MB를 초과했습니다. 업로드 불가능합니다.");
+      return;
+    }
+
+
     const formData = new FormData();
     filesToUpload.forEach((file) => {
       formData.append("files", file);
@@ -191,6 +204,7 @@ function SheetCloud() {
       if (response.status === 200) {
         alert('업로드가 완료되었습니다!');
         fetchFiles(); // 업로드 완료 후 파일 목록 업데이트
+        fetchVolume();
       } else {
         alert('업로드에 실패하였습니다.');
       }
@@ -203,6 +217,31 @@ function SheetCloud() {
     fileInputRef.current.click();
   };
   //업로드기능
+
+
+  function customEscape(str) {
+    var result = "";
+
+    for (var i = 0; i < str.length; i++) {
+      var charCode = str.charCodeAt(i);
+
+      if (
+        charCode === 0x2D ||          // "-"
+        charCode === 0x5F ||          // "_"
+        charCode === 0x2E ||          // "."
+        charCode === 0x7E ||          // "~"
+        (charCode >= 0x30 && charCode <= 0x39) ||  // 숫자 0-9
+        (charCode >= 0x41 && charCode <= 0x5A) ||  // 대문자 A-Z
+        (charCode >= 0x61 && charCode <= 0x7A)     // 소문자 a-z
+      ) {
+        result += str.charAt(i);
+      } else {
+        result += "%" + charCode.toString(16).toUpperCase();
+      }
+    }
+
+    return result;
+  }
 
   //다운로드기능
   const handleDownload = async () => {
@@ -225,12 +264,15 @@ function SheetCloud() {
 
         if (response.status === 200) {
           const contentDisposition = response.headers.get("Content-Disposition");
+          let fileName = decodeURIComponent(customEscape(contentDisposition.split("filename=")[1]));
+          // let fileName = decodeURIComponent(escape(contentDisposition.split("filename=")[1]));
+          console.log(fileName);
 
-          let fileName = contentDisposition
-            ? contentDisposition.split("filename=")[1]
-            : selectedFilePaths.length > 1
-              ? "downloaded_files.zip"
-              : "default_file_name.ext";
+          // let fileName = fileTo
+          // ? contentDisposition.split("filename=")[1]
+          // : selectedFilePaths.length > 1
+          //   ? "downloaded_files.zip"
+          //   : "default_file_name.ext";
 
           fileName = fileName.replace(/['"]/g, "").replace(/^\//, ""); // 따옴표 제거
 
@@ -255,7 +297,6 @@ function SheetCloud() {
         console.error("다운로드 중 오류가 발생했습니다:", error);
       }
     }
-
   };
   //다운로드기능
 
@@ -267,7 +308,7 @@ function SheetCloud() {
       return;
     }
 
-    // console.log(selectedFilePaths);
+    console.log(selectedFilePaths);
 
     if (window.confirm("삭제하시겠습니까?")) {
       try {
@@ -283,6 +324,7 @@ function SheetCloud() {
           alert('파일이 삭제되었습니다!');
           fetchFiles();
           fetchFolders();
+          fetchVolume();
           setSelectedFilePaths([]);
         } else {
           alert('파일 삭제에 실패하였습니다.');
@@ -296,36 +338,119 @@ function SheetCloud() {
   };
   //삭제기능
 
+  //이름변경
+  const handleChangeName = async () => {
+    if (selectedFilePaths.length !== 1) {
+      alert("1개 파일을 선택해주세요.");
+      return;
+    }
+
+    console.log(selectedFilePaths);
+    const currentFilePath = selectedFilePaths[0];
+    const currentName = currentFilePath.split("/").pop();
+    const extension = currentName.split('.').pop();
+
+    if (currentFilePath.endsWith('/')) {
+      alert("폴더 이름 변경은 지원하지 않습니다.");
+      return;
+    }
+
+    const updateName = window.prompt("새로운 파일 이름을 입력해주세요:");
+
+    if (updateName && updateName.trim()) { // 파일 이름이 비어 있지 않은 경우
+
+      // 특수 문자 및 길이 확인
+      if (validateName(updateName)) {
+        try {
+          const response = await fetch('/api/v1/file', {
+            method: 'PUT',
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ currentPath, currentName, updateName, extension, }),
+          });
+
+          if (response.status === 200) {
+            alert("파일 이름이 변경되었습니다.");
+            fetchFiles();
+            setSelectedFilePaths([]);
+          } else {
+            const errorMessage = await response.text();
+            alert(`Error: ${errorMessage}`);
+          }
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      } else {
+        alert("파일 이름에 최대 100자가 넘거나 허용되지 않는 특수 문자가 포함되어 있습니다. 공백, #, %, /, \, *, ?, <, >, |, :, . 같은 특수 문자는 사용할 수 없습니다.");
+      }
+    } else {
+      alert("이름 변경이 취소되었습니다.");
+    }
+  };
+  //이름변경
+
   //새폴더
   const handleAddFolder = async () => {
+    const folderDepth = currentPath.split('/').length - 1;
+    const numberOfFolders = folders.length;
+
+    if (folderDepth >= 2) {
+      alert("하위 폴더를 생성할 수 없습니다.");
+      return;
+    }
+
+    if (numberOfFolders >= 20) {
+      alert('15개 이상의 폴더 생성이 불가능합니다.');
+      return;
+    }
+
     const folderName = window.prompt("새 폴더 이름을 입력하세요:");
 
     // 폴더 이름이 비어 있지 않는지 확인
     if (folderName && folderName.trim()) {
-      try {
-        const response = await fetch('/api/v1/file/add-folder', {
-          method: 'POST',
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ currentPath, folderName }),
-        });
+      // 특수 문자 및 길이 확인
+      if (validateName(folderName)) {
+        try {
+          const response = await fetch('/api/v1/file/add-folder', {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ currentPath, folderName }),
+          });
 
-        if (response.status === 200) {
-          alert("새 폴더가 생성되었습니다.");
-          fetchFiles();
-          fetchFolders();
-        } else {
-          const errorMessage = await response.text();
-          alert(`Error: ${errorMessage}`);
+          if (response.status === 200) {
+            alert("새 폴더가 생성되었습니다.");
+            fetchFiles();
+            fetchFolders();
+          } else {
+            const errorMessage = await response.text();
+            alert(`Error: ${errorMessage}`);
+          }
+        } catch (error) {
+          console.log("Error:", error);
         }
-      } catch (error) {
-        console.log("Error:", error);
+      } else {
+        alert("폴더 이름에 최대 100자가 넘거나 허용되지 않는 특수 문자가 포함되어 있습니다. 공백, #, %, /, \, *, ?, <, >, |, :, . 같은 특수 문자는 사용할 수 없습니다.");
       }
     } else {
     }
   };
   //새폴더
+
+  // 폴더 및 파일 이름에 대한 제한 확인
+  const validateName = (name) => {
+    const maxLength = 100;
+    const invalidCharsRegex = /[ \#%./*?<>|:\\]/;
+
+    if (name.length > maxLength || invalidCharsRegex.test(name)) {
+      return false;
+    }
+
+    return true;
+  };
+  // 폴더 및 파일 이름에 대한 제한 확인
 
   //폴더 이동
   const handleFolderClick = (folderPath) => {
@@ -359,27 +484,100 @@ function SheetCloud() {
   };
   //이전 폴더 이동
 
+  // 정렬 기능
+  const [sortOrder, setSortOrder] = useState();
+  const [sortType, setSortType] = useState();
+
+  const handleNameHeaderClick = () => {
+    if (sortOrder === null || sortOrder === 'desc') {
+      setSortOrder('asc');
+    } else {
+      setSortOrder('desc');
+    }
+    setSortType('name');
+  };
+
+  useEffect(() => {
+    const sortedFiles = [...files];
+    if (sortType === 'name') {
+      if (sortOrder === 'asc') {
+        sortedFiles.sort((a, b) => a.fileName.localeCompare(b.fileName));
+      } else if (sortOrder === 'desc') {
+        sortedFiles.sort((a, b) => b.fileName.localeCompare(a.fileName));
+      }
+    } else {
+    }
+    setFiles(sortedFiles);
+  }, [sortOrder, sortType]);
+  // 정렬 기능
+
+  //용량
+  const [currentVolume, setCurrentVolume] = useState("");
+  const [originalVolume, setOriginalVolume] = useState(0);
+
+  const fetchVolume = async () => {
+    try {
+      const response = await fetch('/api/v1/file/get-volume?currentPath=sheet/');
+      const data = await response.json();
+      setCurrentVolume(data.result.volume);
+      setOriginalVolume(data.result.originalVolume);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchVolume();
+  }, []);
+
+
+  const maxVolume = 10;
+  const originalVolumeMB = originalVolume / 1048576;
+  const percentageUsed = (originalVolumeMB / maxVolume) * 100;
+  // console.log(percentageUsed);
+  // console.log(currentVolume, originalVolume);
+  //용량
 
   return (
-    <div className="sheetcloud_box">
+    <div className={cloud.cloud_box}>
 
-      <div className="sheetcloud_back" onClick={() => { navigate(-1) }}> 나가기 </div>
+      <Button
+        className={cloud.cloud_back}
+        onClick={() => { navigate(-1) }}
+        type="submit"
+        variant="contained"
+        sx={{
+          backgroundColor: '#cc3712',
+          height: '4.5vh',
+          width: '8vw',
+          borderRadius: '10px',
+          fontSize: '1.4vw',
+          fontWeight: 600,
+          '&:hover': { backgroundColor: '#85240c' }
+        }}>
+        나가기
+      </Button>
 
-      <div className='sheetcloud_left'>
-        <div className="sheetcloud_title">시트 데이터 관리</div>
-        <div className="sheetcloud_folder">{renderFolderTree(folders)}</div>
+      <div className={cloud.cloud_left}>
+        <div className={cloud.cloud_title}>시트 데이터 관리</div>
+        <div className={cloud.cloud_folder}>{renderFolderTree(folders)}</div>
+      </div>
+
+      <div className={cloud.cloud_volume}>
+        <p className={cloud.cloud_volumetxt}>사용 용량 : {currentVolume} / {maxVolume} MB</p>
+        <LinearProgress className={cloud.cloud_linearprogress} variant="determinate" value={percentageUsed} />
       </div>
 
 
-      <div className='sheetcloud_right'>
+      <div className={cloud.cloud_right}>
 
 
-        <div className='sheetcloud_currentPath'>
+        <div className={cloud.cloud_currentPath}>
           현재 폴더 위치 : {currentPath}
-          <img src="/img/back.png" alt="img" className="sheetcloud_goback" onClick={() => handleGoBack()} />
+          <img src="/img/back.png" alt="img" className={cloud.cloud_goback} onClick={() => handleGoBack()} />
         </div>
 
-        <div className='sheetcloud_buttons'>
+        <div className={cloud.cloud_buttons}>
 
 
           <Button
@@ -439,6 +637,21 @@ function SheetCloud() {
           </Button>
 
           <Button
+            onClick={handleChangeName}
+            variant="contained"
+            sx={{
+              backgroundColor: '#12A3CC',
+              height: '4.5vh',
+              width: '8vw',
+              borderRadius: '10px',
+              fontSize: '1.4vw',
+              fontWeight: 600,
+              '&:hover': { backgroundColor: '#0F6983' }
+            }}>
+            이름변경
+          </Button>
+
+          <Button
             onClick={handleDelete}
             variant="contained"
             sx={{
@@ -454,51 +667,47 @@ function SheetCloud() {
           </Button>
         </div>
 
-        <div className='sheetcloud_list'>
-
-          <div style={{ margin: "20px" }}>
-            <table style={{ borderCollapse: "collapse", width: "100%" }}>
-              <thead>
-                <tr>
-                  <th>선택</th>
-                  <th>이름</th>
-                  <th>유형</th>
-                  <th>파일 크기</th>
-                  <th>생성 날짜</th>
+        <div className={cloud.cloud_list}>
+          <div className={cloud.category}>
+            <table className={cloud.table}>
+              <thead className={cloud.thead}>
+                <tr className={cloud.tr}>
+                  <th className={cloud.th}>선택</th>
+                  <th className={cloud.th} onClick={handleNameHeaderClick}>
+                    이름
+                    <span className={`${cloud['sort-indicator']} ${cloud[sortOrder === 'asc' ? 'asc' : 'desc']}`} />
+                  </th>
+                  <th className={cloud.th}>유형</th>
+                  <th className={cloud.th}>파일 크기</th>
+                  <th className={cloud.th}>생성 날짜</th>
                 </tr>
               </thead>
-              <tbody>
-                {files.map((file) => (
-                  <tr key={file.path}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedFilePaths.includes(file.filePath)}
-                        onChange={(e) => handleCheckboxChange(e, file.filePath)}
-                      />
-                    </td>
-                    <td
-                      className={file.extension === "폴더" ? "clickable" : ""}
-                      onClick={file.extension === "폴더" ? () => handleFolderClick(file.filePath) : null}
-                    >
-                      {file.fileName}
-                    </td>
-                    <td>{file.extension}</td>
-                    <td>{file.fileSize}</td>
-                    <td>{file.registeredAt}</td>
-                  </tr>
-                ))}
-              </tbody>
             </table>
+            <div className={cloud.cell}>
+              <table className={cloud.table}>
+                <tbody className={cloud.body}>
+                  {files.map((file) => (
+                    <tr className={cloud.tr} key={file.path}>
+                      <td className={cloud.td}>
+                        <input type='checkbox' checked={selectedFilePaths.includes(file.filePath)}
+                          onChange={(e) => handleCheckboxChange(e, file.filePath)} />
+                      </td>
+                      <td className={file.extension === '폴더' ? cloud.clickable : ''}
+                        onClick={file.extension === '폴더' ? () => handleFolderClick(file.filePath) : null}>
+                        {file.fileName}
+                      </td>
+                      <td className={cloud.td}>{file.extension}</td>
+                      <td className={cloud.td}>{file.fileSize}</td>
+                      <td className={cloud.td}>{file.registeredAt}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-
-          <span className='sheetcloud_warning'> * 5MB 초과, 파일 5개 이상 불가 </span>
-
         </div>
-
+        <span className={cloud.cloud_warning}> * 5MB 초과, 파일 5개 이상 불가 </span>
       </div>
-
-
     </div>
   )
 }
