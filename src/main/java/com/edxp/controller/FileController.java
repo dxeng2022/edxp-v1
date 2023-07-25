@@ -5,6 +5,7 @@ import com.edxp.config.auth.PrincipalDetails;
 import com.edxp.constant.ErrorCode;
 import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
+import com.edxp.dto.response.FileVolumeResponse;
 import com.edxp.dto.response.FolderListResponse;
 import com.edxp.exception.EdxpApplicationException;
 import com.edxp.service.FileService;
@@ -14,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
@@ -45,6 +47,16 @@ public class FileController {
         return CommonResponse.success(folders);
     }
 
+    @GetMapping("/get-volume")
+    public CommonResponse<FileVolumeResponse> getVolume(
+            @RequestParam(required = false) String currentPath,
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+        FileVolumeResponse response = fileService.getVolume(principal.getUser().getId(), currentPath);
+        return CommonResponse.success(response);
+    }
+
     @CrossOrigin
     @PostMapping("/add-folder")
     public CommonResponse<Void> addFolder(
@@ -72,12 +84,13 @@ public class FileController {
     @CrossOrigin
     @PostMapping("/download")
     public void downloadFiles(
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse,
             @RequestBody FileDownloadsRequest request,
-            HttpServletResponse response,
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
-        response.setStatus(HttpServletResponse.SC_OK);
-        fileService.downloadFiles(request, response, principal.getUser().getId());
+        httpResponse.setStatus(HttpServletResponse.SC_OK);
+        fileService.downloadFiles(httpRequest, httpResponse, request, principal.getUser().getId());
     }
 
     @CrossOrigin

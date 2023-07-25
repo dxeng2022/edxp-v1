@@ -33,6 +33,10 @@ spring:
     multipart:
       enabled: true
       max-file-size: 3MB
+#  mvc:
+#    view:
+#      prefix: /static/
+#      suffix: .html
 
 # s3 setting
 cloud:
@@ -51,6 +55,7 @@ cloud:
 # file path
 file:
   path: ${FILE_PATH}
+  location: ${SPRING_PROFILES_ACTIVE}
 
 ---
 
