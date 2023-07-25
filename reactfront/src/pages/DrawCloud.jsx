@@ -88,7 +88,7 @@ function DrawCloud() {
           onClick={() => handleFolderClick(folderPath)} // 폴더 클릭 시, 해당 폴더 경로로 이동하는 함수를 호출합니다.
         >
           <span className={`${cloud.icon} ${cloud[`depth-${folderDepth}`]}`}></span>
-          <span>{folderName}</span>
+          <span className={cloud.foldername}>{folderName}</span>
         </div>
       );
 
@@ -563,7 +563,7 @@ function DrawCloud() {
 
       <div className={cloud.cloud_left}>
         <div className={cloud.cloud_title}>도면 데이터 관리</div>
-        <div className={cloud.cloud_folder}>{renderFolderTree(folders)}</div>
+        <div className={cloud.cloud_folderlist}>{renderFolderTree(folders)}</div>
       </div>
 
       <div className={cloud.cloud_volume}>
