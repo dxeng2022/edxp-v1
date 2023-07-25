@@ -576,7 +576,7 @@ function DrawCloud() {
 
 
         <div className={cloud.cloud_currentPath}>
-          현재 폴더 위치 : {currentPath}
+          <div className={cloud.cloud_currentPathContent}>현재 폴더 위치 : {currentPath}</div>
           <Button
             className={cloud.cloud_goback}
             onClick={() => handleGoBack()}

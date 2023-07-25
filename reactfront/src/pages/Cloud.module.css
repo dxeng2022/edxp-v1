@@ -109,14 +109,20 @@
 }
 
 .cloud_currentPath {
-  width: 300px;
+  width: 750px;
   height: 50px;
   margin-top: 17px;
   margin-left: 20px;
   display: flex;
   align-items: center;
-  white-space: nowrap;
   font-size: larger;
+  white-space: nowrap;
+}
+
+.cloud_currentPathContent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .clickable {
