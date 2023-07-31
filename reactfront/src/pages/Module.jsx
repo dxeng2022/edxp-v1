@@ -34,10 +34,8 @@ function Module() {
         })
             .then(res => {
                 console.log(1, res)
-                const form = res.url.substring(res.url.lastIndexOf(":"));
-                const url = form.slice(form.indexOf("/"));
                 if (res.status === 200) {
-                    navigate(url);
+                    navigate("/");
                 }
             })
     }
