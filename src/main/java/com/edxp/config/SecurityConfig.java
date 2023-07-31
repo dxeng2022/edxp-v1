@@ -10,6 +10,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import javax.servlet.http.HttpServletResponse;
+
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
@@ -26,10 +28,34 @@ public class SecurityConfig {
                                 .anyRequest().permitAll()
                 )
                 .formLogin()
-                    .loginPage("/")
-                    .loginProcessingUrl("/login")
-                    .defaultSuccessUrl("/module")
-                    .failureUrl("/login-error")
+                    .successHandler((request, response, authentication) -> {
+                        // 로그인 성공 시 JSON 응답을 리턴
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"success\": true}");
+                    })
+                    .failureHandler((request, response, exception) -> {
+                        // 로그인 실패 시 JSON 응답을 리턴
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"success\": false}");
+                    })
+                    .permitAll()
+//                    .loginPage("/")
+//                    .loginProcessingUrl("/login")
+//                    .defaultSuccessUrl("/module")
+//                    .failureUrl("/login-error")
+                .and()
+                .logout()
+                    .logoutUrl("/logout") // 로그아웃 URL 설정
+                    .invalidateHttpSession(true) // 세션 무효화
+                    .clearAuthentication(true) // 인증 정보 제거
+                    .deleteCookies("JSESSIONID") // 쿠키 삭제 (세션 쿠키 이름)
+                    .logoutSuccessHandler((request, response, authentication) -> {
+                        // 로그아웃 성공 시 처리 (옵션)
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    })
+                    .permitAll()
                 .and()
                 .build();
     }
