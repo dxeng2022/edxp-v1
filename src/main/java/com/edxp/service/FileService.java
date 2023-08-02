@@ -23,8 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
@@ -49,6 +47,16 @@ public class FileService {
     @Value("${file.location}")
     private String location;
 
+    /**
+     * [ 파일 및 폴더 리스트 불러오기 ]
+     *
+     * @param userId      value of user id
+     * @param currentPath current path of s3 objects
+     * @return List&lt;FileListResponse&gt;
+     * – fileName, fileSize, filePath, extension, registeredAt, originalFileSize, originalRegisteredAt
+     * @apiNote AWS S3 에서 현재 경로의 파일과 폴더 정보를 불러오는 API
+     * @since 2023.06.07
+     */
     @Transactional(readOnly = true)
     public List<FileListResponse> getFiles(Long userId, String currentPath) {
         log.debug("path : {}", currentPath);
@@ -69,7 +77,8 @@ public class FileService {
                 ListObjectsRequest folderObjectsRequest = getListObjectsRequest(userId, folderPath);
                 ObjectListing folderObjects = amazonS3Client.listObjects(folderObjectsRequest);
                 List<S3ObjectSummary> folderObjectSummaries = new ArrayList<>(folderObjects.getObjectSummaries());
-                Optional<S3ObjectSummary> latestObject = folderObjectSummaries.stream().max(Comparator.comparing(S3ObjectSummary::getLastModified));
+                Optional<S3ObjectSummary> latestObject = folderObjectSummaries.stream()
+                        .max(Comparator.comparing(S3ObjectSummary::getLastModified));
                 Date latModified = latestObject.map(S3ObjectSummary::getLastModified).orElse(new Date(0));
                 long folderSize = folderObjectSummaries.stream().mapToLong(S3ObjectSummary::getSize).sum();
 
@@ -89,6 +98,15 @@ public class FileService {
         return files;
     }
 
+    /**
+     * [ 폴더 리스트 불러오기 ]
+     *
+     * @param userId      user id signed in
+     * @param currentPath current path
+     * @return List&lt;FolderListResponse&gt; – folderName, folderPath
+     * @apiNote AWS S3에서 전체 폴더 정보만 불러오는 API
+     * @since 2023.06.08
+     */
     @Transactional(readOnly = true)
     public List<FolderListResponse> getFolders(Long userId, String currentPath) {
         log.debug("folderPath : {}", currentPath);
@@ -113,6 +131,15 @@ public class FileService {
         return folders;
     }
 
+    /**
+     * [ 폴더 용량 불러오기 ]
+     *
+     * @param userId      user id signed in
+     * @param currentPath current path
+     * @return FileVolumeResponse – volume, originalVolume
+     * @apiNote AWS S3 에서 전체 정보를 불러와 용량을 모두 더한 후에 전체 용량을 반환하는 API
+     * @since 2023.07.19
+     */
     @Transactional(readOnly = true)
     public FileVolumeResponse getVolume(Long userId, String currentPath) {
         log.debug("folderPath : {}", currentPath);
@@ -132,13 +159,14 @@ public class FileService {
         return FileVolumeResponse.from(s3ObjectSummaries);
     }
 
-    private StringBuilder getPath (long userId, String currentPath) {
-        StringBuilder path = new StringBuilder();
-        path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(currentPath);
-
-        return path;
-    }
-
+    /**
+     * [ 새 폴더 추가 ]
+     *
+     * @param userId  user id signed in
+     * @param request current path, folder name to add
+     * @apiNote AWS S3 에 폴더 객체 생성을 요청하는 API
+     * @since 2023.07.06
+     */
     @Transactional
     public void addFolder(Long userId, FolderAddRequest request) {
         log.debug("path : {}", getPath(userId, request.getCurrentPath()));
@@ -148,12 +176,22 @@ public class FileService {
         boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
 
         if (!isObjectExist) {
-            amazonS3Client.putObject(bucket, String.valueOf(filePath), new ByteArrayInputStream(new byte[0]), new ObjectMetadata());
+            amazonS3Client.putObject(
+                    bucket, String.valueOf(filePath), new ByteArrayInputStream(new byte[0]), new ObjectMetadata()
+            );
         } else {
             throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
         }
     }
 
+    /**
+     * [ 파일 업로드 ]
+     *
+     * @param userId  user id signed in
+     * @param request current path, files
+     * @apiNote AWS S3에 새로운 객체 생성을 요청하는 API
+     * @since 2023.06.10
+     */
     @Transactional
     public void uploadFile(Long userId, FileUploadRequest request) {
         if (request.getFiles().size() > 5) throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
@@ -176,27 +214,54 @@ public class FileService {
                     throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
                 }
             } catch (IOException e) {
-                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, file.getOriginalFilename() + " upload is failed.");
+                throw new EdxpApplicationException(
+                        ErrorCode.INTERNAL_SERVER_ERROR, file.getOriginalFilename() + " upload is failed."
+                );
             }
         });
     }
 
+    /**
+     * [ 파일 다운로드 ]
+     *
+     * @param httpRequest  java servlet request
+     * @param httpResponse java servlet response
+     * @param request      currentPath, filePaths
+     * @param userId       user id signed in
+     * @throws IOException file io exception
+     * @apiNote 단일 파일 다운로드 - HttpResponse 객체에 파일 정보를 담아서 반환
+     * <p>
+     * 다중 파일 다운로드 - 파일을 로컬에 다운 받아 압축 하면서 HttpResponse 객체에 반환
+     * @since 2023.06.30
+     */
     @Transactional
-    public void downloadFiles(HttpServletRequest httpRequest, HttpServletResponse response, FileDownloadsRequest request, Long userId) throws IOException {
+    public void downloadFiles(
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse,
+            FileDownloadsRequest request,
+            Long userId
+    ) throws IOException {
         StringBuilder userPath = new StringBuilder();
-        userPath.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/");
+        userPath.append("dxeng/").append(location).append("/")
+                .append("user_").append(String.format("%06d", userId)).append("/");
 
         // 단일 파일 다운로드
-        if (request.getFilePaths().size() == 1 && request.getFilePaths().get(0).charAt(request.getFilePaths().get(0).length() - 1) != '/') {
+        if (request.getFilePaths().size() == 1
+                && request.getFilePaths().get(0).charAt(request.getFilePaths().get(0).length() - 1) != '/'
+        ) {
             String filePath = String.valueOf(userPath.append(request.getFilePaths().get(0)));
             String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-            response.addHeader("Content-Disposition", "attachment; filename=" + getEncodedFileName(httpRequest, fileName));
-            response.setContentType("application/octet-stream");
+            httpResponse.addHeader(
+                    "Content-Disposition",
+                    "attachment; filename=" + FileUtil.getEncodedFileName(httpRequest, fileName)
+            );
+            httpResponse.setContentType("application/octet-stream");
             S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, filePath));
 
-            try (S3ObjectInputStream objectInputStream = object.getObjectContent();
-                 OutputStream responseOutputStream = response.getOutputStream()) {
-
+            try (
+                    S3ObjectInputStream objectInputStream = object.getObjectContent();
+                    OutputStream responseOutputStream = httpResponse.getOutputStream()
+            ) {
                 byte[] buffer = new byte[4096];
                 int bytesRead;
                 while ((bytesRead = objectInputStream.read(buffer)) != -1) {
@@ -209,9 +274,13 @@ public class FileService {
         }
 
         // (1) 서버 로컬에 생성되는 디렉토리, 해당 디렉토리에 파일이 다운로드된다
-        File localDirectory = new File(downloadFolder + "/" + RandomStringUtils.randomAlphanumeric(6) + "-download");
-        response.addHeader("Content-Disposition", "attachment; filename=" + localDirectory.getName() + ".zip");
-        try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+        File localDirectory =
+                new File(downloadFolder + "/" + RandomStringUtils.randomAlphanumeric(6) + "-download");
+        httpResponse.addHeader(
+                "Content-Disposition", "attachment; filename=" + localDirectory.getName() + ".zip"
+        );
+
+        try (ZipOutputStream zipOut = new ZipOutputStream(httpResponse.getOutputStream())) {
             // (2) TransferManager -> localDirectory 에 파일 다운로드
             ArrayList<Transfer> downloadList = new ArrayList<>();
             for (String path : request.getFilePaths()) {
@@ -236,7 +305,11 @@ public class FileService {
                 Thread.sleep(1000);
 
                 double percentTransferred = FileUtil.getAverageList(downloadList);
-                log.info("[" + localDirectory.getName() + "] " + decimalFormat.format(percentTransferred) + "% download progressing...");
+                log.info(
+                        "[" + localDirectory.getName() + "] "
+                                + decimalFormat.format(percentTransferred)
+                                + "% download progressing..."
+                );
             }
             log.info("[" + localDirectory.getName() + "] download directory from S3 success!");
 
@@ -252,6 +325,14 @@ public class FileService {
         }
     }
 
+    /**
+     * [ 파일 이름 변경 및 업데이트 ]
+     *
+     * @param request currentPath, currentName, updateName, extension
+     * @param userId  user id signed in
+     * @apiNote 파일 이름을 변경하는 API
+     * @since 2023.08.02
+     */
     @Transactional
     public void updateFile(FileUpdateRequest request, Long userId) {
         StringBuilder path = getPath(userId, request.getCurrentPath());
@@ -276,16 +357,26 @@ public class FileService {
         try {
             amazonS3Client.deleteObject(bucket, sourceKey);
         } catch (Exception e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, " delete is failed.");
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, " delete is failed in update.");
         }
     }
 
+    /**
+     * [ 파일 삭제 ]
+     *
+     * @param request filePaths
+     * @param userId  user id signed in
+     * @return boolean - is success delete
+     * @apiNote 요청받은 경로의 파일을 삭제하는 API
+     * @since 2023.08.02
+     */
     @Transactional
     public boolean deleteFile(FileDeleteRequest request, Long userId) {
         AtomicBoolean allPassed = new AtomicBoolean(false);
         request.getFilePaths().forEach(path -> {
             StringBuilder filePath = new StringBuilder();
-            filePath.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(path);
+            filePath.append("dxeng/").append(location).append("/")
+                    .append("user_").append(String.format("%06d", userId)).append("/").append(path);
             log.debug("filename: {}", filePath);
             try {
                 boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
@@ -322,26 +413,18 @@ public class FileService {
         return allPassed.get();
     }
 
+    private StringBuilder getPath(long userId, String currentPath) {
+        StringBuilder path = new StringBuilder();
+        path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(currentPath);
+
+        return path;
+    }
+
     private ListObjectsRequest getListObjectsRequest(Long userId, String currentPath) {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
         listObjectsRequest.setBucketName(bucket);
         listObjectsRequest.setPrefix("dxeng/" + location + "/" + "user_" + String.format("%06d", userId) + "/" + currentPath);
         return listObjectsRequest;
-    }
-
-    private String getEncodedFileName(HttpServletRequest httpRequest, String fileName) {
-        String header = httpRequest.getHeader("User-Agent");
-        if (header.contains("Edge")|| header.contains("MSIE") || header.contains("Trident")) {
-            return URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
-        } else if (header.contains("Chrome") || header.contains("Opera") || header.contains("Firefox")) {
-            return new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-        } else if (header.contains("Postman")) {
-            String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-            log.debug(test);
-            return test;
-        } else {
-            return  "downloaded_file";
-        }
     }
 
     private void addFolderToZip(ZipOutputStream zipOut, String filePath) throws IOException {
