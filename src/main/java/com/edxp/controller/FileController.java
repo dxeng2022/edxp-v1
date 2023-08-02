@@ -27,6 +27,7 @@ import java.util.List;
 public class FileController {
     private final FileService fileService;
 
+    // 파일 및 폴더리스트
     @GetMapping
     public CommonResponse<List<FileListResponse>> getFileList(
             @RequestParam(required = false) String currentPath,
@@ -37,6 +38,7 @@ public class FileController {
         return CommonResponse.success(files);
     }
 
+    // 폴더 리스트
     @GetMapping("/get-folder")
     public CommonResponse<List<FolderListResponse>> getFolder(
             @RequestParam(required = false) String currentPath,
@@ -47,6 +49,7 @@ public class FileController {
         return CommonResponse.success(folders);
     }
 
+    // 전체 용량 확인
     @GetMapping("/get-volume")
     public CommonResponse<FileVolumeResponse> getVolume(
             @RequestParam(required = false) String currentPath,
@@ -57,6 +60,7 @@ public class FileController {
         return CommonResponse.success(response);
     }
 
+    // 폴더 생성
     @CrossOrigin
     @PostMapping("/add-folder")
     public CommonResponse<Void> addFolder(
@@ -68,6 +72,7 @@ public class FileController {
         return CommonResponse.success();
     }
 
+    // 파일 업로드
     @CrossOrigin
     @PostMapping("/upload")
     public CommonResponse<Void> uploadFile(
@@ -80,7 +85,8 @@ public class FileController {
         fileService.uploadFile(principal.getUser().getId(), new FileUploadRequest(request.getCurrentPath(), files));
         return CommonResponse.success();
     }
-
+    
+    // 파일 다운로드
     @CrossOrigin
     @PostMapping("/download")
     public void downloadFiles(
@@ -89,10 +95,12 @@ public class FileController {
             @RequestBody FileDownloadsRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
+        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         httpResponse.setStatus(HttpServletResponse.SC_OK);
         fileService.downloadFiles(httpRequest, httpResponse, request, principal.getUser().getId());
     }
 
+    // 파일 업데이트, 이름변경
     @CrossOrigin
     @PutMapping
     public CommonResponse<Void> updateFile(
@@ -103,6 +111,7 @@ public class FileController {
         return CommonResponse.success();
     }
 
+    // 파일 삭제
     @CrossOrigin
     @DeleteMapping
     public CommonResponse<Void> deleteFile(
