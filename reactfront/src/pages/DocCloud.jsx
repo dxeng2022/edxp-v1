@@ -157,8 +157,8 @@ function DocCloud() {
 
       // 파일 용량 확인
       filesToUpload = filesToUpload.filter((file) => {
-        if (file.size > 5 * 1024 * 1024) { // 5MB 초과시 경고 메시지 표시
-          alert(`${file.name} 파일은 용량이 5MB를 초과했습니다. 업로드되지 않습니다.`);
+        if (file.size > 10 * 1024 * 1024) { // 10MB 초과시 경고 메시지 표시
+          alert(`${file.name} 파일의 용량이 10MB를 초과했습니다. 업로드되지 않습니다.`);
           return false;
         }
         return true;
@@ -166,7 +166,7 @@ function DocCloud() {
 
       // 5개 이상 파일 업로드되면 경고 메시지 표시
       if (e.target.files.length > 5) {
-        alert("최대 5개의 파일까지 업로드할 수 있습니다. 초과한 파일은 무시됩니다.");
+        alert("최대 5개의 파일까지 업로드되며, 초과한 파일은 제외됩니다.");
       }
 
       if (filesToUpload.length > 0) {
@@ -182,8 +182,8 @@ function DocCloud() {
 
     const filesSizeMB = filesSize / (1024 * 1024);
 
-    if (filesSizeMB + (originalVolume / (1024 * 1024)) > 10) {
-      alert("파일 용량 합과 원래 볼륨을 합한 값이 10MB를 초과했습니다. 업로드 불가능합니다.");
+    if (filesSizeMB + (originalVolume / (1024 * 1024)) > 30) {
+      alert("총 용량 30MB를 초과하였습니다. 파일을 정리해주세요.");
       return;
     }
 
@@ -533,7 +533,7 @@ function DocCloud() {
   }, []);
 
 
-  const maxVolume = 10;
+  const maxVolume = 30;
   const originalVolumeMB = originalVolume / 1048576;
   const percentageUsed = (originalVolumeMB / maxVolume) * 100;
   // console.log(percentageUsed);
