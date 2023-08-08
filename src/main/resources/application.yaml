@@ -32,7 +32,7 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 3MB
+      max-file-size: 10MB
 #  mvc:
 #    view:
 #      prefix: /static/
