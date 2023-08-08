@@ -3,9 +3,12 @@ package com.edxp.common.utils;
 import com.amazonaws.services.s3.transfer.Transfer;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,6 +39,21 @@ public class FileUtil {
             return;
         }
         throw new FileNotFoundException("File [" + file.getName() + "] delete fail");
+    }
+
+    public static String getEncodedFileName(HttpServletRequest httpRequest, String fileName) {
+        String header = httpRequest.getHeader("User-Agent");
+        if (header.contains("Edge") || header.contains("MSIE") || header.contains("Trident")) {
+            return URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        } else if (header.contains("Chrome") || header.contains("Opera") || header.contains("Firefox")) {
+            return new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+        } else if (header.contains("Postman")) {
+            String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+            log.debug(test);
+            return test;
+        } else {
+            return "downloaded_file";
+        }
     }
 
     public static boolean isDownOver(ArrayList<Transfer> list) {
