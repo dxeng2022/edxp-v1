@@ -78,6 +78,13 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
 
+logging:
+  level:
+    com:
+      edxp:
+        controller: debug
+        service: debug
+
 ---
 
 spring:
@@ -103,6 +110,7 @@ logging:
   level:
     com:
       edxp:
+        controller: debug
         service: debug
 ---
 

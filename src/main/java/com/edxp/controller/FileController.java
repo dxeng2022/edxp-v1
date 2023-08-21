@@ -85,7 +85,7 @@ public class FileController {
         fileService.uploadFile(principal.getUser().getId(), new FileUploadRequest(request.getCurrentPath(), files));
         return CommonResponse.success();
     }
-    
+
     // 파일 다운로드
     @CrossOrigin
     @PostMapping("/download")
@@ -95,9 +95,17 @@ public class FileController {
             @RequestBody FileDownloadsRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-        httpResponse.setStatus(HttpServletResponse.SC_OK);
-        fileService.downloadFiles(httpRequest, httpResponse, request, principal.getUser().getId());
+        try {
+            log.debug(httpRequest.toString());
+            log.debug(httpResponse.toString());
+            log.debug(request.toString());
+            log.debug(String.valueOf(principal));
+            if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+            httpResponse.setStatus(HttpServletResponse.SC_OK);
+            fileService.downloadFiles(httpRequest, httpResponse, request, principal.getUser().getId());
+        } catch (NullPointerException e) {
+            log.debug(e.getMessage());
+        }
     }
 
     // 파일 업데이트, 이름변경
