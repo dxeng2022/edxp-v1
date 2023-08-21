@@ -17,7 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.List;
 
 @Slf4j
@@ -96,15 +98,28 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
         try {
-            log.debug(httpRequest.toString());
-            log.debug(httpResponse.toString());
-            log.debug(request.toString());
-            log.debug(String.valueOf(principal));
+            Enumeration<String> headers = httpRequest.getHeaderNames();
+            while (headers.hasMoreElements()) {
+                String name = headers.nextElement();
+                String value = httpRequest.getHeader(name);
+                log.debug(name + "=" + value);
+            }
+            BufferedReader dis = new BufferedReader(new InputStreamReader(httpRequest.getInputStream()));
+            String str;
+            while ((str = dis.readLine()) != null) {
+                log.debug(new String(str.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8) + "/n");
+                // euc-kr로 전송된 한글은 깨진다.
+            }
+            log.debug("json: {}", request.toString());
+            log.debug("principal: {}", principal);
+
             if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
             httpResponse.setStatus(HttpServletResponse.SC_OK);
             fileService.downloadFiles(httpRequest, httpResponse, request, principal.getUser().getId());
+
+            log.debug("response: {}", httpResponse);
         } catch (NullPointerException e) {
-            log.debug(e.getMessage());
+            log.debug("null error: {}", e.getMessage());
         }
     }
 

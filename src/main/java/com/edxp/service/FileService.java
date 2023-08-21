@@ -258,6 +258,7 @@ public class FileService {
             httpResponse.setContentType("application/octet-stream");
             S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, filePath));
 
+            log.debug("single down success: {}", filePath);
             try (
                     S3ObjectInputStream objectInputStream = object.getObjectContent();
                     OutputStream responseOutputStream = httpResponse.getOutputStream()
@@ -273,6 +274,7 @@ public class FileService {
             }
         }
 
+        // 멀티 파일 다운로드
         // (1) 서버 로컬에 생성되는 디렉토리, 해당 디렉토리에 파일이 다운로드된다
         File localDirectory =
                 new File(downloadFolder + "/" + RandomStringUtils.randomAlphanumeric(6) + "-download");
@@ -284,7 +286,6 @@ public class FileService {
             // (2) TransferManager -> localDirectory 에 파일 다운로드
             ArrayList<Transfer> downloadList = new ArrayList<>();
             for (String path : request.getFilePaths()) {
-                log.debug("path: {}", path);
                 if (path.charAt(path.length() - 1) == '/') {
                     MultipleFileDownload downloadDirectory = transferManager.downloadDirectory(
                             bucket, userPath + path, localDirectory
@@ -315,7 +316,6 @@ public class FileService {
 
             // (4) 로컬 디렉토리 -> 압축하면서 다운로드
             log.info("compressing to zip file...");
-            log.debug(localDirectory.getPath());
             addFolderToZip(zipOut, localDirectory + "/" + userPath + request.getCurrentPath());
         } catch (Exception e) {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
