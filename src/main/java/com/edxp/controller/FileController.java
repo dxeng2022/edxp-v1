@@ -119,7 +119,8 @@ public class FileController {
 
             log.debug("response: {}", httpResponse);
         } catch (NullPointerException e) {
-            log.debug("null error: {}", e.getMessage());
+//            e.printStackTrace();
+            log.error("null error: {}", e);
         }
     }
 

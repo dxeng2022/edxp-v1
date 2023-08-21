@@ -10,9 +10,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 
 @Slf4j
 public class FileUtil {
@@ -42,18 +40,34 @@ public class FileUtil {
     }
 
     public static String getEncodedFileName(HttpServletRequest httpRequest, String fileName) {
-        String header = httpRequest.getHeader("User-Agent");
-        if (header.contains("Edge") || header.contains("MSIE") || header.contains("Trident")) {
-            return URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
-        } else if (header.contains("Chrome") || header.contains("Opera") || header.contains("Firefox")) {
-            return new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-        } else if (header.contains("Postman")) {
-            String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-            log.debug(test);
-            return test;
-        } else {
-            return "downloaded_file";
+        Enumeration<String> headers = httpRequest.getHeaderNames();
+        HashMap<String, String> headerMap = new HashMap<>();
+
+        while (headers.hasMoreElements()) {
+            String name = headers.nextElement();
+            String value = httpRequest.getHeader(name);
+            headerMap.put(name, value);
         }
+
+        if (headerMap.get("User-Agent") == null) {
+            return "downloaded_file";
+        } else {
+            if (headerMap.get("User-Agent").contains("Edge") || headerMap.get("User-Agent").contains("MSIE") || headerMap.get("User-Agent").contains("Trident")) {
+                return URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+            }
+
+            if (headerMap.get("User-Agent").contains("Chrome") || headerMap.get("User-Agent").contains("Opera") || headerMap.get("User-Agent").contains("Firefox")) {
+                return new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+            }
+
+            if (headerMap.get("User-Agent").contains("Postman")) {
+                String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+                log.debug(test);
+                return test;
+            }
+        }
+
+        return "downloaded_file";
     }
 
     public static boolean isDownOver(ArrayList<Transfer> list) {

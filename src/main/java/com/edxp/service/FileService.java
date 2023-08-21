@@ -241,6 +241,7 @@ public class FileService {
             FileDownloadsRequest request,
             Long userId
     ) throws IOException {
+        log.debug("userId: {}", userId);
         StringBuilder userPath = new StringBuilder();
         userPath.append("dxeng/").append(location).append("/")
                 .append("user_").append(String.format("%06d", userId)).append("/");
@@ -251,14 +252,17 @@ public class FileService {
         ) {
             String filePath = String.valueOf(userPath.append(request.getFilePaths().get(0)));
             String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+            log.debug("check1: {}", fileName);
+            log.debug("res: {}", httpResponse);
             httpResponse.addHeader(
                     "Content-Disposition",
                     "attachment; filename=" + FileUtil.getEncodedFileName(httpRequest, fileName)
             );
+            log.debug("check2");
             httpResponse.setContentType("application/octet-stream");
             S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, filePath));
-
             log.debug("single down success: {}", filePath);
+
             try (
                     S3ObjectInputStream objectInputStream = object.getObjectContent();
                     OutputStream responseOutputStream = httpResponse.getOutputStream()
@@ -317,6 +321,8 @@ public class FileService {
             // (4) 로컬 디렉토리 -> 압축하면서 다운로드
             log.info("compressing to zip file...");
             addFolderToZip(zipOut, localDirectory + "/" + userPath + request.getCurrentPath());
+        } catch (NullPointerException e) {
+            log.debug("service: {}", e.getMessage());
         } catch (Exception e) {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
         } finally {
