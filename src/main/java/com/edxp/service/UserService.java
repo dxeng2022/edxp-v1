@@ -18,7 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Random;
+
+import static com.edxp.common.utils.CreateKeyUtil.createPwKey;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -101,35 +102,4 @@ public class UserService {
         entity.setUsername(entity.getUsername() + "_deleted");
         entity.setDeletedAt(Timestamp.from(Instant.now()));
     }
-
-    // 신규 비밀번호 생성
-    private String createPwKey() {
-        StringBuilder key = new StringBuilder();
-        Random rnd = new Random();
-
-        for (int i = 0; i < 8; i++) {
-            int index = rnd.nextInt(3);
-
-            if (i < 6) {
-                switch (index) {
-                    case 0:
-                        key.append((char) ((rnd.nextInt(26)) + 97));
-                        break;
-                    case 1:
-                        key.append((char) ((rnd.nextInt(26)) + 65));
-                        break;
-                    case 2:
-                        key.append(rnd.nextInt(10));
-                        break;
-                }
-            } else {
-                int[] arr = {33, 64, 35, 36};
-                key.append((char) arr[(rnd.nextInt(4))]);
-            }
-        }
-
-        return key.toString();
-    }
-
-
 }

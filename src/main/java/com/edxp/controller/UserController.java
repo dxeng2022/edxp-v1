@@ -53,7 +53,7 @@ public class UserController {
     @CrossOrigin
     @PostMapping("/signup-auth")
     public CommonResponse<Void> sendAuthMail(@RequestBody UserCheckRequest request) {
-        String issuedCode = emailSenderService.sendEmail(request);
+        String issuedCode = emailSenderService.sendAuthEmail(request);
         userAuthService.addAuthCode(request, issuedCode);
         return CommonResponse.success();
     }
