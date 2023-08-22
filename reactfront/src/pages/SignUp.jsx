@@ -226,6 +226,7 @@ function SignUp() {
   const authButton = () => {
 
     let details = {
+        'username': email,
         'authCode': authCode,
     };
     

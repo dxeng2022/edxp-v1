@@ -40,27 +40,29 @@ public class FileUtil {
     }
 
     public static String getEncodedFileName(HttpServletRequest httpRequest, String fileName) {
-        Enumeration<String> headers = httpRequest.getHeaderNames();
         HashMap<String, String> headerMap = new HashMap<>();
 
+        Enumeration<String> headers = httpRequest.getHeaderNames();
         while (headers.hasMoreElements()) {
             String name = headers.nextElement();
             String value = httpRequest.getHeader(name);
             headerMap.put(name, value);
         }
+        
+        String agent = headerMap.get("User-Agent");
 
-        if (headerMap.get("User-Agent") == null) {
+        if (agent == null) {
             return "downloaded_file";
         } else {
-            if (headerMap.get("User-Agent").contains("Edge") || headerMap.get("User-Agent").contains("MSIE") || headerMap.get("User-Agent").contains("Trident")) {
+            if (agent.contains("Edge") || agent.contains("MSIE") || agent.contains("Trident")) {
                 return URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
             }
 
-            if (headerMap.get("User-Agent").contains("Chrome") || headerMap.get("User-Agent").contains("Opera") || headerMap.get("User-Agent").contains("Firefox")) {
+            if (agent.contains("Chrome") || agent.contains("Opera") || agent.contains("Firefox")) {
                 return new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
             }
 
-            if (headerMap.get("User-Agent").contains("Postman")) {
+            if (agent.contains("Postman")) {
                 String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
                 log.debug(test);
                 return test;
