@@ -251,12 +251,17 @@ public class FileService {
         ) {
             String filePath = String.valueOf(userPath.append(request.getFilePaths().get(0)));
             String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+            log.debug("filePath: {}", request.getFilePaths().get(0));
+
             httpResponse.addHeader(
                     "Content-Disposition",
                     "attachment; filename=" + FileUtil.getEncodedFileName(httpRequest, fileName)
             );
+
             httpResponse.setContentType("application/octet-stream");
             S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, filePath));
+
+            log.info("single file download - {} : success", request.getFilePaths().get(0));
 
             try (
                     S3ObjectInputStream objectInputStream = object.getObjectContent();
@@ -273,6 +278,7 @@ public class FileService {
             }
         }
 
+        // 멀티 파일 다운로드
         // (1) 서버 로컬에 생성되는 디렉토리, 해당 디렉토리에 파일이 다운로드된다
         File localDirectory =
                 new File(downloadFolder + "/" + RandomStringUtils.randomAlphanumeric(6) + "-download");
@@ -284,7 +290,6 @@ public class FileService {
             // (2) TransferManager -> localDirectory 에 파일 다운로드
             ArrayList<Transfer> downloadList = new ArrayList<>();
             for (String path : request.getFilePaths()) {
-                log.debug("path: {}", path);
                 if (path.charAt(path.length() - 1) == '/') {
                     MultipleFileDownload downloadDirectory = transferManager.downloadDirectory(
                             bucket, userPath + path, localDirectory
@@ -315,7 +320,6 @@ public class FileService {
 
             // (4) 로컬 디렉토리 -> 압축하면서 다운로드
             log.info("compressing to zip file...");
-            log.debug(localDirectory.getPath());
             addFolderToZip(zipOut, localDirectory + "/" + userPath + request.getCurrentPath());
         } catch (Exception e) {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
@@ -373,6 +377,7 @@ public class FileService {
     @Transactional
     public boolean deleteFile(FileDeleteRequest request, Long userId) {
         AtomicBoolean allPassed = new AtomicBoolean(false);
+
         request.getFilePaths().forEach(path -> {
             StringBuilder filePath = new StringBuilder();
             filePath.append("dxeng/").append(location).append("/")
@@ -410,9 +415,11 @@ public class FileService {
             }
             allPassed.set(true);
         });
+
         return allPassed.get();
     }
 
+    // 파일 경로 반환 내부 메소드
     private StringBuilder getPath(long userId, String currentPath) {
         StringBuilder path = new StringBuilder();
         path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(currentPath);
@@ -420,6 +427,7 @@ public class FileService {
         return path;
     }
 
+    // ListObjectsRequest 반환 내부 메소드
     private ListObjectsRequest getListObjectsRequest(Long userId, String currentPath) {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
         listObjectsRequest.setBucketName(bucket);
@@ -427,6 +435,7 @@ public class FileService {
         return listObjectsRequest;
     }
 
+    // 파일 압축 내부 메소드
     private void addFolderToZip(ZipOutputStream zipOut, String filePath) throws IOException {
         final int INPUT_STREAM_BUFFER_SIZE = 2048;
         Files.walkFileTree(Paths.get(filePath), new SimpleFileVisitor<>() {

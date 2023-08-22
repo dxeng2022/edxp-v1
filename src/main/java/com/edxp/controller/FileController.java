@@ -85,7 +85,7 @@ public class FileController {
         fileService.uploadFile(principal.getUser().getId(), new FileUploadRequest(request.getCurrentPath(), files));
         return CommonResponse.success();
     }
-    
+
     // 파일 다운로드
     @CrossOrigin
     @PostMapping("/download")
@@ -95,6 +95,7 @@ public class FileController {
             @RequestBody FileDownloadsRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
+        log.debug("json: {}", request.toString());
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         httpResponse.setStatus(HttpServletResponse.SC_OK);
         fileService.downloadFiles(httpRequest, httpResponse, request, principal.getUser().getId());
