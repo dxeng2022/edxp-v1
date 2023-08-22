@@ -251,7 +251,7 @@ public class FileService {
         ) {
             String filePath = String.valueOf(userPath.append(request.getFilePaths().get(0)));
             String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-            log.debug("filePath: {}", fileName);
+            log.debug("filePath: {}", request.getFilePaths().get(0));
 
             httpResponse.addHeader(
                     "Content-Disposition",
@@ -261,7 +261,7 @@ public class FileService {
             httpResponse.setContentType("application/octet-stream");
             S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucket, filePath));
 
-            log.info("single file down - {} is success", filePath);
+            log.info("single file download - {} : success", request.getFilePaths().get(0));
 
             try (
                     S3ObjectInputStream objectInputStream = object.getObjectContent();
