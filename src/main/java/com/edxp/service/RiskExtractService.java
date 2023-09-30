@@ -43,9 +43,6 @@ import java.util.Map;
 public class RiskExtractService {
     private final FileService fileService;
 
-//    private final String parserUrl = "http://dxeng-alb-297620258.ap-northeast-2.elb.amazonaws.com:8081/api/v1/parser/execute";
-//    private final String modelUrl = "http://dxeng-alb-297620258.ap-northeast-2.elb.amazonaws.com:5000/upload";
-
     @Value("${module.parser}")
     private String parserUrl;
     @Value("${module.analyze}")
