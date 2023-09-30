@@ -330,6 +330,45 @@ public class FileService {
     }
 
     /**
+     * [ 분석용 파일 다운로드 ]
+     *
+     * @param userId   signed in
+     * @param fileName filename to download
+     * @return file
+     * @apiNote 분석용 파일을 다운로드 하는 API
+     * @since 2023.09.27
+     */
+    @Transactional
+    public File downloadAnalysisFile(Long userId, String fileName) {
+        StringBuilder userPath = new StringBuilder();
+        userPath.append("dxeng/").append(location).append("/")
+                .append("user_").append(String.format("%06d", userId)).append("/").append("doc").append("/")
+                .append("risk").append("/").append(fileName);
+
+        try {
+            File file = new File(downloadFolder + "/" + fileName);
+            Download download = transferManager.download(bucket, String.valueOf(userPath), file);
+
+            log.info("[" + fileName + "] download progressing... start");
+            DecimalFormat decimalFormat = new DecimalFormat("##0.00");
+            while (!download.isDone()) {
+                Thread.sleep(1000);
+
+                double percentTransferred = download.getProgress().getPercentTransferred();
+                log.info(
+                        "[" + fileName + "] "
+                                + decimalFormat.format(percentTransferred)
+                                + "% download progressing..."
+                );
+            }
+            log.info("single file download - {} : success", fileName);
+            return file;
+        } catch (InterruptedException e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
+        }
+    }
+
+    /**
      * [ 파일 이름 변경 및 업데이트 ]
      *
      * @param request currentPath, currentName, updateName, extension
