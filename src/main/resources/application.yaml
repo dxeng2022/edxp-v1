@@ -11,6 +11,10 @@ spring:
 
 ---
 
+server:
+  tomcat:
+    max-http-form-post-size: 10MB
+
 spring:
   config:
     activate:
@@ -33,6 +37,7 @@ spring:
     multipart:
       enabled: true
       max-file-size: 10MB
+      max-request-size: 10MB
 #  mvc:
 #    view:
 #      prefix: /static/
@@ -56,6 +61,11 @@ cloud:
 file:
   path: ${FILE_PATH}
   location: ${SPRING_PROFILES_ACTIVE}
+
+# file path
+module:
+  parser: ${MODULE_PARSER_URL}
+  analyze: ${MODULE_ANALYZE_URL}
 
 ---
 
