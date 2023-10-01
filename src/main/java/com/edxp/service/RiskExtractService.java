@@ -47,18 +47,15 @@ public class RiskExtractService {
     private String parserUrl;
     @Value("${module.analyze}")
     private String modelUrl;
-    @Value("${file.path}")
-    private String downloadFolder;
 
     public Map<String, List<ParsedDocument>> parse(Long userId, MultipartFile file) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-        String resultPath = downloadFolder + "/" + "risk" + "/";
         String resultName = RandomStringUtils.randomAlphanumeric(6);
-        File resultFile = new File(resultPath + resultName + "-parsed.json");
-        File downsizedFile = new File(resultPath + resultName + "-downsized.json");
+        File resultFile = new File(resultName + "-parsed.json");
+        File downsizedFile = new File(resultName + "-downsized.json");
 
         Resource fileResource;
         try {
@@ -74,6 +71,9 @@ public class RiskExtractService {
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(requestMap, headers);
 
         ResponseEntity<String> response = restTemplate.postForEntity(parserUrl, requestEntity, String.class);
+
+        log.debug("resultFile: {}", resultFile);
+        log.debug("downsizedFile: {}", downsizedFile);
 
         List<ParsedDocument> parsedDocuments;
         List<ParsedDocument> copiedDocuments;
