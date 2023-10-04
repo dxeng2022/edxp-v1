@@ -1,7 +1,7 @@
 package com.edxp.controller;
 
-import com.edxp.common.response.CommonResponse;
-import com.edxp.config.auth.PrincipalDetails;
+import com.edxp._core.common.response.CommonResponse;
+import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp.dto.User;
 import com.edxp.dto.request.UserChangeRequest;
 import com.edxp.dto.request.UserCheckRequest;
@@ -25,6 +25,15 @@ public class UserController {
     private final UserService userService;
     private final EmailSenderService emailSenderService;
     private final UserAuthService userAuthService;
+
+    // 로그인 리스트 확인하기
+    @CrossOrigin
+    @GetMapping("/log-users")
+    public CommonResponse<Void> currentUsers() {
+        userService.getCurrentUsers();
+
+        return CommonResponse.success();
+    }
 
     // 로그인 정보 불러오기
     @CrossOrigin

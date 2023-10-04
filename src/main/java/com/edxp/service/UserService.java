@@ -1,25 +1,31 @@
 package com.edxp.service;
 
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.config.auth.PrincipalDetails;
+import com.edxp._core.constant.ErrorCode;
+import com.edxp.domain.SessionInfo;
 import com.edxp.domain.UserEntity;
+import com.edxp.domain.UserSession;
 import com.edxp.dto.User;
 import com.edxp.dto.request.UserChangeRequest;
 import com.edxp.dto.request.UserCheckRequest;
 import com.edxp.dto.request.UserFindRequest;
 import com.edxp.dto.request.UserSignUpRequest;
 import com.edxp.dto.response.UserFindResponse;
-import com.edxp.exception.EdxpApplicationException;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static com.edxp.common.utils.CreateKeyUtil.createPwKey;
+import static com.edxp._core.common.utils.CreateKeyUtil.createPwKey;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,7 +33,27 @@ import static com.edxp.common.utils.CreateKeyUtil.createPwKey;
 public class UserService {
     private final UserRepository userRepository;
     private final EmailSenderService emailSenderService;
+    private final SessionRegistry sessionRegistry;
     private final BCryptPasswordEncoder encoder;
+
+    // 로그인 리스트 확인하기
+    @Transactional(readOnly = true)
+    public void getCurrentUsers() {
+        List<UserSession> userSessions = sessionRegistry.getAllPrincipals().stream()
+                .map(principal -> UserSession.builder()
+                        .username(((PrincipalDetails) principal).getUsername())
+                        .sessions(sessionRegistry.getAllSessions(principal,false)
+                                .stream().map(si -> SessionInfo.builder()
+                                        .lastRequest(si.getLastRequest())
+                                        .sessionId(si.getSessionId())
+                                        .build()
+                                ).collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+
+        System.out.println(userSessions);
+
+    }
 
     // 회원가입
     @Transactional

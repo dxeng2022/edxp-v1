@@ -13,10 +13,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -32,6 +34,8 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement -> sessionManagement
                             .maximumSessions(1)
                             .maxSessionsPreventsLogin(true)
+                            .expiredUrl("/session-expired")
+                            .sessionRegistry(sessionRegistry())
                 )
                 .formLogin()
                     .successHandler((request, response, authentication) -> {
@@ -47,16 +51,15 @@ public class SecurityConfig {
                         response.getWriter().write("{\"success\": false}");
                     })
                     .permitAll()
-//                    .loginPage("/")
-//                    .loginProcessingUrl("/login")
-//                    .defaultSuccessUrl("/module")
-//                    .failureUrl("/login-error")
                 .and()
                 .logout()
                     .logoutUrl("/logout") // 로그아웃 URL 설정
-                    .invalidateHttpSession(true) // 세션 무효화
-                    .clearAuthentication(true) // 인증 정보 제거
-                    .deleteCookies("JSESSIONID") // 쿠키 삭제 (세션 쿠키 이름)
+                    .addLogoutHandler((request, response, authentication) -> {
+                        HttpSession session = request.getSession();
+                        if (session != null) {
+                            session.invalidate();
+                        }
+                    })
                     .logoutSuccessHandler((request, response, authentication) -> {
                         // 로그아웃 성공 시 처리 (옵션)
                         response.setStatus(HttpServletResponse.SC_OK);
