@@ -7,7 +7,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import static com.edxp.common.utils.CreateKeyUtil.createAuthKey;
+import static com.edxp._core.common.utils.CreateKeyUtil.createAuthKey;
 
 @Slf4j
 @RequiredArgsConstructor

@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
-import static com.edxp.common.utils.FileUtil.getDateFormat;
-import static com.edxp.common.utils.FileUtil.getSizeFormat;
+import static com.edxp._core.common.utils.FileUtil.getDateFormat;
+import static com.edxp._core.common.utils.FileUtil.getSizeFormat;
 
 @Getter
 @AllArgsConstructor

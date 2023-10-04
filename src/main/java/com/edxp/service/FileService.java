@@ -6,13 +6,13 @@ import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.MultipleFileDownload;
 import com.amazonaws.services.s3.transfer.Transfer;
 import com.amazonaws.services.s3.transfer.TransferManager;
-import com.edxp.common.utils.FileUtil;
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.common.utils.FileUtil;
+import com.edxp._core.constant.ErrorCode;
 import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
 import com.edxp.dto.response.FileVolumeResponse;
 import com.edxp.dto.response.FolderListResponse;
-import com.edxp.exception.EdxpApplicationException;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -342,8 +342,8 @@ public class FileService {
     public File downloadAnalysisFile(Long userId, String fileName) {
         StringBuilder userPath = new StringBuilder();
         userPath.append("dxeng/").append(location).append("/")
-                .append("user_").append(String.format("%06d", userId)).append("/").append("doc").append("/")
-                .append("risk").append("/").append(fileName);
+                .append("user_").append(String.format("%06d", userId)).append("/").append("doc_risk").append("/")
+                .append(fileName);
 
         try {
             File file = new File(downloadFolder + "/" + fileName);

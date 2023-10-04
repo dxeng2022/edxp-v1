@@ -1,9 +1,11 @@
-package com.edxp.config;
+package com.edxp._core.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -26,6 +28,10 @@ public class SecurityConfig {
 //                                "/user/**"
 //                        ).authenticated()
                                 .anyRequest().permitAll()
+                )
+                .sessionManagement(sessionManagement -> sessionManagement
+                            .maximumSessions(1)
+                            .maxSessionsPreventsLogin(true)
                 )
                 .formLogin()
                     .successHandler((request, response, authentication) -> {
@@ -58,6 +64,11 @@ public class SecurityConfig {
                     .permitAll()
                 .and()
                 .build();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 
     @Bean

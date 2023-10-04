@@ -1,11 +1,11 @@
 package com.edxp.controller;
 
-import com.edxp.common.response.CommonResponse;
-import com.edxp.config.auth.PrincipalDetails;
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.common.response.CommonResponse;
+import com.edxp._core.config.auth.PrincipalDetails;
+import com.edxp._core.constant.ErrorCode;
 import com.edxp.domain.ParsedDocument;
 import com.edxp.dto.request.RiskAnalyzeRequest;
-import com.edxp.exception.EdxpApplicationException;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.service.RiskExtractService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -25,12 +26,14 @@ import java.util.Map;
 public class RiskExtractController {
     private final RiskExtractService riskExtractService;
 
+    @CrossOrigin
     @PostMapping("/parser")
     public ResponseEntity<List<ParsedDocument>> requestParse(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestPart(value = "file") MultipartFile file
-    ) {
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+        if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
         Map<String, List<ParsedDocument>> response = riskExtractService.parse(principal.getUser().getId(), file);
         String fileName = null;
 
@@ -42,11 +45,12 @@ public class RiskExtractController {
                 .body(response.get(fileName));
     }
 
+    @CrossOrigin
     @PostMapping("/analysis")
     public CommonResponse<List<ParsedDocument>> requestAnalysis(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody RiskAnalyzeRequest request
-    ) {
+    ) throws IOException {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         return CommonResponse.success(riskExtractService.analysis(principal.getUser().getId(), request));
     }

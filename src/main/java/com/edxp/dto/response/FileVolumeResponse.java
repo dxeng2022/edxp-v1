@@ -6,7 +6,7 @@ import lombok.Getter;
 
 import java.util.List;
 
-import static com.edxp.common.utils.FileUtil.getSizeFormat;
+import static com.edxp._core.common.utils.FileUtil.getSizeFormat;
 
 @Getter
 @AllArgsConstructor

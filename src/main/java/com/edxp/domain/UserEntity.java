@@ -1,6 +1,6 @@
 package com.edxp.domain;
 
-import com.edxp.constant.RoleType;
+import com.edxp._core.constant.RoleType;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Where;
