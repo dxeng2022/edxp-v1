@@ -342,8 +342,8 @@ public class FileService {
     public File downloadAnalysisFile(Long userId, String fileName) {
         StringBuilder userPath = new StringBuilder();
         userPath.append("dxeng/").append(location).append("/")
-                .append("user_").append(String.format("%06d", userId)).append("/").append("doc").append("/")
-                .append("risk").append("/").append(fileName);
+                .append("user_").append(String.format("%06d", userId)).append("/").append("doc_risk").append("/")
+                .append(fileName);
 
         try {
             File file = new File(downloadFolder + "/" + fileName);

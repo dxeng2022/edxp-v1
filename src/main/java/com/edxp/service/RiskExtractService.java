@@ -108,7 +108,7 @@ public class RiskExtractService {
 
         files.add(result);
         files.add(resultResized);
-        FileUploadRequest uploadRequest = new FileUploadRequest("doc/risk/", files);
+        FileUploadRequest uploadRequest = new FileUploadRequest("doc_risk/", files);
 
         fileService.uploadFile(userId, uploadRequest);
 
@@ -128,38 +128,34 @@ public class RiskExtractService {
             return null;
     }
 
-    public List<ParsedDocument> analysis(Long userId, RiskAnalyzeRequest request) {
+    public List<ParsedDocument> analysis(Long userId, RiskAnalyzeRequest request) throws IOException {
         File jsonFile = fileService.downloadAnalysisFile(userId, request.getFileName());
 
-        MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
-        formData.add("file", new FileSystemResource(jsonFile));
-
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, headers);
-
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(modelUrl, requestEntity, String.class);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<ParsedDocument> analysisDocuments;
         try {
+            MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+            formData.add("file", new FileSystemResource(jsonFile));
+
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, headers);
+
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(modelUrl, requestEntity, String.class);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<ParsedDocument> analysisDocuments;
             analysisDocuments = objectMapper.readValue(responseEntity.getBody(), objectMapper.getTypeFactory().constructCollectionType(List.class, ParsedDocument.class));
+
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                return analysisDocuments;
+            } else {
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Analysis is failed");
+            }
         } catch (JsonProcessingException e) {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Mapping is failed");
-        }
-
-        try {
+        } finally {
             FileUtil.remove(jsonFile);
-        } catch (IOException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File delete failed");
-        }
-
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            return analysisDocuments;
-        } else {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Analysis is failed");
         }
     }
 

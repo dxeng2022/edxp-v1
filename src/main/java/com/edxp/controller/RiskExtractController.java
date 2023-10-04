@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,7 @@ public class RiskExtractController {
     public CommonResponse<List<ParsedDocument>> requestAnalysis(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody RiskAnalyzeRequest request
-    ) {
+    ) throws IOException {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         return CommonResponse.success(riskExtractService.analysis(principal.getUser().getId(), request));
     }
