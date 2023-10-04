@@ -30,7 +30,7 @@ public class RiskExtractController {
     public ResponseEntity<List<ParsedDocument>> requestParse(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestPart(value = "file") MultipartFile file
-    ) {
+    ) throws IOException {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         Map<String, List<ParsedDocument>> response = riskExtractService.parse(principal.getUser().getId(), file);
         String fileName = null;

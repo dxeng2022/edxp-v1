@@ -48,14 +48,10 @@ public class RiskExtractService {
     @Value("${module.analyze}")
     private String modelUrl;
 
-    public Map<String, List<ParsedDocument>> parse(Long userId, MultipartFile file) {
+    public Map<String, List<ParsedDocument>> parse(Long userId, MultipartFile file) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        String resultName = RandomStringUtils.randomAlphanumeric(6);
-        File resultFile = new File(resultName + "-parsed.json");
-        File downsizedFile = new File(resultName + "-downsized.json");
 
         Resource fileResource;
         try {
@@ -72,10 +68,14 @@ public class RiskExtractService {
 
         ResponseEntity<String> response = restTemplate.postForEntity(parserUrl, requestEntity, String.class);
 
+
+        String resultName = RandomStringUtils.randomAlphanumeric(6);
+        File resultFile = new File(resultName + "-parsed.json");
+        File downsizedFile = new File(resultName + "-downsized.json");
+
         log.debug("resultFile: {}", resultFile);
         log.debug("downsizedFile: {}", downsizedFile);
 
-        List<ParsedDocument> parsedDocuments;
         List<ParsedDocument> copiedDocuments;
         try (
                 FileOutputStream fos1 = new FileOutputStream(resultFile);
@@ -84,7 +84,7 @@ public class RiskExtractService {
             ObjectMapper objectMapper = new ObjectMapper();
             TypeReference<List<ParsedDocument>> typeReference = new TypeReference<>() {
             };
-            parsedDocuments = objectMapper.readValue(response.getBody(), typeReference);
+            List<ParsedDocument> parsedDocuments = objectMapper.readValue(response.getBody(), typeReference);
             objectMapper.writeValue(fos1, parsedDocuments);
 
             for (ParsedDocument p : parsedDocuments) p.setWordList(null);
@@ -93,6 +93,8 @@ public class RiskExtractService {
 
             copiedDocuments = objectMapper.readValue(resultFile, typeReference);
         } catch (IOException e) {
+            FileUtil.remove(resultFile);
+            FileUtil.remove(downsizedFile);
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Mapping failed");
         }
 
@@ -104,6 +106,9 @@ public class RiskExtractService {
             resultResized = convertFileToMultipartFile(downsizedFile);
         } catch (IOException e) {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Converting failed");
+        } finally {
+            FileUtil.remove(resultFile);
+            FileUtil.remove(downsizedFile);
         }
 
         files.add(result);
@@ -114,13 +119,6 @@ public class RiskExtractService {
 
         Map<String, List<ParsedDocument>> responseMap = new HashMap<>();
         responseMap.put(result.getOriginalFilename(), copiedDocuments);
-
-        try {
-            FileUtil.remove(resultFile);
-            FileUtil.remove(downsizedFile);
-        } catch (IOException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File delete failed");
-        }
 
         if (response.getStatusCode().is2xxSuccessful())
             return responseMap;
