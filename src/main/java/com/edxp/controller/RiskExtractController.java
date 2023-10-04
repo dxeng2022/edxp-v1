@@ -26,12 +26,14 @@ import java.util.Map;
 public class RiskExtractController {
     private final RiskExtractService riskExtractService;
 
+    @CrossOrigin
     @PostMapping("/parser")
     public ResponseEntity<List<ParsedDocument>> requestParse(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestPart(value = "file") MultipartFile file
+            @RequestParam("file") MultipartFile file
     ) throws IOException {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+        if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
         Map<String, List<ParsedDocument>> response = riskExtractService.parse(principal.getUser().getId(), file);
         String fileName = null;
 
@@ -43,6 +45,7 @@ public class RiskExtractController {
                 .body(response.get(fileName));
     }
 
+    @CrossOrigin
     @PostMapping("/analysis")
     public CommonResponse<List<ParsedDocument>> requestAnalysis(
             @AuthenticationPrincipal PrincipalDetails principal,
