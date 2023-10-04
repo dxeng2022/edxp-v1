@@ -1,4 +1,4 @@
-package com.edxp.config.auth;
+package com.edxp._core.config.auth;
 
 import com.edxp.dto.User;
 import lombok.Getter;

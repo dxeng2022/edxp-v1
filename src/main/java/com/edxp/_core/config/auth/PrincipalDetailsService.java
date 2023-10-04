@@ -1,9 +1,9 @@
-package com.edxp.config.auth;
+package com.edxp._core.config.auth;
 
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.constant.ErrorCode;
 import com.edxp.domain.UserEntity;
 import com.edxp.dto.User;
-import com.edxp.exception.EdxpApplicationException;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

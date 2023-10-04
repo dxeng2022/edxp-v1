@@ -1,4 +1,4 @@
-package com.edxp.common.utils;
+package com.edxp._core.common.utils;
 
 import com.amazonaws.services.s3.transfer.Transfer;
 import lombok.extern.slf4j.Slf4j;

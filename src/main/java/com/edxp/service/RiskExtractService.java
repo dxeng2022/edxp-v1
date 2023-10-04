@@ -1,11 +1,11 @@
 package com.edxp.service;
 
-import com.edxp.common.utils.FileUtil;
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.common.utils.FileUtil;
+import com.edxp._core.constant.ErrorCode;
 import com.edxp.domain.ParsedDocument;
 import com.edxp.dto.request.FileUploadRequest;
 import com.edxp.dto.request.RiskAnalyzeRequest;
-import com.edxp.exception.EdxpApplicationException;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

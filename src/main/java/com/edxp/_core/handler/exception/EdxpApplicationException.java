@@ -1,6 +1,6 @@
-package com.edxp.exception;
+package com.edxp._core.handler.exception;
 
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.constant.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package com.edxp.config;
+package com.edxp._core.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

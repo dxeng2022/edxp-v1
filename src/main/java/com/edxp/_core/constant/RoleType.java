@@ -1,4 +1,4 @@
-package com.edxp.constant;
+package com.edxp._core.constant;
 
 import lombok.Getter;
 
