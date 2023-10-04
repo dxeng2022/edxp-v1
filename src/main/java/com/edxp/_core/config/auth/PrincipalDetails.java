@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -39,5 +40,18 @@ public class PrincipalDetails implements UserDetails {
         Collection<GrantedAuthority> collectors = new ArrayList<>();
         collectors.add(user::getRole);
         return collectors;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof PrincipalDetails) {
+            return this.user.getUsername().equals(((PrincipalDetails) o).getUsername());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.user.getUsername().hashCode();
     }
 }
