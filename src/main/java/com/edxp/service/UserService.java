@@ -1,30 +1,27 @@
 package com.edxp.service;
 
-import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.domain.SessionInfo;
 import com.edxp.domain.UserEntity;
-import com.edxp.domain.UserSession;
 import com.edxp.dto.User;
 import com.edxp.dto.request.UserChangeRequest;
 import com.edxp.dto.request.UserCheckRequest;
 import com.edxp.dto.request.UserFindRequest;
 import com.edxp.dto.request.UserSignUpRequest;
+import com.edxp.dto.response.SessionInfoResponse;
 import com.edxp.dto.response.UserFindResponse;
 import com.edxp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.edxp._core.common.utils.CreateKeyUtil.createPwKey;
 
@@ -34,27 +31,25 @@ import static com.edxp._core.common.utils.CreateKeyUtil.createPwKey;
 public class UserService {
     private final UserRepository userRepository;
     private final EmailSenderService emailSenderService;
-    private final SessionRegistry sessionRegistry;
+    private final JdbcTemplate jdbcTemplate;
     private final BCryptPasswordEncoder encoder;
 
     // 로그인 리스트 확인하기
     @Transactional(readOnly = true)
-    public void getCurrentUsers() {
-        List<UserSession> userSessions = sessionRegistry.getAllPrincipals().stream()
-                .map(principal -> UserSession.builder()
-                        .username(((PrincipalDetails) principal).getUsername())
-                        .sessions(sessionRegistry.getAllSessions(principal,false)
-                                .stream().map(si -> SessionInfo.builder()
-                                        .lastRequest(si.getLastRequest())
-                                        .principal((Principal) si.getPrincipal())
-                                        .sessionId(si.getSessionId())
-                                        .build()
-                                ).collect(Collectors.toList()))
-                        .build())
-                .collect(Collectors.toList());
+    public List<SessionInfoResponse> getCurrentUsers() {
+        // Spring Session JDBC 를 사용하여 현재 로그인한 사용자 정보를 조회하는 쿼리를 작성합니다.
+        String query = "SELECT * FROM SPRING_SESSION";
 
-        System.out.println(userSessions);
-
+        // 쿼리를 실행하여 로그인한 사용자 목록을 가져옵니다.
+        return jdbcTemplate.query(query, (rs, rowNum) -> {
+            SessionInfo sessionInfo = SessionInfo.builder()
+                        .sessionId(rs.getString("session_id"))
+                        .principalName(rs.getString("principal_name"))
+                        .creationTime(rs.getLong("creation_time"))
+                        .expiryTime(rs.getLong("expiry_time"))
+                        .build();
+            return SessionInfoResponse.from(sessionInfo);
+        });
     }
 
     // 회원가입

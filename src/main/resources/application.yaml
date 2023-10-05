@@ -88,6 +88,10 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
 
+  session:
+    store-type: jdbc
+    timeout: 3600
+
 logging:
   level:
     com:
