@@ -2,6 +2,7 @@ package com.edxp.service;
 
 import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp._core.constant.ErrorCode;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.domain.SessionInfo;
 import com.edxp.domain.UserEntity;
 import com.edxp.domain.UserSession;
@@ -11,7 +12,6 @@ import com.edxp.dto.request.UserCheckRequest;
 import com.edxp.dto.request.UserFindRequest;
 import com.edxp.dto.request.UserSignUpRequest;
 import com.edxp.dto.response.UserFindResponse;
-import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -45,6 +46,7 @@ public class UserService {
                         .sessions(sessionRegistry.getAllSessions(principal,false)
                                 .stream().map(si -> SessionInfo.builder()
                                         .lastRequest(si.getLastRequest())
+                                        .principal((Principal) si.getPrincipal())
                                         .sessionId(si.getSessionId())
                                         .build()
                                 ).collect(Collectors.toList()))

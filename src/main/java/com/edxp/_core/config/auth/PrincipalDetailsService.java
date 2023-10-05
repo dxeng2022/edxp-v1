@@ -22,7 +22,6 @@ public class PrincipalDetailsService implements UserDetailsService {
         log.info("로그인 시도 - username: {}", username);
         UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(() ->
                 new EdxpApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", username)));
-        log.info("로그인 성공 - principal: {}", User.fromEntity(userEntity).getUsername());
         return new PrincipalDetails(User.fromEntity(userEntity));
     }
 }
