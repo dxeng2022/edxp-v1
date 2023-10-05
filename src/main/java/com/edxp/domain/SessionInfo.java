@@ -5,16 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.security.Principal;
-import java.util.Date;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SessionInfo {
     private String sessionId;
-    private Principal principal;
-    private Date lastRequest;
-    private boolean expired;
+    private String principalName;
+    private long creationTime;
+    private long expiryTime;
 }

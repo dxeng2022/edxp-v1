@@ -7,6 +7,7 @@ import com.edxp.dto.request.UserChangeRequest;
 import com.edxp.dto.request.UserCheckRequest;
 import com.edxp.dto.request.UserFindRequest;
 import com.edxp.dto.request.UserSignUpRequest;
+import com.edxp.dto.response.SessionInfoResponse;
 import com.edxp.dto.response.UserFindResponse;
 import com.edxp.dto.response.UserInfoResponse;
 import com.edxp.service.EmailSenderService;
@@ -16,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,10 +32,10 @@ public class UserController {
     // 로그인 리스트 확인하기
     @CrossOrigin
     @GetMapping("/log-users")
-    public CommonResponse<Void> currentUsers() {
-        userService.getCurrentUsers();
+    public CommonResponse<List<SessionInfoResponse>> currentUsers() {
+        List<SessionInfoResponse> currentUsers = userService.getCurrentUsers();
 
-        return CommonResponse.success();
+        return CommonResponse.success(currentUsers);
     }
 
     // 로그인 정보 불러오기

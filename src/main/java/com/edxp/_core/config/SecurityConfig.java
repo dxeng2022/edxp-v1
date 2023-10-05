@@ -5,8 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -31,12 +29,6 @@ public class SecurityConfig {
 //                        ).authenticated()
                                 .anyRequest().permitAll()
                 )
-//                .sessionManagement(sessionManagement -> sessionManagement
-//                            .maximumSessions(1)
-//                            .maxSessionsPreventsLogin(true)
-//                            .expiredUrl("/session-expired")
-//                            .sessionRegistry(sessionRegistry())
-//                )
                 .formLogin()
                     .successHandler((request, response, authentication) -> {
                         log.info("로그인 성공");
@@ -54,23 +46,15 @@ public class SecurityConfig {
                     })
                     .permitAll()
                 .and()
+//                .sessionManagement(sessionManagement -> sessionManagement
+//                            .maximumSessions(1)
+//                            .maxSessionsPreventsLogin(true)
+//                            .sessionRegistry(sessionRegistry())
+//                )
                 .logout()
                     .logoutUrl("/logout") // 로그아웃 URL 설정
+                    .invalidateHttpSession(true) // 세션 무효화
                     .deleteCookies("JSESSIONID")
-                    .invalidateHttpSession(true)
-                    .clearAuthentication(true)
-//                    .addLogoutHandler((request, response, authentication) -> {
-//                        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//                        if (principal instanceof PrincipalDetails) {
-//                            UserDetails userDetails = (PrincipalDetails) principal;
-//                            List<SessionInformation> sessions = sessionRegistry().getAllSessions(userDetails, false);
-//
-//                            // 세션 정보를 만료시켜 SessionRegistry 를 최신화
-//                            for (SessionInformation session : sessions) {
-//                                session.expireNow();
-//                            }
-//                        }
-//                    })
                     .logoutSuccessHandler((request, response, authentication) -> {
                         // 로그아웃 성공 시 처리 (옵션)
                         response.setStatus(HttpServletResponse.SC_OK);
@@ -78,11 +62,6 @@ public class SecurityConfig {
                     .permitAll()
                 .and()
                 .build();
-    }
-
-    @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
     }
 
     @Bean
