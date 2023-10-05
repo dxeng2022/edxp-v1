@@ -38,6 +38,15 @@ public class UserController {
         return CommonResponse.success(currentUsers);
     }
 
+    // 로그인 유저 세션 확인하기
+    @CrossOrigin
+    @GetMapping("/log-user")
+    public CommonResponse<SessionInfoResponse> currentUser(@RequestParam("sessionId") String sessionId) {
+        SessionInfoResponse currentUser = userService.getCurrentUser(sessionId);
+
+        return CommonResponse.success(currentUser);
+    }
+
     // 로그인 정보 불러오기
     @CrossOrigin
     @GetMapping("/my-info")

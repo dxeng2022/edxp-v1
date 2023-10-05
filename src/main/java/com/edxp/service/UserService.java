@@ -14,7 +14,9 @@ import com.edxp.dto.response.UserFindResponse;
 import com.edxp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,13 +45,37 @@ public class UserService {
         // 쿼리를 실행하여 로그인한 사용자 목록을 가져옵니다.
         return jdbcTemplate.query(query, (rs, rowNum) -> {
             SessionInfo sessionInfo = SessionInfo.builder()
+                    .sessionId(rs.getString("session_id"))
+                    .principalName(rs.getString("principal_name"))
+                    .creationTime(rs.getLong("creation_time"))
+                    .expiryTime(rs.getLong("expiry_time"))
+                    .build();
+            return SessionInfoResponse.from(sessionInfo);
+        });
+    }
+
+    // 로그인 유저 세션 확인하기
+    @Transactional(readOnly = true)
+    public SessionInfoResponse getCurrentUser(String sessionId) {
+        String query = "SELECT * FROM SPRING_SESSION WHERE PRINCIPAL_NAME = ?";
+
+        RowMapper<SessionInfo> rowMapper = (rs, rowNum) ->
+                SessionInfo.builder()
                         .sessionId(rs.getString("session_id"))
                         .principalName(rs.getString("principal_name"))
                         .creationTime(rs.getLong("creation_time"))
                         .expiryTime(rs.getLong("expiry_time"))
                         .build();
-            return SessionInfoResponse.from(sessionInfo);
-        });
+
+        SessionInfo sessionInfo;
+        try {
+            sessionInfo = jdbcTemplate.queryForObject(query, rowMapper, sessionId);
+        } catch (EmptyResultDataAccessException e) {
+            sessionInfo = null;
+        }
+
+        if (sessionInfo != null) return SessionInfoResponse.from(sessionInfo);
+        return new SessionInfoResponse();
     }
 
     // 회원가입

@@ -1,14 +1,18 @@
 package com.edxp.dto.response;
 
 import com.edxp.domain.SessionInfo;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Builder
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class SessionInfoResponse {
     private String sessionId;
     private String principalName;

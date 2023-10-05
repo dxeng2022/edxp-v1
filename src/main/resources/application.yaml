@@ -121,8 +121,10 @@ spring:
     show-sql: true
 
   session:
-    store-type: jdbc
     timeout: 3600
+    store-type: jdbc
+    jdbc:
+      initialize-schema: always
 
 logging:
   level:
@@ -130,6 +132,7 @@ logging:
       edxp:
         controller: debug
         service: debug
+
 ---
 
 spring:
@@ -150,3 +153,9 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
+
+  session:
+    timeout: 3600
+    store-type: jdbc
+    jdbc:
+      initialize-schema: always
