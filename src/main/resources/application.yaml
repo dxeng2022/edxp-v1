@@ -130,6 +130,7 @@ logging:
       edxp:
         controller: debug
         service: debug
+
 ---
 
 spring:
