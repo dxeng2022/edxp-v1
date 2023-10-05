@@ -121,8 +121,10 @@ spring:
     show-sql: true
 
   session:
-    store-type: jdbc
     timeout: 3600
+    store-type: jdbc
+    jdbc:
+      initialize-schema: always
 
 logging:
   level:
@@ -153,5 +155,7 @@ spring:
     show-sql: true
 
   session:
-    store-type: jdbc
     timeout: 3600
+    store-type: jdbc
+    jdbc:
+      initialize-schema: always
