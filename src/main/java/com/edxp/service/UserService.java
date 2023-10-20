@@ -33,8 +33,9 @@ import static com.edxp._core.common.utils.CreateKeyUtil.createPwKey;
 public class UserService {
     private final UserRepository userRepository;
     private final EmailSenderService emailSenderService;
-    private final JdbcTemplate jdbcTemplate;
+
     private final BCryptPasswordEncoder encoder;
+    private final JdbcTemplate jdbcTemplate;
 
     // 로그인 리스트 확인하기
     @Transactional(readOnly = true)
@@ -56,7 +57,7 @@ public class UserService {
 
     // 로그인 유저 세션 확인하기
     @Transactional(readOnly = true)
-    public SessionInfoResponse getCurrentUser(String sessionId) {
+    public SessionInfoResponse getCurrentUser(String username) {
         String query = "SELECT * FROM SPRING_SESSION WHERE PRINCIPAL_NAME = ?";
 
         RowMapper<SessionInfo> rowMapper = (rs, rowNum) ->
@@ -69,7 +70,7 @@ public class UserService {
 
         SessionInfo sessionInfo;
         try {
-            sessionInfo = jdbcTemplate.queryForObject(query, rowMapper, sessionId);
+            sessionInfo = jdbcTemplate.queryForObject(query, rowMapper, username);
         } catch (EmptyResultDataAccessException e) {
             sessionInfo = null;
         }
