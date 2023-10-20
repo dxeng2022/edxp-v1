@@ -37,7 +37,7 @@ public class UserService {
     private final BCryptPasswordEncoder encoder;
     private final JdbcTemplate jdbcTemplate;
 
-    // 로그인 리스트 확인하기
+    // 전체 로그인 리스트 확인
     @Transactional(readOnly = true)
     public List<SessionInfoResponse> getCurrentUsers() {
         // Spring Session JDBC 를 사용하여 현재 로그인한 사용자 정보를 조회하는 쿼리를 작성합니다.
@@ -47,7 +47,7 @@ public class UserService {
         return jdbcTemplate.query(query, (rs, rowNum) -> {
             SessionInfo sessionInfo = SessionInfo.builder()
                     .sessionId(rs.getString("session_id"))
-                    .principalName(rs.getString("principal_name"))
+                    .username(rs.getString("principal_name"))
                     .creationTime(rs.getLong("creation_time"))
                     .expiryTime(rs.getLong("expiry_time"))
                     .build();
@@ -55,7 +55,7 @@ public class UserService {
         });
     }
 
-    // 로그인 유저 세션 확인하기
+    // 유저 세션 정보 확인
     @Transactional(readOnly = true)
     public SessionInfoResponse getCurrentUser(String username) {
         String query = "SELECT * FROM SPRING_SESSION WHERE PRINCIPAL_NAME = ?";
@@ -63,7 +63,7 @@ public class UserService {
         RowMapper<SessionInfo> rowMapper = (rs, rowNum) ->
                 SessionInfo.builder()
                         .sessionId(rs.getString("session_id"))
-                        .principalName(rs.getString("principal_name"))
+                        .username(rs.getString("principal_name"))
                         .creationTime(rs.getLong("creation_time"))
                         .expiryTime(rs.getLong("expiry_time"))
                         .build();

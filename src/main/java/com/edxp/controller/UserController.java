@@ -34,7 +34,6 @@ public class UserController {
     @GetMapping("/log-users")
     public CommonResponse<List<SessionInfoResponse>> currentUsers() {
         List<SessionInfoResponse> currentUsers = userService.getCurrentUsers();
-
         return CommonResponse.success(currentUsers);
     }
 

@@ -15,7 +15,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class SessionInfoResponse {
     private String sessionId;
-    private String principalName;
+    private String username;
     private String creationTime;
     private String expiryTime;
     private long originCreationTime;
@@ -30,7 +30,7 @@ public class SessionInfoResponse {
 
         return new SessionInfoResponse(
                 sessionInfo.getSessionId(),
-                sessionInfo.getPrincipalName(),
+                sessionInfo.getUsername(),
                 formattedCreation,
                 formattedExpiry,
                 sessionInfo.getCreationTime(),

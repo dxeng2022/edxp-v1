@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SessionInfo {
     private String sessionId;
-    private String principalName;
+    private String username;
     private long creationTime;
     private long expiryTime;
 }
