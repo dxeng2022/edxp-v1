@@ -1,7 +1,13 @@
-package com.edxp.config;
+package com.edxp._core.config;
 
+import com.edxp._core.config.auth.PrincipalDetailsService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -12,9 +18,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.servlet.http.HttpServletResponse;
 
+@Slf4j
+@RequiredArgsConstructor
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
+    private final PrincipalDetailsService principalDetailsService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -29,28 +39,30 @@ public class SecurityConfig {
                 )
                 .formLogin()
                     .successHandler((request, response, authentication) -> {
+                        log.info("로그인 성공");
                         // 로그인 성공 시 JSON 응답을 리턴
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.setContentType("application/json");
                         response.getWriter().write("{\"success\": true}");
                     })
                     .failureHandler((request, response, exception) -> {
+                        log.info("로그인 실패");
                         // 로그인 실패 시 JSON 응답을 리턴
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                         response.setContentType("application/json");
                         response.getWriter().write("{\"success\": false}");
                     })
                     .permitAll()
-//                    .loginPage("/")
-//                    .loginProcessingUrl("/login")
-//                    .defaultSuccessUrl("/module")
-//                    .failureUrl("/login-error")
                 .and()
+//                .sessionManagement(sessionManagement -> sessionManagement
+//                            .maximumSessions(1)
+//                            .maxSessionsPreventsLogin(true)
+//                            .sessionRegistry(sessionRegistry())
+//                )
                 .logout()
                     .logoutUrl("/logout") // 로그아웃 URL 설정
                     .invalidateHttpSession(true) // 세션 무효화
-                    .clearAuthentication(true) // 인증 정보 제거
-                    .deleteCookies("JSESSIONID") // 쿠키 삭제 (세션 쿠키 이름)
+                    .deleteCookies("JSESSIONID")
                     .logoutSuccessHandler((request, response, authentication) -> {
                         // 로그아웃 성공 시 처리 (옵션)
                         response.setStatus(HttpServletResponse.SC_OK);
@@ -58,6 +70,14 @@ public class SecurityConfig {
                     .permitAll()
                 .and()
                 .build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(encodePwd());
+        provider.setUserDetailsService(principalDetailsService);
+        return new ProviderManager(provider);
     }
 
     @Bean

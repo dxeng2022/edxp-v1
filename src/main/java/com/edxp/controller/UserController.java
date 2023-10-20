@@ -1,12 +1,13 @@
 package com.edxp.controller;
 
-import com.edxp.common.response.CommonResponse;
-import com.edxp.config.auth.PrincipalDetails;
+import com.edxp._core.common.response.CommonResponse;
+import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp.dto.User;
 import com.edxp.dto.request.UserChangeRequest;
 import com.edxp.dto.request.UserCheckRequest;
 import com.edxp.dto.request.UserFindRequest;
 import com.edxp.dto.request.UserSignUpRequest;
+import com.edxp.dto.response.SessionInfoResponse;
 import com.edxp.dto.response.UserFindResponse;
 import com.edxp.dto.response.UserInfoResponse;
 import com.edxp.service.EmailSenderService;
@@ -17,14 +18,34 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user")
 @RestController
 public class UserController {
     private final UserService userService;
-    private final EmailSenderService emailSenderService;
     private final UserAuthService userAuthService;
+    private final EmailSenderService emailSenderService;
+
+    // 로그인 리스트 확인하기
+    @CrossOrigin
+    @GetMapping("/log-users")
+    public CommonResponse<List<SessionInfoResponse>> currentUsers() {
+        List<SessionInfoResponse> currentUsers = userService.getCurrentUsers();
+
+        return CommonResponse.success(currentUsers);
+    }
+
+    // 로그인 유저 세션 확인하기
+    @CrossOrigin
+    @GetMapping("/log-user")
+    public CommonResponse<SessionInfoResponse> currentUser(@RequestParam("username") String username) {
+        SessionInfoResponse currentUser = userService.getCurrentUser(username);
+
+        return CommonResponse.success(currentUser);
+    }
 
     // 로그인 정보 불러오기
     @CrossOrigin

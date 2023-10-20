@@ -6,13 +6,13 @@ import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.MultipleFileDownload;
 import com.amazonaws.services.s3.transfer.Transfer;
 import com.amazonaws.services.s3.transfer.TransferManager;
-import com.edxp.common.utils.FileUtil;
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.common.utils.FileUtil;
+import com.edxp._core.constant.ErrorCode;
 import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
 import com.edxp.dto.response.FileVolumeResponse;
 import com.edxp.dto.response.FolderListResponse;
-import com.edxp.exception.EdxpApplicationException;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -326,6 +326,45 @@ public class FileService {
         } finally {
             // (5) 로컬 디렉토리 삭제
             FileUtil.remove(localDirectory);
+        }
+    }
+
+    /**
+     * [ 분석용 파일 다운로드 ]
+     *
+     * @param userId   signed in
+     * @param fileName filename to download
+     * @return file
+     * @apiNote 분석용 파일을 다운로드 하는 API
+     * @since 2023.09.27
+     */
+    @Transactional
+    public File downloadAnalysisFile(Long userId, String fileName) {
+        StringBuilder userPath = new StringBuilder();
+        userPath.append("dxeng/").append(location).append("/")
+                .append("user_").append(String.format("%06d", userId)).append("/").append("doc_risk").append("/")
+                .append(fileName);
+
+        try {
+            File file = new File(downloadFolder + "/" + fileName);
+            Download download = transferManager.download(bucket, String.valueOf(userPath), file);
+
+            log.info("[" + fileName + "] download progressing... start");
+            DecimalFormat decimalFormat = new DecimalFormat("##0.00");
+            while (!download.isDone()) {
+                Thread.sleep(1000);
+
+                double percentTransferred = download.getProgress().getPercentTransferred();
+                log.info(
+                        "[" + fileName + "] "
+                                + decimalFormat.format(percentTransferred)
+                                + "% download progressing..."
+                );
+            }
+            log.info("single file download - {} : success", fileName);
+            return file;
+        } catch (InterruptedException e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
         }
     }
 

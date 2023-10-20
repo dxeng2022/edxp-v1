@@ -1,8 +1,8 @@
 package com.edxp.service;
 
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.constant.ErrorCode;
 import com.edxp.dto.request.UserCheckRequest;
-import com.edxp.exception.EdxpApplicationException;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

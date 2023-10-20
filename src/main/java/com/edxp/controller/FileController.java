@@ -1,13 +1,13 @@
 package com.edxp.controller;
 
-import com.edxp.common.response.CommonResponse;
-import com.edxp.config.auth.PrincipalDetails;
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.common.response.CommonResponse;
+import com.edxp._core.config.auth.PrincipalDetails;
+import com.edxp._core.constant.ErrorCode;
 import com.edxp.dto.request.*;
 import com.edxp.dto.response.FileListResponse;
 import com.edxp.dto.response.FileVolumeResponse;
 import com.edxp.dto.response.FolderListResponse;
-import com.edxp.exception.EdxpApplicationException;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

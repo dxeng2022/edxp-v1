@@ -1,7 +1,7 @@
-package com.edxp.exception;
+package com.edxp._core.handler.exception;
 
-import com.edxp.common.response.CommonResponse;
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.common.response.CommonResponse;
+import com.edxp._core.constant.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

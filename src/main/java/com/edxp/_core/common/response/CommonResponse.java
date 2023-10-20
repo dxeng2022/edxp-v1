@@ -1,4 +1,4 @@
-package com.edxp.common.response;
+package com.edxp._core.common.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
