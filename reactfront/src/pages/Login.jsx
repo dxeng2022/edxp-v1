@@ -2,6 +2,7 @@ import './Login.css';
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@mui/material";
+import { JSEncrypt } from "jsencrypt";
 
 
 function Login() {
@@ -45,49 +46,87 @@ function Login() {
 
     const handleOnKeyPress = e => {
         if (e.key === 'Enter') {
-            onClickConfirmButton();
+            onClickGoButton();
         }
     };
     
-    const onClickConfirmButton = () => {
+    // 로그인 버튼 변경 예정
+    // const onClickConfirmButton = () => {
+    //     let details = {
+    //         'username': email,
+    //         'password': pw,
+    //     };
+    //
+    //     let formBody = [];
+    //     for (let property in details) {
+    //         let encodedKey = encodeURIComponent(property);
+    //         let encodedValue = encodeURIComponent(details[property]);
+    //         formBody.push(encodedKey + "=" + encodedValue);
+    //     }
+    //     formBody = formBody.join("&");
+    //
+    //     fetch("/login", {
+    //         method: "POST",
+    //         headers: {
+    //             "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+    //         },
+    //         body: formBody,
+    //     })
+    //     .then(res => {
+    //         const form = res.url.substring(res.url.lastIndexOf(":"));
+    //         //eslint-disable-next-line
+    //         const url = form.slice(form.indexOf("/"));
+    //         if (res.status === 200) {
+    //             navigate('/module');
+    //         } 
+    //         else {
+    //             alert("등록되지 않은 회원입니다.");
+    //         }
+    //     })
+    // }
 
-        let details = {
-            'username': email,
-            'password': pw,
-        };
+    const [keyRes, setKeyRes] = useState({
+        "publicKeyModulus": '',
+        "publicKeyExponent": ''
+    });
 
-        let formBody = [];
-        for (let property in details) {
-            let encodedKey = encodeURIComponent(property);
-            let encodedValue = encodeURIComponent(details[property]);
-            formBody.push(encodedKey + "=" + encodedValue);
-        }
-        formBody = formBody.join("&");
+    const onClickGoButton = () => {
+        const rsa = new JSEncrypt();
 
-        fetch("/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-            },
-            body: formBody,
-        })
-        .then(res => {
-            const form = res.url.substring(res.url.lastIndexOf(":"));
-            //eslint-disable-next-line
-            const url = form.slice(form.indexOf("/"));
-            if (res.status === 200) {
-                navigate('/module');
-            } 
-            else {
-                alert("등록되지 않은 회원입니다.");
+        let encPassword = "";
+
+        fetch("public-key", {
+            method: "GET",
+        }).then(res => res.json()).then(res => {
+            setKeyRes(res.result);
+            rsa.setPublicKey(res.result.publicKeyModulus);
+            encPassword = rsa.encrypt(pw);
+
+            let details = {
+                "username" : email,
+                "password" : encPassword
             }
-        })
+
+            fetch("log", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                body: JSON.stringify(details),
+            })
+                .then(res => {
+                    if (res.status === 200) {
+                        navigate('/module');
+                    }
+                    else {
+                        alert("등록되지 않은 회원입니다.");
+                    }
+                })
+        });
     }
-    
-    
+
     return (
         <div className="login_contentWrap">
-
             <div className='login_tab'>로 그 인</div>
 
             <div className="login_inputTitle">이메일</div>
@@ -132,7 +171,7 @@ function Login() {
             
             <div className='login_buttons'>
                     <Button
-                        onClick={onClickConfirmButton} 
+                        onClick={onClickGoButton} 
                         disabled={notAllow}
                         className="login_Button"
                         type="submit" 
