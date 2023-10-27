@@ -91,28 +91,28 @@ function Login() {
     });
 
     const onClickGoButton = () => {
-        const rsa = new JSEncrypt();
+        const rsa = new JSEncrypt(); // JSEncrypt 라이브러리 사용
 
         let encPassword = "";
 
-        fetch("public-key", {
+        fetch("public-key", { // public key 발급
             method: "GET",
         }).then(res => res.json()).then(res => {
-            setKeyRes(res.result);
-            rsa.setPublicKey(res.result.publicKeyModulus);
-            encPassword = rsa.encrypt(pw);
+            setKeyRes(res.result); // 결과 값 저장
+            rsa.setPublicKey(res.result.publicKeyModulus); // rsa 공개키 설정
+            encPassword = rsa.encrypt(pw); // 입력받은 비밀번호 RSA 암호화 진행
 
             let details = {
-                "username" : email,
-                "password" : encPassword
+                "username" : email, // 입력받은 이메일
+                "password" : encPassword // 암호화된 비밀번호
             }
 
-            fetch("log", {
+            fetch("log", { // 로그인 진행
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json;charset=UTF-8"
                 },
-                body: JSON.stringify(details),
+                body: JSON.stringify(details), // 이메일, 비밀번호 JSON 으로 전달
             })
                 .then(res => {
                     if (res.status === 200) {

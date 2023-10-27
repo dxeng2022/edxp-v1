@@ -25,12 +25,12 @@ public class UserAuthService {
     // 인증 코드 추가 메소드
     public void addAuthCode(UserCheckRequest request, String issuedCode) {
         log.info("인증코드: {}", issuedCode);
-        String userId = request.getUsername();
+        String username = request.getUsername();
 
-        authCodes.put(userId, issuedCode);
+        authCodes.put(username, issuedCode);
 
         // 3분 후에 제거
-        scheduler.schedule(() -> removeAuthCode(userId), 3, TimeUnit.MINUTES);
+        scheduler.schedule(() -> removeAuthCode(username), 3, TimeUnit.MINUTES);
     }
 
     // 인증 코드 확인 메소드
@@ -45,7 +45,7 @@ public class UserAuthService {
     }
 
     // 인증 코드를 제거하는 메소드
-    private void removeAuthCode(String userId) {
-        authCodes.remove(userId);
+    public void removeAuthCode(String username) {
+        authCodes.remove(username);
     }
 }

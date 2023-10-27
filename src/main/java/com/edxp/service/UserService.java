@@ -33,6 +33,7 @@ import static com.edxp._core.common.utils.CreateKeyUtil.createPwKey;
 public class UserService {
     private final UserRepository userRepository;
     private final EmailSenderService emailSenderService;
+    private final UserAuthService userAuthService;
 
     private final BCryptPasswordEncoder encoder;
     private final JdbcTemplate jdbcTemplate;
@@ -92,6 +93,8 @@ public class UserService {
                 request.getOrganization(),
                 request.getJob()
         ));
+
+        userAuthService.removeAuthCode(request.getUsername());
     }
 
     // 회원정보 변경
