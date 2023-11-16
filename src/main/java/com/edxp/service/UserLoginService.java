@@ -2,6 +2,7 @@ package com.edxp.service;
 
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
+import com.edxp.dto.request.UserLoginRequest;
 import com.edxp.dto.response.UserRSAResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,8 +56,10 @@ public class UserLoginService {
         return decryptedValue;
     }
 
-    public void login(String username, String password) {
-        Authentication authentication = new UsernamePasswordAuthenticationToken(username, password);
+    public void login(PrivateKey privatekey, UserLoginRequest loginRequest) {
+        String decPassword = decryptRSAKey(privatekey, loginRequest.getPassword());
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), decPassword);
 
         try {
             authentication = authenticationManager.authenticate(authentication);

@@ -32,18 +32,15 @@ public class UserLoginController {
     public CommonResponse<UserRSAResponse> getKeys(HttpServletRequest request) {
         HttpSession session = request.getSession();
         UserRSAResponse response = userLoginService.getRSAKeys();
-        System.out.println(response.getPublicKeyModulus());
         session.setAttribute("_RSA_WEB_Key_", response.getPrivateKey());
         return CommonResponse.success(response);
     }
 
     @PostMapping("/log")
-    public CommonResponse<Void> getLog(HttpServletRequest request, @RequestBody UserLoginRequest authRequest) {
+    public CommonResponse<Void> getLog(HttpServletRequest request, @RequestBody UserLoginRequest loginRequest) {
         HttpSession session = request.getSession();
         PrivateKey privateKey = (PrivateKey) session.getAttribute("_RSA_WEB_Key_");
-
-        String _pwd = userLoginService.decryptRSAKey(privateKey, authRequest.getPassword());
-        userLoginService.login(authRequest.getUsername(), _pwd);
+        userLoginService.login(privateKey, loginRequest);
 
         return CommonResponse.success();
     }
