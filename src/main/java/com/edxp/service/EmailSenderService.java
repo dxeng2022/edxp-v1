@@ -7,7 +7,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
+import static com.edxp._core.common.utils.CreateKeyUtil.createAuthKey;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -15,7 +15,7 @@ import java.util.Random;
 public class EmailSenderService {
     private final JavaMailSender mailSender;
 
-    public String sendEmail(UserCheckRequest request) {
+    public String sendAuthEmail(UserCheckRequest request) {
         String authCode = createAuthKey();
         String subject = "엔지니어링 설계정보 디지털변환 클라우드 플랫폼 인증번호 메일";
         String body = "인증번호 코드: " + authCode;
@@ -46,27 +46,5 @@ public class EmailSenderService {
         System.out.println("Mail sent Successfully...");
 
         return true;
-    }
-
-    private String createAuthKey() {
-        StringBuilder key = new StringBuilder();
-        Random rnd = new Random();
-
-        for (int i = 0; i < 8; i++) {
-            int index = rnd.nextInt(3);
-
-            switch (index) {
-                case 0:
-                    key.append((char) ((rnd.nextInt(26)) + 97));
-                    break;
-                case 1:
-                    key.append((char) ((rnd.nextInt(26)) + 65));
-                    break;
-                case 2:
-                    key.append(rnd.nextInt(10));
-                    break;
-            }
-        }
-        return key.toString();
     }
 }

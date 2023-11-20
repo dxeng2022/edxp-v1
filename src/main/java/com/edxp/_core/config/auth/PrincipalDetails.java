@@ -1,9 +1,8 @@
-package com.edxp.config.auth;
+package com.edxp._core.config.auth;
 
 import com.edxp.dto.User;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -40,5 +39,18 @@ public class PrincipalDetails implements UserDetails {
         Collection<GrantedAuthority> collectors = new ArrayList<>();
         collectors.add(user::getRole);
         return collectors;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof PrincipalDetails) {
+            return this.user.getUsername().equals(((PrincipalDetails) o).getUsername());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.user.getUsername().hashCode();
     }
 }

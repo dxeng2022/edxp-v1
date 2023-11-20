@@ -32,8 +32,16 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 
-//    cloud 관련
+    // spring session 추가
+    implementation 'org.springframework.session:spring-session-jdbc'
+
+    // cloud 관련
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+    // Utils
+    implementation 'org.apache.commons:commons-lang3:3.12.0' // Apache lang utils
+    implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.4' // file upload util
+    implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '2.10.0' // zip util
 }
 
 tasks.named('test') {

@@ -8,8 +8,11 @@ services:
     environment:
       - MAIL_SENDER_USERNAME=${MAIL_SENDER_USERNAME}
       - MAIL_SENDER_PASSWORD=${MAIL_SENDER_PASSWORD}
+      - MODULE_PARSER_URL=${MODULE_PARSER_URL}
+      - MODULE_ANALYZE_URL=${MODULE_ANALYZE_URL}
       - IAM_ACCESS_KEY=${IAM_ACCESS_KEY}
       - IAM_SECRET_KEY=${IAM_SECRET_KEY}
+      - FILE_PATH=${FILE_PATH}
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
@@ -23,13 +26,8 @@ services:
     restart: always
 
   pinpoint-agent:
-    build:
-      context: ./pinpoint-agent/
-      dockerfile: Dockerfile
-      args:
-        - PINPOINT_VERSION=${PINPOINT_VERSION}
-    container_name: "${PINPOINT_AGENT_NAME}"
-    image: "pinpointdocker/pinpoint-agent:${PINPOINT_VERSION}"
+    container_name: ${PINPOINT_AGENT_NAME}
+    image: pinpointdocker/pinpoint-agent:${PINPOINT_VERSION}
     restart: unless-stopped
     volumes:
       - data-volume:/pinpoint-agent

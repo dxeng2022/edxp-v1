@@ -1,24 +1,31 @@
 package com.edxp.service;
 
-import com.edxp.constant.ErrorCode;
+import com.edxp._core.constant.ErrorCode;
+import com.edxp._core.handler.exception.EdxpApplicationException;
+import com.edxp.domain.SessionInfo;
 import com.edxp.domain.UserEntity;
 import com.edxp.dto.User;
 import com.edxp.dto.request.UserChangeRequest;
 import com.edxp.dto.request.UserCheckRequest;
 import com.edxp.dto.request.UserFindRequest;
 import com.edxp.dto.request.UserSignUpRequest;
+import com.edxp.dto.response.SessionInfoResponse;
 import com.edxp.dto.response.UserFindResponse;
-import com.edxp.exception.EdxpApplicationException;
 import com.edxp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Random;
+import java.util.List;
+
+import static com.edxp._core.common.utils.CreateKeyUtil.createPwKey;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,7 +33,52 @@ import java.util.Random;
 public class UserService {
     private final UserRepository userRepository;
     private final EmailSenderService emailSenderService;
+    private final UserAuthService userAuthService;
+
     private final BCryptPasswordEncoder encoder;
+    private final JdbcTemplate jdbcTemplate;
+
+    // 전체 로그인 리스트 확인
+    @Transactional(readOnly = true)
+    public List<SessionInfoResponse> getCurrentUsers() {
+        // Spring Session JDBC 를 사용하여 현재 로그인한 사용자 정보를 조회하는 쿼리를 작성합니다.
+        String query = "SELECT * FROM SPRING_SESSION";
+
+        // 쿼리를 실행하여 로그인한 사용자 목록을 가져옵니다.
+        return jdbcTemplate.query(query, (rs, rowNum) -> {
+            SessionInfo sessionInfo = SessionInfo.builder()
+                    .sessionId(rs.getString("session_id"))
+                    .username(rs.getString("principal_name"))
+                    .creationTime(rs.getLong("creation_time"))
+                    .expiryTime(rs.getLong("expiry_time"))
+                    .build();
+            return SessionInfoResponse.from(sessionInfo);
+        });
+    }
+
+    // 유저 세션 정보 확인
+    @Transactional(readOnly = true)
+    public SessionInfoResponse getCurrentUser(String username) {
+        String query = "SELECT * FROM SPRING_SESSION WHERE PRINCIPAL_NAME = ?";
+
+        RowMapper<SessionInfo> rowMapper = (rs, rowNum) ->
+                SessionInfo.builder()
+                        .sessionId(rs.getString("session_id"))
+                        .username(rs.getString("principal_name"))
+                        .creationTime(rs.getLong("creation_time"))
+                        .expiryTime(rs.getLong("expiry_time"))
+                        .build();
+
+        SessionInfo sessionInfo;
+        try {
+            sessionInfo = jdbcTemplate.queryForObject(query, rowMapper, username);
+        } catch (EmptyResultDataAccessException e) {
+            sessionInfo = null;
+        }
+
+        if (sessionInfo != null) return SessionInfoResponse.from(sessionInfo);
+        return new SessionInfoResponse();
+    }
 
     // 회원가입
     @Transactional
@@ -41,6 +93,8 @@ public class UserService {
                 request.getOrganization(),
                 request.getJob()
         ));
+
+        userAuthService.removeAuthCode(request.getUsername());
     }
 
     // 회원정보 변경
@@ -84,7 +138,7 @@ public class UserService {
         String rawPassword = createPwKey();
         boolean isSentEmail = emailSenderService.sendEmailWithNewPassword(request.getUsername(), rawPassword);
         if (isSentEmail) {
-            log.info("초기화된 비밀번호: {}", rawPassword);
+            log.debug("초기화된 비밀번호: {}", rawPassword);
             String encPassword = encoder.encode(rawPassword);
             userEntity.setPassword(encPassword);
         } else {
@@ -101,35 +155,4 @@ public class UserService {
         entity.setUsername(entity.getUsername() + "_deleted");
         entity.setDeletedAt(Timestamp.from(Instant.now()));
     }
-
-    // 신규 비밀번호 생성
-    private String createPwKey() {
-        StringBuilder key = new StringBuilder();
-        Random rnd = new Random();
-
-        for (int i = 0; i < 8; i++) {
-            int index = rnd.nextInt(3);
-
-            if (i < 6) {
-                switch (index) {
-                    case 0:
-                        key.append((char) ((rnd.nextInt(26)) + 97));
-                        break;
-                    case 1:
-                        key.append((char) ((rnd.nextInt(26)) + 65));
-                        break;
-                    case 2:
-                        key.append(rnd.nextInt(10));
-                        break;
-                }
-            } else {
-                int[] arr = {33, 64, 35, 36};
-                key.append((char) arr[(rnd.nextInt(4))]);
-            }
-        }
-
-        return key.toString();
-    }
-
-
 }

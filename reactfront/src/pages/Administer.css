@@ -1,0 +1,112 @@
+.admin__container {
+    position: relative;
+    padding: 15vh 2vw 5vh 2vw;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.admin__list_box {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-manage {
+    width: 100%;
+}
+
+.file-manage {
+    width: 100%;
+}
+
+.admin__list_box .user-manage,
+.admin__list_box .file-manage {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+}
+
+.admin__list_box div p {
+    margin-top: 3vh;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.side_bar {
+    margin-top: 1vh;
+    width: 74%;
+    height: 1px;
+    border-bottom: 1px solid #000;
+}
+
+.admin__table_box {
+    margin-left: 3vh;
+}
+
+.user-manage__list,
+.file-manage__list {
+    width: 100%;
+    height: 12vh;
+}
+.user-manage__list ul,
+.file-manage__list ul {
+    margin-top: 1vh;
+    margin-left: -0.2vw;
+    width: 11.5vw
+}
+.user-manage__list li,
+.file-manage__list li {
+    height: 2em;
+    display: flex;
+    align-items: center;
+    list-style: none;
+    cursor: pointer;
+}
+.user-manage__list li:hover,
+.file-manage__list li:hover {
+    background-color: rgba(0, 0, 0, 0.12);
+    border-radius: 9px;
+}
+.user-manage__list li .list__icon,
+.file-manage__list li .list__icon {
+    margin-left: 9px;
+}
+.user-manage__list li span,
+.file-manage__list li span {
+    font-size: 16px;
+}
+
+/*테이블 박스*/
+.data-box {
+    padding: 3vh 3vw;
+    height: 74vh;
+}
+.data-title {
+    margin-bottom: 2vh;
+    padding-left: 1vw;
+    font-size: 24px;
+    font-weight: 700;
+}
+.data-grid {
+    height: 57vh;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.grade-badge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #B3CF95;
+}
+.grade-badge p {
+    margin-top: -3px;
+    margin-left: 1px;
+    font-size: 20px;
+    font-weight: 600;
+    color: black;
+}
