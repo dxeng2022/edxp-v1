@@ -41,6 +41,7 @@ public class UserLoginController {
         HttpSession session = request.getSession();
         PrivateKey privateKey = (PrivateKey) session.getAttribute("_RSA_WEB_Key_");
         userLoginService.login(privateKey, loginRequest);
+        session.removeAttribute("_RSA_WEB_Key_");
 
         return CommonResponse.success();
     }
