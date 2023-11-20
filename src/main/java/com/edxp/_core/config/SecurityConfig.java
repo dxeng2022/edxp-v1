@@ -3,6 +3,7 @@ package com.edxp._core.config;
 import com.edxp._core.config.auth.PrincipalDetailsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,19 +26,36 @@ import javax.servlet.http.HttpServletResponse;
 public class SecurityConfig {
     private final PrincipalDetailsService principalDetailsService;
 
+    private final String[] OPEN_ADDRESS = {
+            "/", "/log", "/login",
+            "/isLogin", "/public-key", "/log",
+            "/api/v1/user/signup", "/api/v1/user/check-dupl", "/api/v1/user/signup-auth", "/api/v1/user/signup-authcheck",
+            "/api/v1/user/find-mail",  "/api/v1/user/find-pw"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         return http
                 .csrf().disable()
                 .cors().configurationSource(corsConfigurationSource())
                 .and()
-                .authorizeHttpRequests(auth -> auth
+//                .authorizeHttpRequests(auth -> auth
 //                        .requestMatchers(
 //                                "/user/**"
 //                        ).authenticated()
-                                .anyRequest().permitAll()
-                )
+//                                .anyRequest().permitAll()
+//                )
+                .authorizeRequests()
+                    .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                    .antMatchers(
+                            OPEN_ADDRESS
+                    ).permitAll()
+                    .antMatchers("/admin/**").hasRole("ADMIN")
+//                    .anyRequest().permitAll()
+                .and()
                 .formLogin()
+//                    .loginPage("/")
                     .successHandler((request, response, authentication) -> {
                         log.info("로그인 성공");
                         // 로그인 성공 시 JSON 응답을 리턴
@@ -54,11 +72,11 @@ public class SecurityConfig {
                     })
                     .permitAll()
                 .and()
-//                .sessionManagement(sessionManagement -> sessionManagement
-//                            .maximumSessions(1)
-//                            .maxSessionsPreventsLogin(true)
+                .sessionManagement(sessionManagement -> sessionManagement
+                            .maximumSessions(1)
+                            .maxSessionsPreventsLogin(true)
 //                            .sessionRegistry(sessionRegistry())
-//                )
+                )
                 .logout()
                     .logoutUrl("/logout") // 로그아웃 URL 설정
                     .invalidateHttpSession(true) // 세션 무효화

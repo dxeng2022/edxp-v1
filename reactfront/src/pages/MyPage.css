@@ -223,16 +223,31 @@
   white-space: nowrap;
 }
 
+.button_list {
+  display: flex;
+  justify-content: space-between;
+}
+
 .mypage_out {
   font-size: 1vw;
   color: #969696;
   white-space: nowrap;
   width: 4.5vw;
   display: flex;
-  justify-content: flex-end;
   margin-top: 2vh;
   margin-bottom: 2vh;
-  margin-left: 50vw;
+  border-bottom: 1px solid #969696;
+  cursor: pointer;
+}
+
+.mypage_admin {
+  font-size: 1vw;
+  color: #969696;
+  white-space: nowrap;
+  width: 5.3vw;
+  display: flex;
+  margin-top: 2vh;
+  margin-bottom: 2vh;
   border-bottom: 1px solid #969696;
   cursor: pointer;
 }

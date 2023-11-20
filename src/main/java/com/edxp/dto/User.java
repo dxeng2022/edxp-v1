@@ -25,6 +25,38 @@ public class User implements Serializable {
     private Timestamp updatedAt;
     private Timestamp deletedAt;
 
+    public static User of(
+            Long id,
+            String username,
+            String password,
+            String name,
+            String phone,
+            String gender,
+            String birth,
+            String organization,
+            String job,
+            String role,
+            Timestamp registeredAt,
+            Timestamp updatedAt,
+            Timestamp deletedAt
+    ) {
+        return new User(
+                id,
+                username,
+                password,
+                name,
+                phone,
+                gender,
+                birth,
+                organization,
+                job,
+                role,
+                registeredAt,
+                updatedAt,
+                deletedAt
+        );
+    }
+
     public static User fromEntity(UserEntity entity) {
         return new User(
                 entity.getId(),

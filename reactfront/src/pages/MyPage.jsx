@@ -43,14 +43,14 @@ function MyPage() {
   const newbirth = user.birth?.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
 
   const newphone = user.phone?.replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3");
-  
-  
+
+
   useEffect(() => {
     fetch("/api/v1/user/my-info").then(res => res.json()).then(res => {
       setResponse(res);
       setUser(res.result);
     });
-    
+
   }, [phoneChanged]);
 
   useEffect(() => {
@@ -79,7 +79,7 @@ function MyPage() {
 
   const handlePhone = (e) => {
     setPhone(e.target.value);
-    const regex = 
+    const regex =
     /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})[0-9]{3,4}[0-9]{4}$/;
     if (regex.test(e.target.value)) {
     setPhoneValid(true);
@@ -142,10 +142,10 @@ function MyPage() {
           })
           .then(res => {
             console.log(1, res)
-            const form = res.url.substring(res.url.lastIndexOf(":"));
-            const url = form.slice(form.indexOf("/"));
+            // const form = res.url.substring(res.url.lastIndexOf(":"));
+            // const url = form.slice(form.indexOf("/"));
             if (res.status === 200) {
-              navigate(url);
+              navigate("/");
             }
           })
           alert("비밀번호 수정이 완료되었습니다.\n다시 로그인해주세요.");
@@ -163,7 +163,7 @@ function MyPage() {
       'id': response.result.id,
       'phone': phone
     };
-    
+
     if (response.result.phone === phone) {
       alert("현재 전화번호와 같습니다.\n현재 전화번호와 다른 전화번호를 입력해주세요.")
     } else {
@@ -196,7 +196,7 @@ function MyPage() {
     };
 
     if (window.confirm("정말 회원 탈퇴를 하시겠습니까?") === true){
-      
+
       fetch("/api/v1/user/" + details.id, {
         method: "DELETE",
         headers: {
@@ -327,17 +327,17 @@ function MyPage() {
                   )}
                   </div>
               </div>
-              
+
               <div className="mypage_button">
                 <Button
                   disabled= {complete}
                   onClick={changePwButton}
-                  type="submit" 
+                  type="submit"
                   variant="contained"
                   sx={{
-                    backgroundColor:'#7ccc46', 
-                    height: '4.5vh', 
-                    width: '4vw', 
+                    backgroundColor:'#7ccc46',
+                    height: '4.5vh',
+                    width: '4vw',
                     borderRadius: '10px',
                     fontSize: '1vw',
                     fontWeight: 600,
@@ -369,7 +369,7 @@ function MyPage() {
                 )}
                 </div>
             </div>
-            
+
             <div className="mypage_button">
               <Button
                 disabled={notAllow}
@@ -377,9 +377,9 @@ function MyPage() {
                 type="submit"
                 variant="contained"
                 sx={{
-                    backgroundColor:'#7ccc46', 
-                    height: '4.5vh', 
-                    width: '4vw', 
+                    backgroundColor:'#7ccc46',
+                    height: '4.5vh',
+                    width: '4vw',
                     borderRadius: '10px',
                     fontSize: '1vw',
                     fontWeight: 600,
@@ -391,10 +391,19 @@ function MyPage() {
 
           </div>
         </div>
-        <div className="mypage_out" onClick={outButton}>회원 탈퇴</div>
+        <div className="button_list">
+          {
+              user.role === "ROLE_ADMIN" ?
+                  <div
+                    className="mypage_admin"
+                    onClick={() => {navigate('/module/admin')}}
+                  >
+                      관리자 모드
+                  </div> : <div></div>
+          }
+          <div className="mypage_out" onClick={outButton}>회원 탈퇴</div>
+        </div>
       </div>
-
-        
 
 
     </div>

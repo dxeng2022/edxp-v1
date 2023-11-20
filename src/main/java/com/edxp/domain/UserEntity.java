@@ -3,12 +3,14 @@ package com.edxp.domain;
 import com.edxp._core.constant.RoleType;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
 
+@ToString
 @Getter
 @Table(name = "\"User\"")
 //@SQLDelete(sql = "UPDATE `User` SET deletedAt = NOW() where id=?")
@@ -59,7 +61,7 @@ public class UserEntity {
     }
 
     public void setRoleUser() {
-        this.role = RoleType.USER.getDescription();
+        this.role = RoleType.USER.getRoleName();
     }
 
     @PrePersist

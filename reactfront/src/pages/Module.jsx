@@ -11,6 +11,7 @@ import Doc from "./Doc.jsx";
 import DocChoice from "./DocChoice.jsx";
 import DocCloud from "./DocCloud.jsx";
 import MyPage from "./MyPage.jsx";
+import Administer from "./Administer";
 
 
 function Module() {
@@ -89,6 +90,7 @@ function Module() {
                 <Route path="/doc/choice" element={<DocChoice />} />
                 <Route path="/doc/cloud" element={<DocCloud />} />
                 <Route path="/mypage" element={<MyPage />} />
+                <Route path="/admin" element={<Administer />} />
             </Routes>
 
         </>
