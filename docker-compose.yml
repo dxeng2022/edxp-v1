@@ -3,11 +3,9 @@ version: "3.8"
 services:
   edxp-app:
     container_name: edxp-app
-    build: .
-    image: epikeran/edxp-app
+    image: dxeng2022/dxeng-deploy
     entrypoint:
       - java
-      -
       - -jar
       - -javaagent:/pinpoint-agent/pinpoint-bootstrap-2.5.1.jar
       - -Dpinpoint.agentId=test01
