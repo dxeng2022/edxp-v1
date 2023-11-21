@@ -3,9 +3,11 @@ version: "3.8"
 services:
   edxp-app:
     container_name: edxp-app
-    build:
-      dockerfile: Dockerfile-dev
-    image: epikeran/edxp-app
+    image: dxeng2022/dxeng-deploy
+    entrypoint:
+      - java
+      - -jar
+      - ./app.jar
     environment:
       - MAIL_SENDER_USERNAME=${MAIL_SENDER_USERNAME}
       - MAIL_SENDER_PASSWORD=${MAIL_SENDER_PASSWORD}
