@@ -55,7 +55,8 @@ public class SecurityConfig {
 //                    .anyRequest().permitAll()
                 .and()
                 .formLogin()
-//                    .loginPage("/")
+                    .loginPage("/")
+                    .loginProcessingUrl("/login")
                     .successHandler((request, response, authentication) -> {
                         log.info("로그인 성공");
                         // 로그인 성공 시 JSON 응답을 리턴
