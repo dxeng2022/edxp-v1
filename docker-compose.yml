@@ -5,6 +5,14 @@ services:
     container_name: edxp-app
     build: .
     image: epikeran/edxp-app
+    entrypoint:
+      - java
+      -
+      - -jar
+      - -javaagent:/pinpoint-agent/pinpoint-bootstrap-2.5.1.jar
+      - -Dpinpoint.agentId=test01
+      - -Dpinpoint.applicationName=bootapp
+      - ./app.jar
     environment:
       - MAIL_SENDER_USERNAME=${MAIL_SENDER_USERNAME}
       - MAIL_SENDER_PASSWORD=${MAIL_SENDER_PASSWORD}
