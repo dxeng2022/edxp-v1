@@ -73,11 +73,11 @@ public class SecurityConfig {
                     })
                     .permitAll()
                 .and()
-                .sessionManagement(sessionManagement -> sessionManagement
-                            .maximumSessions(1)
-                            .maxSessionsPreventsLogin(true)
-//                            .sessionRegistry(sessionRegistry())
-                )
+//                .sessionManagement(sessionManagement -> sessionManagement
+//                            .maximumSessions(1)
+//                            .maxSessionsPreventsLogin(true)
+////                            .sessionRegistry(sessionRegistry())
+//                )
                 .logout()
                     .logoutUrl("/logout") // 로그아웃 URL 설정
                     .invalidateHttpSession(true) // 세션 무효화
