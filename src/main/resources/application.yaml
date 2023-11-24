@@ -19,6 +19,9 @@ spring:
   config:
     activate:
       on-profile: common
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   # mail sender setting
   mail:
     host: smtp.gmail.com
