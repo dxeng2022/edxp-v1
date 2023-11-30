@@ -1,0 +1,36 @@
+.docpoisonparser_box {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex-direction: row;
+  text-align: center;
+}
+
+.docpoisonparser_circularprogress {
+  position: fixed;
+  /* margin-top: -5%; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* 원형 프로그레스 바와 텍스트 사이의 간격 */  
+}
+
+.docpoisonparser_table {
+  position: relative;
+  /* margin-left: auto; */
+}
+
+.react-pdf__Page__textContent {
+  display: none;
+}
+
+.react-pdf__Page__annotations {
+  display: none;
+}
+
+.docpoisonparser_python {
+  text-align: right;
+}

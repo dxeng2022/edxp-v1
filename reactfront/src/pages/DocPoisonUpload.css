@@ -1,0 +1,57 @@
+.docposionupload_box {
+  position: absolute;
+  /* background-color: antiquewhite; */
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  align-items: center; /* 가로 센터 정렬 */
+}
+
+.docposionupload_title {
+  /* background-color: aqua; */
+  margin: 5%;
+}
+
+.docposionupload_table {
+  /* background-color: cadetblue; */
+  width: 70%;
+  margin: 7%;
+}
+
+.docposionupload_table .MuiTableHead-root {
+  background-color: #c7c7c7;
+  font-size: larger;
+  font-weight: bold;
+  color: #333;
+}
+
+.docposionupload_table .MuiTableBody-root {
+  background-color: #eeeeee;
+}
+.docposionupload_table .MuiTableCell-root {
+  font-size: 20px;
+  padding: 16px;
+}
+
+.docposionupload_upload {
+  margin-top: 1%;
+  text-align: right;
+}
+
+.docposionupload_buttons {
+  /* background-color: aqua; */
+  width: 70%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.docpoisonupload_circularprogress {
+  margin-top: 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* 원형 프로그레스 바와 텍스트 사이의 간격 */  
+}

@@ -23,7 +23,7 @@ function Doc() {
           </div>
           <div className="doc_buttons">
             <Button
-              onClick={()=>{ navigate('/module/doc/choice') }} 
+              onClick={()=>{ navigate('/module/doc/visual') }} 
               type="submit" 
               variant="contained"
               sx={{
@@ -46,7 +46,7 @@ function Doc() {
           </div>
           <div className="doc_buttons">
             <Button
-              onClick={()=>{ navigate(-1) }} 
+              onClick={()=>{ navigate('/module/doc/poison') }} 
               type="submit" 
               variant="contained"
               sx={{
