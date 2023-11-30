@@ -9,7 +9,9 @@ import SheetDownload from "./SheetDownload.jsx";
 import SheetCloud from "./SheetCloud.jsx";
 import Doc from "./Doc.jsx";
 import DocChoice from "./DocChoice.jsx";
+import DocPoison from "./DocPoison.jsx";
 import DocCloud from "./DocCloud.jsx";
+import DocVisual from "./DocVisual.jsx";
 import MyPage from "./MyPage.jsx";
 import Administer from "./Administer";
 
@@ -88,7 +90,9 @@ function Module() {
                 <Route path="/sheet/cloud" element={<SheetCloud />} />
                 <Route path="/doc" element={<Doc />} />
                 <Route path="/doc/choice" element={<DocChoice />} />
+                <Route path="/doc/poison/*" element={<DocPoison />} />
                 <Route path="/doc/cloud" element={<DocCloud />} />
+                <Route path="/doc/visual" element={<DocVisual />} />
                 <Route path="/mypage" element={<MyPage />} />
                 <Route path="/admin" element={<Administer />} />
             </Routes>

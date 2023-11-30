@@ -1,0 +1,21 @@
+.docpoison_box {
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  left: 50%;
+  transform: translate(-50%, 15%);
+  height: 75vh;
+  width: 70vw;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0.5vh 0.5vh 0.5vh 0.5vh rgba(0, 0, 0, 0.425);
+}
+
+.docpoison_back {
+  z-index: 3;
+  position: fixed;
+  top: 8%;
+  left: 15%;
+  white-space: nowrap;
+  text-decoration: underline;
+}

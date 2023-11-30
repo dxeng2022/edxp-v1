@@ -1,0 +1,10 @@
+.docpoisonlabel_box {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex-direction: row;
+  text-align: center;
+  /* background-color: aqua; */
+}
