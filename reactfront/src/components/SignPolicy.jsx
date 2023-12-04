@@ -560,9 +560,9 @@ export default function SignPolicy() {
           </Button>
           <Grid item>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Link href="/" variant="body2">
+              <Button onClick={()=>{ navigate('/') }} size="small">
                 되돌아가기
-              </Link>
+              </Button>
             </Box>
           </Grid>
         </Box>

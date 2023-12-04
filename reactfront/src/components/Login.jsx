@@ -1,30 +1,34 @@
-import React, { useState } from 'react';
-import { Avatar, Button, CssBaseline, TextField, Link, Box, Grid, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import React from 'react';
+import { Avatar, Button, CssBaseline, TextField, Box, Grid, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import useValidation from '../hooks/useValidation';
+import HandleValidationHook from '../hooks/HandleValidationHook';
+import ButtonStatusHook from '../hooks/ButtonStatusHook'
 import loginAPI from '../services/LoginAPI';
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { setLoginAlert } from '../actions';
 
 
 export default function Login() {
 
-  //Dialog 상태 관리
-  const [loginAlert, setLoginAlert] = useState(false);
-  const handleClose = () => setLoginAlert(false);
-  //Dialog 상태 관리
-  
-  // 로그인 버튼 상태관리
-  const [loginButtonStatus, setLoginButtonStatus] = useState(true);
-  // 로그인 버튼 상태관리
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const { email,pw, emailError, pwError,
-    handleEmailValidation, handlePwValidation
-  } = useValidation({ setLoginButtonStatus });
+  const emailError = useSelector(state => state.emailError);
+  const pwError = useSelector(state => state.pwError);
+  const loginButtonStatus = useSelector(state => state.loginButtonStatus);
+  const loginAlert = useSelector(state => state.loginAlert);
+
   
-  const { onClickLoginButton } = loginAPI({ email, pw, setLoginAlert });
+
+  const { handleEmailValidation, handlePwValidation } = HandleValidationHook({});
+  
+  const { onClickLoginButton } = loginAPI({ setLoginAlert });
 
 
   return (
     <Grid item>
+      <ButtonStatusHook />
       <CssBaseline />
       <Box
         sx={{
@@ -82,7 +86,7 @@ export default function Login() {
             open={loginAlert}
             onClose={(event, reason) => {
               if (reason !== 'backdropClick') {
-                handleClose();
+                dispatch(setLoginAlert(false));
               }
             }}
             aria-labelledby="alert-dialog-title"
@@ -95,20 +99,20 @@ export default function Login() {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose}>닫기</Button>
+              <Button onClick={() => dispatch(setLoginAlert(false))}>닫기</Button>
             </DialogActions>
           </Dialog>
 
           <Grid container>
             <Grid item xs>
-              <Link href="/find" variant="body2">
-                이메일/비밀번호 찾기
-              </Link>
+              <Button onClick={()=>{ navigate('/find') }} size="small">
+                  이메일/비밀번호 찾기
+                </Button>
             </Grid>
             <Grid item>
-              <Link href="/signpolicy" variant="body2">
+              <Button onClick={()=>{ navigate('/signpolicy') }} size="small">
                 회원가입
-              </Link>
+              </Button>
             </Grid>
           </Grid>
         </Box>

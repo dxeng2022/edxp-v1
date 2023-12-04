@@ -1,10 +1,16 @@
 import axios from 'axios';
-import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { setFindEmailAlert, setFindPwAlert, 
+  setFindEmailResult, setFindPwResult, } from '../actions';
 
-export default function FindAPI({ email, name, phone, birth, setFindEmailAlert, setFindPwAlert }) {
+export default function FindAPI() {
 
-  const [findEmailResult, setFindEmailResult] = useState();
-  const [findPwResult, setFindPwResult] = useState();
+  const dispatch = useDispatch();
+
+  const email = useSelector(state => state.email);
+  const name = useSelector(state => state.name);
+  const phone = useSelector(state => state.phone);
+  const birth = useSelector(state => state.birth);
 
   //email 찾기
   const onClickFindEmailButton = async () => {
@@ -23,13 +29,13 @@ export default function FindAPI({ email, name, phone, birth, setFindEmailAlert, 
       });
 
       if (response.status === 200) {
-        setFindEmailResult('회원님의 이메일은 ' + JSON.stringify(response.data.result.username) + '입니다.');
-        setFindEmailAlert(true);
+        dispatch(setFindEmailResult('회원님의 이메일은 ' + JSON.stringify(response.data.result.username) + '입니다.'));
+        dispatch(setFindEmailAlert(true));
       }
     } catch(error) {
       if (error.response && error.response.status !== 200) {
-        setFindEmailResult('일치하는 정보가 없습니다.');
-        setFindEmailAlert(true);
+        dispatch(setFindEmailResult('일치하는 정보가 없습니다.'));
+        dispatch(setFindEmailAlert(true));
       } else {
         console.log(error.response);
       }
@@ -55,13 +61,13 @@ export default function FindAPI({ email, name, phone, birth, setFindEmailAlert, 
         },
       })
       if (response.status === 200) {
-        setFindPwResult(' 회원님의 이메일로 임시비밀번호를 발송했습니다. ');
-        setFindPwAlert(true);
+        dispatch(setFindPwResult(' 회원님의 이메일로 임시비밀번호를 발송했습니다. '));
+        dispatch(setFindPwAlert(true));
       }
     } catch(error) {
       if (error.response && error.response.status !== 200) {
-        setFindPwResult('일치하는 정보가 없습니다.');
-        setFindPwAlert(true);
+        dispatch(setFindPwResult('일치하는 정보가 없습니다.'));
+        dispatch(setFindPwAlert(true));
       } else {
         console.log(error.response);
       }
@@ -70,5 +76,5 @@ export default function FindAPI({ email, name, phone, birth, setFindEmailAlert, 
   //pw 찾기
 
   
-  return { findEmailResult, findPwResult, onClickFindEmailButton, onClickFindPwButton };
+  return { onClickFindEmailButton, onClickFindPwButton };
 }

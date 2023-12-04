@@ -1,46 +1,55 @@
 import React, { useState } from 'react';
-import { Avatar, Button, CssBaseline, TextField, Link, Box, Grid, Tab, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material'
+import { Avatar, Button, CssBaseline, TextField, Box, Grid, Tab, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import SearchIcon from '@mui/icons-material/Search';
-import useValidation from '../hooks/useValidation';
+import HandleValidationHook from '../hooks/HandleValidationHook';
+import ButtonStatusHook from '../hooks/ButtonStatusHook'
 import FindAPI from '../services/FindAPI';
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { setFindEmailAlert, setFindPwAlert } from '../actions';
 
 
 export default function Find() {
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
+  const emailError = useSelector(state => state.emailError);
+  const nameError = useSelector(state => state.nameError);
+  const phoneError = useSelector(state => state.phoneError);
+
+  const findEmailButtonStatus = useSelector(state => state.findEmailButtonStatus);
+  const findPwButtonStatus = useSelector(state => state.findPwButtonStatus);
+
+  const findEmailAlert = useSelector(state => state.findEmailAlert);
+  const findPwAlert = useSelector(state => state.findPwAlert);
+
+  const findEmailResult = useSelector(state => state.findEmailResult);
+  const findPwResult = useSelector(state => state.findPwResult);
   
-  // Dialog 상태 관리
-  const [findEmailAlert, setFindEmailAlert] = useState(false);
-  const [findPwAlert, setFindPwAlert] = useState(false);
-  const handleClose = () => {setFindEmailAlert(false); setFindPwAlert(false)}
-  // Dialog 상태 관리
 
-  // findEmail/Pw button 상태관리
-  const [findEmailButtonStatus, setFindEmailButtonStatus] = useState(true);
-  const [findPwButtonStatus, setFindPwButtonStatus] = useState(true);
-  // findEmail/Pw button 상태관리
-
-
-  const { email, name, phone, birth,
-    emailError, nameError, phoneError,
-    handleEmailValidation, handleNameValidation,
-    handlePhoneValidation, handleDateChange,
-    findTabReset,
-  } = useValidation({ setFindEmailButtonStatus, setFindPwButtonStatus });
-
-  const { findEmailResult, findPwResult,
-    onClickFindEmailButton, onClickFindPwButton
-  } = FindAPI({ email, name, phone, birth, setFindEmailAlert, setFindPwAlert });
+  const { handleEmailValidation, handleNameValidation, handlePhoneValidation, handleDateChange } = HandleValidationHook({});
+  const { onClickFindEmailButton, onClickFindPwButton } = FindAPI({});
 
 
   // tab 이동
   const [value, setValue] = useState('1');
+
+  // tab 변수 초기화
+  // const findTabReset = () => {
+  //   console.log('findTabReset is called');
+  //   dispatch(setEmail(''));
+  //   dispatch(setName(''));
+  //   dispatch(setPhone(''));
+  //   dispatch(setBirth(''));
+  // };
+
   const handleChange = (event, newValue) => {
-    findTabReset();
+    // findTabReset();
     setValue(newValue);
   };
   // tab 이동
@@ -48,6 +57,7 @@ export default function Find() {
 
   return (
     <Grid item>
+      <ButtonStatusHook />
       <CssBaseline />
       <Box
         sx={{
@@ -75,7 +85,8 @@ export default function Find() {
               <Box component="form" noValidate sx={{ maxWidth: '50ch' }}>
                 <TextField
                   error={nameError}
-                  helperText={nameError ? "올바른 이름을 입력해주세요." : ""}
+                  placeholder="한/영 2~20자"
+                  // helperText={nameError ? "올바른 이름을 입력해주세요." : ""}
                   onChange={handleNameValidation}
                   margin="normal"
                   fullWidth
@@ -83,7 +94,8 @@ export default function Find() {
                 />
                 <TextField
                   error={phoneError}
-                  helperText={phoneError ? " - 없이 입력해주세요." : ""}
+                  placeholder=" -(하이픈) 없이 입력"
+                  // helperText={phoneError ? " - 없이 입력해주세요." : ""}
                   onChange={handlePhoneValidation}
                   margin="normal"
                   fullWidth
@@ -118,7 +130,7 @@ export default function Find() {
                     open={findEmailAlert}
                     onClose={(event, reason) => {
                       if (reason !== 'backdropClick') {
-                        handleClose();
+                        dispatch(setFindEmailAlert(false));
                       }
                     }}
                     aria-labelledby="alert-dialog-title"
@@ -131,16 +143,16 @@ export default function Find() {
                       </DialogContentText>
                     </DialogContent>
                     <DialogActions>
-                      <Button onClick={handleClose}>닫기</Button>
+                      <Button onClick={() => dispatch(setFindEmailAlert(false))}>닫기</Button>
                     </DialogActions>
                   </Dialog>
 
                 </Grid>
                 <Grid item>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                    <Link href="/" variant="body2">
+                    <Button onClick={()=>{ navigate('/') }} size="small">
                       되돌아가기
-                    </Link>
+                    </Button>
                   </Box>
                 </Grid>
               </Box>
@@ -150,7 +162,8 @@ export default function Find() {
               <Box component="form" noValidate sx={{ maxWidth: '50ch' }}>
                 <TextField
                   error={emailError}
-                  helperText={emailError ? "올바른 이메일 주소를 입력해주세요." : ""}
+                  placeholder="example@wise.co.kr"
+                  // helperText={emailError ? "올바른 이메일 주소를 입력해주세요." : ""}
                   onChange={handleEmailValidation}
                   margin="normal"
                   fullWidth
@@ -158,7 +171,8 @@ export default function Find() {
                 />
                 <TextField
                   error={nameError}
-                  helperText={nameError ? "올바른 이름을 입력해주세요." : ""}
+                  placeholder="한/영 2~20자"
+                  // helperText={nameError ? "올바른 이름을 입력해주세요." : ""}
                   onChange={handleNameValidation}
                   margin="normal"
                   fullWidth
@@ -166,7 +180,8 @@ export default function Find() {
                 />
                 <TextField
                   error={phoneError}
-                  helperText={phoneError ? " - 없이 입력해주세요." : ""}
+                  placeholder=" -(하이픈) 없이 입력"
+                  // helperText={phoneError ? " - 없이 입력해주세요." : ""}
                   onChange={handlePhoneValidation}
                   margin="normal"
                   fullWidth
@@ -204,7 +219,7 @@ export default function Find() {
                     open={findPwAlert}
                     onClose={(event, reason) => {
                       if (reason !== 'backdropClick') {
-                        handleClose();
+                        dispatch(setFindPwAlert(false));
                       }
                     }}
                     aria-labelledby="alert-dialog-title"
@@ -217,16 +232,16 @@ export default function Find() {
                       </DialogContentText>
                     </DialogContent>
                     <DialogActions>
-                      <Button onClick={handleClose}>닫기</Button>
+                      <Button onClick={() => dispatch(setFindPwAlert(false))}>닫기</Button>
                     </DialogActions>
                   </Dialog>
 
                 </Grid>
                 <Grid item>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                    <Link href="/" variant="body2">
+                    <Button onClick={()=>{ navigate('/') }} size="small">
                       되돌아가기
-                    </Link>
+                    </Button>
                   </Box>
                 </Grid>
               </Box>

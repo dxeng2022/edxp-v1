@@ -2,10 +2,16 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { JSEncrypt } from "jsencrypt";
 import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { setLoginAlert } from '../actions';
 
-export default function LoginAPI({ email, pw, setLoginAlert }) {
+export default function LoginAPI() {
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const email = useSelector(state => state.email);
+  const pw = useSelector(state => state.pw);
 
   //eslint-disable-next-line
   const [keyRes, setKeyRes] = useState({"publicKeyModulus": '', "publicKeyExponent": '' });
@@ -40,7 +46,7 @@ export default function LoginAPI({ email, pw, setLoginAlert }) {
       }
     } catch (error) {
       if (error.response && error.response.status !== 200) {
-        setLoginAlert(true);
+        dispatch(setLoginAlert(true));
       } else {
         console.log(error.response);
       }
