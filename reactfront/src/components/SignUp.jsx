@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, Button, CssBaseline, Grid, Box, Typography, InputLabel, MenuItem, FormControl, Select } from '@mui/material'
-import { CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Link, TextField } from '@mui/material';
+import { CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
@@ -18,13 +18,16 @@ export default function SignUp() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const emailError = useSelector(state => state.emailError);
-  const nameError = useSelector(state => state.nameError);
-  const phoneError = useSelector(state => state.phoneError);
-  const pwError = useSelector(state => state.pwError);
+  const signUpEmailError = useSelector(state => state.signUpEmailError);
+  const signUpNameError = useSelector(state => state.signUpNameError);
+  const signUpPhoneError = useSelector(state => state.signUpPhoneError);
+  const signUpPwError = useSelector(state => state.signUpPwError);
+
   const pwConfirmError = useSelector(state => state.pwConfirmError);
   const orgError = useSelector(state => state.orgError);
   const jobError = useSelector(state => state.jobError);
+
+  
 
   const emailCheckButtonStatus = useSelector(state => state.emailCheckButtonStatus);
   const sendAuthCodButtonStatus = useSelector(state => state.sendAuthCodButtonStatus);
@@ -43,8 +46,9 @@ export default function SignUp() {
   const authCodeResult = useSelector(state => state.authCodeResult);
   const signUpResult = useSelector(state => state.signUpResult);
 
-  const { handleEmailValidation, handlePwValidation, handleNameValidation,
-    handlePhoneValidation, handleDateChange, handleAuthCode, handlePwConfirm,
+
+  const { handleSignUpEmailValidation, handleSignUpPwValidation, handleSignUpNameValidation,
+    handleSignUpPhoneValidation, handleSignUpDateChange, handleAuthCode, handlePwConfirm,
     handleOrgValidation, handleJobValidation, handleGender,
   } = HandleValidationHook({});
   
@@ -53,6 +57,11 @@ export default function SignUp() {
     onClickCheckAuthCodeButton, onClickSignUp,
   } = SignUpAPI({});
   
+  
+
+
+
+
 
   return (
     <Grid item>
@@ -61,6 +70,7 @@ export default function SignUp() {
       <Box
         sx={{
           marginTop: 8,
+          mx: 4,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -79,10 +89,10 @@ export default function SignUp() {
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={9}>
               <TextField
-                error={emailError}
+                error={signUpEmailError}
                 placeholder="example@wise.co.kr"
                 // helperText={emailError ? "올바른 이메일 주소를 입력해주세요." : ""}
-                onChange={handleEmailValidation}
+                onChange={handleSignUpEmailValidation}
                 InputProps={{
                   readOnly: emailReadOnlyStatus,
                 }}
@@ -187,10 +197,10 @@ export default function SignUp() {
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6}>
               <TextField
-                error={pwError}
+                error={signUpPwError}
                 placeholder="영문, 숫자, 특수문자 포함 8자 이상"
                 // helperText={pwError ? "영문, 숫자, 특수문자 포함 8자 이상" : ""}
-                onChange={handlePwValidation}
+                onChange={handleSignUpPwValidation}
                 margin="normal"
                 variant="outlined"
                 fullWidth
@@ -219,20 +229,20 @@ export default function SignUp() {
             
             <Grid item xs={12} sm={6}>
               <TextField
-                error={nameError}
+                error={signUpNameError}
                 placeholder="2~20 글자 입력"
                 // helperText={nameError ? "올바른 이름을 입력해주세요." : ""}
-                onChange={handleNameValidation}
+                onChange={handleSignUpNameValidation}
                 fullWidth
                 label="이름"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                error={phoneError}
+                error={signUpPhoneError}
                 placeholder=" -(하이픈) 없이 입력"
                 // helperText={phoneError ? " - 없이 입력해주세요." : ""}
-                onChange={handlePhoneValidation}
+                onChange={handleSignUpPhoneValidation}
                 fullWidth
                 label="전화번호"
               />
@@ -258,7 +268,7 @@ export default function SignUp() {
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DesktopDatePicker
                     label = "생년월일"
-                    onChange={handleDateChange}
+                    onChange={handleSignUpDateChange}
                   />
                 </LocalizationProvider>
               </Box>
@@ -348,7 +358,7 @@ export default function SignUp() {
 
           <Grid item>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button Button onClick={()=>{ navigate('/') }} size="small">
+              <Button onClick={()=>{ navigate('/') }} size="small">
                 되돌아가기
               </Button>
             </Box>

@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Main from "./containers/Main.jsx";
-import Module from "./pages/Module.jsx";
+import Module from "./containers/Module.jsx"
 
 function App() {
   return (

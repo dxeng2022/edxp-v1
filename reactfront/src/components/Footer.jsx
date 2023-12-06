@@ -10,27 +10,27 @@ export default function Footer() {
         py: 1,
         px: 1,
         mt: 'auto',
-        backgroundColor: (theme) =>
-          theme.palette.mode === 'light'
-            ? theme.palette.grey[200]
-            : theme.palette.grey[800],
+        backgroundColor: '#263a4e',
       }}
     >
 
       <Grid container justifyContent="center">
         <Typography component="div">
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={6}>
+          <Grid container spacing={1} alignItems="center">
+            <Grid item xs={6} sm={6}>
               <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <InfoOutlinedIcon/> Contact Us
+                <InfoOutlinedIcon fontSize="small" style={{ color: '#bdbdbd' }}/> 
+                <Typography variant="body2" color='#bdbdbd'>Contact Us</Typography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={6} sm={6}>
               <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <EmailOutlinedIcon/> dxeng@wise.co.kr
+                <EmailOutlinedIcon fontSize="small" style={{ color: '#bdbdbd' }}/>
+                <Typography variant="body2" color='#bdbdbd'>dxeng@wise.co.kr</Typography>
               </Box>
               <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <PhoneOutlinedIcon/> 02-6246-1400
+                <PhoneOutlinedIcon fontSize="small" style={{ color: '#bdbdbd' }}/>
+                <Typography variant="body2" color='#bdbdbd'>02-6246-1400</Typography>
               </Box>
             </Grid>
           </Grid>

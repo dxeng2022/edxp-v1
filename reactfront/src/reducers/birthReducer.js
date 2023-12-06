@@ -1,13 +1,33 @@
-import { SET_BIRTH } from '../actions';
+import { SET_FIND_EMAIL_BIRTH, SET_FIND_PW_BIRTH, SET_SIGN_UP_BIRTH } from '../actions';
 
 const birthReducers = {
-  birth,
+  findEmailBirth,
+  findPwBirth,
+  signUpBirth,
 }
 
-function birth(state = '', action) {
+function findEmailBirth(state = '', action) {
   switch (action.type) {
-    case SET_BIRTH:
-      return action.birth;
+    case SET_FIND_EMAIL_BIRTH:
+      return action.findEmailBirth;
+    default:
+      return state;
+  }
+}
+
+function findPwBirth(state = '', action) {
+  switch (action.type) {
+    case SET_FIND_PW_BIRTH:
+      return action.findPwBirth;
+    default:
+      return state;
+  }
+}
+
+function signUpBirth(state = '', action) {
+  switch (action.type) {
+    case SET_SIGN_UP_BIRTH:
+      return action.signUpBirth;
     default:
       return state;
   }

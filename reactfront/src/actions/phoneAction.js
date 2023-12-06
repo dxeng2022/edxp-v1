@@ -1,16 +1,48 @@
-export const SET_PHONE = 'SET_PHONE';
-export const SET_PHONE_ERROR = 'SET_PHONE_ERROR';
+export const SET_FIND_EMAIL_PHONE = 'SET_FIND_EMAIL_PHONE';
+export const SET_FIND_EMAIL_PHONE_ERROR = 'SET_FIND_EMAIL_PHONE_ERROR';
+export const SET_FIND_PW_PHONE = 'SET_FIND_PW_PHONE';
+export const SET_FIND_PW_PHONE_ERROR = 'SET_FIND_PW_PHONE_ERROR';
+export const SET_SIGN_UP_PHONE = 'SET_SIGN_UP_PHONE';
+export const SET_SIGN_UP_PHONE_ERROR = 'SET_SIGN_UP_PHONE_ERROR';
 
-export function setPhone(phone) {
+export function setFindEmailPhone(findEmailPhone) {
   return {
-    type: SET_PHONE,
-    phone,
+    type: SET_FIND_EMAIL_PHONE,
+    findEmailPhone,
   };
 }
 
-export function setPhoneError(phoneError) {
+export function setFindEmailPhoneError(findEmailPhoneError) {
   return {
-    type: SET_PHONE_ERROR,
-    phoneError,
+    type: SET_FIND_EMAIL_PHONE_ERROR,
+    findEmailPhoneError,
+  };
+}
+
+export function setFindPwPhone(findPwPhone) {
+  return {
+    type: SET_FIND_PW_PHONE,
+    findPwPhone,
+  };
+}
+
+export function setFindPwPhoneError(findPwPhoneError) {
+  return {
+    type: SET_FIND_PW_PHONE_ERROR,
+    findPwPhoneError,
+  };
+}
+
+export function setSignUpPhone(signUpPhone) {
+  return {
+    type: SET_SIGN_UP_PHONE,
+    signUpPhone,
+  };
+}
+
+export function setSignUpPhoneError(signUpPhoneError) {
+  return {
+    type: SET_SIGN_UP_PHONE_ERROR,
+    signUpPhoneError,
   };
 }

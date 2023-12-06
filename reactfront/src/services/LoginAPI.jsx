@@ -10,8 +10,8 @@ export default function LoginAPI() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const email = useSelector(state => state.email);
-  const pw = useSelector(state => state.pw);
+  const loginEmail = useSelector(state => state.loginEmail);
+  const loginPw = useSelector(state => state.loginPw);
 
   //eslint-disable-next-line
   const [keyRes, setKeyRes] = useState({"publicKeyModulus": '', "publicKeyExponent": '' });
@@ -27,10 +27,10 @@ export default function LoginAPI() {
       setKeyRes(res.data.result);
 
       rsa.setPublicKey(publicKeyModulus);
-      const encPassword = rsa.encrypt(pw);
+      const encPassword = rsa.encrypt(loginPw);
 
       const details = {
-        "username": email,
+        "username": loginEmail,
         "password": encPassword,
       };
 

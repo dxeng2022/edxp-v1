@@ -1,13 +1,22 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setEmail, setPw, setName, setPhone, setBirth, setAuthCode, setPwConfirm, setOrg, setJob, setGender,
-  setEmailError, setPwError, setNameError, setPhoneError, setPwConfirmError, setOrgError, setJobError, } from '../actions';
+import { setLoginEmail, setFindPwEmail, setSignUpEmail,
+  setLoginPw, setSignUpPw,
+  setFindEmailName, setFindPwName, setSignUpName,
+  setFindEmailPhone, setFindPwPhone, setSignUpPhone,
+  setFindEmailBirth, setFindPwBirth, setSignUpBirth,
+  setAuthCode, setPwConfirm, setOrg, setJob, setGender,
+  setLoginEmailError, setFindPwEmailError, setSignUpEmailError,
+  setLoginPwError, setSignUpPwError,
+  setFindEmailNameError, setFindPwNameError, setSignUpNameError,
+  setFindEmailPhoneError, setFindPwPhoneError, setSignUpPhoneError,
+  setPwConfirmError, setOrgError, setJobError, } from '../actions';
 
-export default function HandleValidationHook() {
+export default function HandleValidation() {
   
   const dispatch = useDispatch();
   
-  const pw = useSelector(state => state.pw);
+  const signUpPw = useSelector(state => state.signUpPw);
   const pwConfirm = useSelector(state => state.pwConfirm);
   
   
@@ -20,12 +29,11 @@ export default function HandleValidationHook() {
     return re.test(String(emailValue));
   };
   // email 검증 로직
-  
-  // email 검증 결과 반영
-  const handleEmailValidation = (event) => {
+
+  const handleLoginEmailValidation = (event) => {
     const emailValue = event.target.value;
-    dispatch(setEmail(emailValue));
-    dispatch(setEmailError(!validateEmail(emailValue)  && emailValue !== ''));
+    dispatch(setLoginEmail(emailValue));
+    dispatch(setLoginEmailError(!validateEmail(emailValue)  && emailValue !== ''));
     // 아래 if문 줄이는 방법
     //   if (!validateEmail(event.target.value)) {
     //     dispatch(setEmailError(true));
@@ -34,25 +42,41 @@ export default function HandleValidationHook() {
     //     dispatch(setEmail(event.target.value));
     // }
   };
-  // email 검증 결과 반영
+
+  const handleFindPwEmailValidation = (event) => {
+    const emailValue = event.target.value;
+    dispatch(setFindPwEmail(emailValue));
+    dispatch(setFindPwEmailError(!validateEmail(emailValue)  && emailValue !== ''));
+  };
+
+  const handleSignUpEmailValidation = (event) => {
+    const emailValue = event.target.value;
+    dispatch(setSignUpEmail(emailValue));
+    dispatch(setSignUpEmailError(!validateEmail(emailValue)  && emailValue !== ''));
+  };
+
   
 
   // pw 검증 로직
-  const validatePw = (pw) => {
+  const validatePw = (pwValue) => {
     const re = 
     //eslint-disable-next-line
     /^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+])(?!.*[^a-zA-z0-9$`~!@$!%*#^?&\\(\\)\-_=+]).{8,20}$/;
-    return re.test(String(pw));
+    return re.test(String(pwValue));
   };
   // pw 검증 로직
-  
-  // pw 검증 결과 반영
-  const handlePwValidation = (event) => {
+
+  const handleLoginPwValidation = (event) => {
     const pwValue = event.target.value;
-    dispatch(setPw(pwValue));
-    dispatch(setPwError(!validatePw(pwValue) && pwValue !== ''));
+    dispatch(setLoginPw(pwValue));
+    dispatch(setLoginPwError(!validatePw(pwValue) && pwValue !== ''));
   };
-  // pw 검증 결과 반영
+
+  const handleSignUpPwValidation = (event) => {
+    const pwValue = event.target.value;
+    dispatch(setSignUpPw(pwValue));
+    dispatch(setSignUpPwError(!validatePw(pwValue) && pwValue !== ''));
+  };
 
 
   // name 검증 로직
@@ -64,14 +88,23 @@ export default function HandleValidationHook() {
   };
   // name 검증 로직
 
-  // name 검증 결과 반영
-  const handleNameValidation = (event) => {
+  const handleFindEmailNameValidation = (event) => {
     const nameValue = event.target.value;
-    dispatch(setName(nameValue));
-    dispatch(setNameError(!validateName(nameValue) && nameValue !== ''));
+    dispatch(setFindEmailName(nameValue));
+    dispatch(setFindEmailNameError(!validateName(nameValue) && nameValue !== ''));
   };
-  // name 검증 결과 반영
 
+  const handleFindPwNameValidation = (event) => {
+    const nameValue = event.target.value;
+    dispatch(setFindPwName(nameValue));
+    dispatch(setFindPwNameError(!validateName(nameValue) && nameValue !== ''));
+  };
+  
+  const handleSignUpNameValidation = (event) => {
+    const nameValue = event.target.value;
+    dispatch(setSignUpName(nameValue));
+    dispatch(setSignUpNameError(!validateName(nameValue) && nameValue !== ''));
+  };
 
 
   // phone 검증 로직
@@ -83,25 +116,50 @@ export default function HandleValidationHook() {
   };
   // phone 검증 로직
 
-  // phone 검증 결과 반영
-  const handlePhoneValidation = (event) => {
+  const handleFindEmailPhoneValidation = (event) => {
     const phoneValue = event.target.value;
-    dispatch(setPhone(phoneValue));
-    dispatch(setPhoneError(!validatePhone(phoneValue) && phoneValue !== ''));
+    dispatch(setFindEmailPhone(phoneValue));
+    dispatch(setFindEmailPhoneError(!validatePhone(phoneValue) && phoneValue !== ''));
   };
-  // phone 검증 결과 반영
 
+  const handleFindPwPhoneValidation = (event) => {
+    const phoneValue = event.target.value;
+    dispatch(setFindPwPhone(phoneValue));
+    dispatch(setFindPwPhoneError(!validatePhone(phoneValue) && phoneValue !== ''));
+  };
 
-  // birth 변환
-  const handleDateChange = (date) => {
+  const handleSignUpPhoneValidation = (event) => {
+    const phoneValue = event.target.value;
+    dispatch(setSignUpPhone(phoneValue));
+    dispatch(setSignUpPhoneError(!validatePhone(phoneValue) && phoneValue !== ''));
+  };
+
+  const handleFindEmailDateChange = (date) => {
     const jsDate = date.toDate();
     const yyyy = jsDate.getFullYear();
     const mm = String(jsDate.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 1을 더하기
     const dd = String(jsDate.getDate()).padStart(2, '0');
     
-    dispatch(setBirth(`${yyyy}${mm}${dd}`));
+    dispatch(setFindEmailBirth(`${yyyy}${mm}${dd}`));
   };
-  // birth 변환
+
+  const handleFindPwDateChange = (date) => {
+    const jsDate = date.toDate();
+    const yyyy = jsDate.getFullYear();
+    const mm = String(jsDate.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 1을 더하기
+    const dd = String(jsDate.getDate()).padStart(2, '0');
+    
+    dispatch(setFindPwBirth(`${yyyy}${mm}${dd}`));
+  };
+
+  const handleSignUpDateChange = (date) => {
+    const jsDate = date.toDate();
+    const yyyy = jsDate.getFullYear();
+    const mm = String(jsDate.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 1을 더하기
+    const dd = String(jsDate.getDate()).padStart(2, '0');
+    
+    dispatch(setSignUpBirth(`${yyyy}${mm}${dd}`));
+  };
   
   
   // authCodoe 저장
@@ -124,23 +182,23 @@ export default function HandleValidationHook() {
 
   // pwConfirm 확인
   useEffect(() => {
-    if(pw === pwConfirm) {
+    if(signUpPw === pwConfirm) {
       dispatch(setPwConfirmError(false));
       return;
     } else {
       dispatch(setPwConfirmError(true));
     }
     //eslint-disable-next-line
-  }, [pw, pwConfirm]);
+  }, [signUpPw, pwConfirm]);
   // pwConfirm 확인
 
 
   // org 검증 로직
-  const validateOrg = (org) => {
+  const validateOrg = (orgValue) => {
     const re = 
     //eslint-disable-next-line
     /^[가-힣a-zA-Z]{2,20}$/;
-    return re.test(String(org));
+    return re.test(String(orgValue));
   };
   // org 검증 로직
 
@@ -153,11 +211,11 @@ export default function HandleValidationHook() {
   // org 검증 결과 반영
 
   // job 검증 로직
-  const validateJob = (job) => {
+  const validateJob = (jobValue) => {
     const re = 
     //eslint-disable-next-line
     /^[가-힣a-zA-Z]{2,20}$/;
-    return re.test(String(job));
+    return re.test(String(jobValue));
   };
   // job 검증 로직
 
@@ -174,9 +232,11 @@ export default function HandleValidationHook() {
 
 
 
-  return  { handleEmailValidation, handlePwValidation, handleNameValidation,
-    handlePhoneValidation, handleDateChange, handleAuthCode,
-    handlePwConfirm, handleOrgValidation, handleJobValidation,
-    handleGender,
+  return  { handleLoginEmailValidation, handleFindPwEmailValidation, handleSignUpEmailValidation,
+    handleLoginPwValidation, handleSignUpPwValidation,
+    handleFindEmailNameValidation, handleFindPwNameValidation, handleSignUpNameValidation,
+    handleFindEmailPhoneValidation, handleFindPwPhoneValidation, handleSignUpPhoneValidation,
+    handleFindEmailDateChange, handleFindPwDateChange, handleSignUpDateChange,
+    handleAuthCode, handlePwConfirm, handleOrgValidation, handleJobValidation, handleGender,
   };
 };

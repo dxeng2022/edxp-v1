@@ -1,23 +1,64 @@
-import { SET_EMAIL, SET_EMAIL_ERROR } from '../actions';
+import { SET_LOGIN_EMAIL, SET_LOGIN_EMAIL_ERROR,
+  SET_FIND_PW_EMAIL, SET_FIND_PW_EMAIL_ERROR, SET_SIGN_UP_EMAIL, SET_SIGN_UP_EMAIL_ERROR } from '../actions';
 
 const emailReducers = {
-  email,
-  emailError,
+  loginEmail,
+  loginEmailError,
+  findPwEmail,
+  findPwEmailError,
+  signUpEmail,
+  signUpEmailError,
 }
 
-function email(state = '', action) {
+function loginEmail(state = '', action) {
   switch (action.type) {
-    case SET_EMAIL:
-      return action.email;
+    case SET_LOGIN_EMAIL:
+      return action.loginEmail;
     default:
       return state;
   }
 }
 
-function emailError(state = false, action) {
+function loginEmailError(state = false, action) {
   switch (action.type) {
-    case SET_EMAIL_ERROR:
-      return action.emailError;
+    case SET_LOGIN_EMAIL_ERROR:
+      return action.loginEmailError;
+    default:
+      return state;
+  }
+}
+
+function findPwEmail(state = '', action) {
+  switch (action.type) {
+    case SET_FIND_PW_EMAIL:
+      return action.findPwEmail;
+    default:
+      return state;
+  }
+}
+
+function findPwEmailError(state = false, action) {
+  switch (action.type) {
+    case SET_FIND_PW_EMAIL_ERROR:
+      return action.findPwEmailError;
+    default:
+      return state;
+  }
+}
+
+function signUpEmail(state = '', action) {
+  switch (action.type) {
+    case SET_SIGN_UP_EMAIL:
+      return action.signUpEmail;
+    default:
+      return state;
+  }
+}
+
+function signUpEmailError(state = false, action) {
+  switch (action.type) {
+    case SET_SIGN_UP_EMAIL_ERROR:
+      return action.signUpEmailError;
     default:
       return state;
   }

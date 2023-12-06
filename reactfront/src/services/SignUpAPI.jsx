@@ -9,22 +9,24 @@ import { setEmailCheckButtonStatus, setSendAuthCodButtonStatus, setCheckAuthCode
 export default function SignUpAPI() {
 
   const dispatch = useDispatch();
-
-  const email = useSelector(state => state.email);
-  const pw = useSelector(state => state.pw);
-  const name = useSelector(state => state.name);
-  const phone = useSelector(state => state.phone);
-  const birth = useSelector(state => state.birth);
+  
+  const signUpEmail = useSelector(state => state.signUpEmail);
+  const signUpPw = useSelector(state => state.signUpPw);
+  const signUpName = useSelector(state => state.signUpName);
+  const signUpPhone = useSelector(state => state.signUpPhone);
+  const signUpBirth = useSelector(state => state.signUpBirth);
   const authCode = useSelector(state => state.authCode);
   const org = useSelector(state => state.org);
   const job = useSelector(state => state.job);
   const gender = useSelector(state => state.gender);
 
+
+
   //email 중복 확인
   const onClickEmailCheckButton = async () => {
 
     const emailCheckInfo = {
-      'username': email,
+      'username': signUpEmail,
     };
 
     try {
@@ -60,16 +62,14 @@ export default function SignUpAPI() {
     setSendAuthCodeLoading(true);
 
     const sendAuthCodeInfo = {
-      'username': email,
+      'username': signUpEmail,
     };
-
     try {
       const response = await axios.post('/api/v1/user/signup-auth', sendAuthCodeInfo, {
         headers: {
           'Content-Type': 'application/json;charset=UTF-8'
         },
       });
-
       if (response.status === 200) {
         dispatch(setAuthCodeResult('인증번호가 발송되었습니다.'));
         dispatch(setCheckAuthCodeButtonStatus(false));
@@ -93,7 +93,7 @@ export default function SignUpAPI() {
   const onClickCheckAuthCodeButton = async () => {
 
     const checkAuthCodeInfo = {
-      'username': email,
+      'username': signUpEmail,
       'authCode': authCode,
     };
 
@@ -128,14 +128,14 @@ export default function SignUpAPI() {
   const onClickSignUp = async () => {
 
     const signUpInfo = {
-      'username': email,
-      'password' : pw,
-      'name': name,
+      'username': signUpEmail,
+      'password' : signUpPw,
+      'name': signUpName,
       'gender' : gender,
       'organization': org,
       'job' : job,
-      'phone': phone,
-      'birth' : birth,
+      'phone': signUpPhone,
+      'birth' : signUpBirth,
     };
 
     try {

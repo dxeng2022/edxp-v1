@@ -11,3 +11,4 @@ export * from './authKeyAction';
 export * from './orgAction';
 export * from './jobAction'
 export * from './genderAction';
+export * from './userInfoAction'

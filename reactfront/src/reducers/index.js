@@ -12,6 +12,7 @@ import authCodeReducer from './authKeyReducer';
 import orgReducer from './orgReducer';
 import jobReducer from './jobReducer';
 import genderReducer from './genderReducer';
+import userInfoReducer from './userInfoReducer';
 
 export default combineReducers({
   ...emailReducer,
@@ -27,4 +28,5 @@ export default combineReducers({
   ...orgReducer,
   ...jobReducer,
   ...genderReducer,
+  ...userInfoReducer,
 });

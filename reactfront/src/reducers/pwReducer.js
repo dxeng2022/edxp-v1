@@ -1,25 +1,46 @@
-import { SET_PW, SET_PW_ERROR, SET_PW_CONFIRM, SET_PW_CONFIRM_ERROR } from '../actions';
+import { SET_LOGIN_PW, SET_LOGIN_PW_ERROR, SET_SIGN_UP_PW, SET_SIGN_UP_PW_ERROR,
+  SET_PW_CONFIRM, SET_PW_CONFIRM_ERROR, } from '../actions';
 
 const pwReducers = {
-  pw,
-  pwError,
+  loginPw,
+  loginPwError,
+  signUpPw,
+  signUpPwError,
   pwConfirm,
   pwConfirmError,
 };
 
-function pw(state = '', action) {
+function loginPw(state = '', action) {
   switch (action.type) {
-    case SET_PW:
-      return action.pw;
+    case SET_LOGIN_PW:
+      return action.loginPw;
     default:
       return state;
   }
 }
-    
-function pwError(state = false, action) {
+
+function loginPwError(state = false, action) {
   switch (action.type) {
-    case SET_PW_ERROR:
-      return action.pwError;
+    case SET_LOGIN_PW_ERROR:
+      return action.loginPwError;
+    default:
+      return state;
+  }
+}
+
+function signUpPw(state = '', action) {
+  switch (action.type) {
+    case SET_SIGN_UP_PW:
+      return action.signUpPw;
+    default:
+      return state;
+  }
+}
+
+function signUpPwError(state = false, action) {
+  switch (action.type) {
+    case SET_SIGN_UP_PW_ERROR:
+      return action.signUpPwError;
     default:
       return state;
   }

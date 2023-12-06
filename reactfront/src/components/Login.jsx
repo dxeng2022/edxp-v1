@@ -2,7 +2,7 @@ import React from 'react';
 import { Avatar, Button, CssBaseline, TextField, Box, Grid, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import HandleValidationHook from '../hooks/HandleValidationHook';
-import ButtonStatusHook from '../hooks/ButtonStatusHook'
+import ButtonStatusHook from '../hooks/ButtonStatusHook';
 import loginAPI from '../services/LoginAPI';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -14,18 +14,15 @@ export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const emailError = useSelector(state => state.emailError);
-  const pwError = useSelector(state => state.pwError);
+  const loginEmailError = useSelector(state => state.loginEmailError);
+  const loginPwError = useSelector(state => state.loginPwError);
   const loginButtonStatus = useSelector(state => state.loginButtonStatus);
   const loginAlert = useSelector(state => state.loginAlert);
 
+  const { handleLoginEmailValidation, handleLoginPwValidation } = HandleValidationHook({});
+  const { onClickLoginButton } = loginAPI({});
+
   
-
-  const { handleEmailValidation, handlePwValidation } = HandleValidationHook({});
-  
-  const { onClickLoginButton } = loginAPI({ setLoginAlert });
-
-
   return (
     <Grid item>
       <ButtonStatusHook />
@@ -49,9 +46,10 @@ export default function Login() {
 
         <Box sx={{ mt: 1, maxWidth: '50ch' }}>
           <TextField
-            error={emailError}
-            helperText={emailError ? "올바른 이메일 주소를 입력해주세요." : ""}
-            onChange={handleEmailValidation}
+            error={loginEmailError}
+            placeholder="example@wise.co.kr"
+            // helperText={emailError ? "올바른 이메일 주소를 입력해주세요." : ""}
+            onChange={handleLoginEmailValidation}
             margin="normal"
             fullWidth
             id="email"
@@ -61,9 +59,10 @@ export default function Login() {
             autoFocus
           />
           <TextField
-            error={pwError}
-            helperText={pwError ? "영문, 숫자, 특수문자 포함 8자 이상 입력해주세요." : ""}
-            onChange={handlePwValidation}
+            error={loginPwError}
+            placeholder="영문, 숫자, 특수문자 포함 8자 이상"
+            // helperText={pwError ? "영문, 숫자, 특수문자 포함 8자 이상 입력해주세요." : ""}
+            onChange={handleLoginPwValidation}
             margin="normal"
             fullWidth
             name="password"
@@ -89,12 +88,10 @@ export default function Login() {
                 dispatch(setLoginAlert(false));
               }
             }}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
           >
-            <DialogTitle id="alert-dialog-title">{"로그인 실패"}</DialogTitle>
+            <DialogTitle>{"로그인 실패"}</DialogTitle>
             <DialogContent>
-              <DialogContentText id="alert-dialog-description">
+              <DialogContentText>
                 일치하는 정보가 없습니다.
               </DialogContentText>
             </DialogContent>
@@ -106,8 +103,8 @@ export default function Login() {
           <Grid container>
             <Grid item xs>
               <Button onClick={()=>{ navigate('/find') }} size="small">
-                  이메일/비밀번호 찾기
-                </Button>
+                이메일/비밀번호 찾기
+              </Button>
             </Grid>
             <Grid item>
               <Button onClick={()=>{ navigate('/signpolicy') }} size="small">
