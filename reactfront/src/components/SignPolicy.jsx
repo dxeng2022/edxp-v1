@@ -9,7 +9,6 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import { useNavigate } from "react-router-dom";
-import { Link } from '@mui/material';
 
 
 
@@ -519,6 +518,7 @@ export default function SignPolicy() {
       <Box
         sx={{
           marginTop: 8,
+          mx: 4,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -560,9 +560,9 @@ export default function SignPolicy() {
           </Button>
           <Grid item>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Link href="/" variant="body2">
+              <Button onClick={()=>{ navigate('/') }} size="small">
                 되돌아가기
-              </Link>
+              </Button>
             </Box>
           </Grid>
         </Box>

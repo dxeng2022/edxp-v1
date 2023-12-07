@@ -1,18 +1,31 @@
 import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
+import { setFindEmailAlert, setFindPwAlert, 
+  setFindEmailResult, setFindPwResult, } from '../actions';
 import { useState } from 'react';
 
-export default function FindAPI({ email, name, phone, birth, setFindEmailAlert, setFindPwAlert }) {
 
-  const [findEmailResult, setFindEmailResult] = useState();
-  const [findPwResult, setFindPwResult] = useState();
+export default function FindAPI() {
+
+  const dispatch = useDispatch();
+
+  const findPwEmail = useSelector(state => state.findPwEmail);
+  const findEmailName = useSelector(state => state.findEmailName);
+  const findPwName = useSelector(state => state.findPwName);
+  const findEmailPhone = useSelector(state => state.findEmailPhone);
+  const findPwPhone = useSelector(state => state.findPwPhone);
+  const findEmailBirth = useSelector(state => state.findEmailBirth);
+  const findPwBirth = useSelector(state => state.findPwBirth);
+
 
   //email 찾기
   const onClickFindEmailButton = async () => {
 
+
     const findEmailInfo = {
-      'name': name,
-      'phone': phone,
-      'birth': birth,
+      'name': findEmailName,
+      'phone': findEmailPhone,
+      'birth': findEmailBirth,
     };
     
     try {
@@ -23,13 +36,13 @@ export default function FindAPI({ email, name, phone, birth, setFindEmailAlert, 
       });
 
       if (response.status === 200) {
-        setFindEmailResult('회원님의 이메일은 ' + JSON.stringify(response.data.result.username) + '입니다.');
-        setFindEmailAlert(true);
+        dispatch(setFindEmailResult('회원님의 이메일은 ' + JSON.stringify(response.data.result.username) + '입니다.'));
+        dispatch(setFindEmailAlert(true));
       }
-    } catch(error) {
+    } catch (error) {
       if (error.response && error.response.status !== 200) {
-        setFindEmailResult('일치하는 정보가 없습니다.');
-        setFindEmailAlert(true);
+        dispatch(setFindEmailResult('일치하는 정보가 없습니다.'));
+        dispatch(setFindEmailAlert(true));
       } else {
         console.log(error.response);
       }
@@ -37,15 +50,16 @@ export default function FindAPI({ email, name, phone, birth, setFindEmailAlert, 
   };
   //email 찾기
 
-
+  const [findPwLoading, setFindPwLoading] = useState(false);
   //pw 찾기
   const onClickFindPwButton = async () => {
+    setFindPwLoading(true);
 
     const findPwInfo = {
-      'username': email,
-      'name': name,
-      'phone': phone,
-      'birth': birth,
+      'username': findPwEmail,
+      'name': findPwName,
+      'phone': findPwPhone,
+      'birth': findPwBirth,
     };
 
     try {
@@ -55,20 +69,21 @@ export default function FindAPI({ email, name, phone, birth, setFindEmailAlert, 
         },
       })
       if (response.status === 200) {
-        setFindPwResult(' 회원님의 이메일로 임시비밀번호를 발송했습니다. ');
-        setFindPwAlert(true);
+        dispatch(setFindPwResult(' 회원님의 이메일로 임시비밀번호를 발송했습니다. '));
+        dispatch(setFindPwAlert(true));
       }
     } catch(error) {
       if (error.response && error.response.status !== 200) {
-        setFindPwResult('일치하는 정보가 없습니다.');
-        setFindPwAlert(true);
+        dispatch(setFindPwResult('일치하는 정보가 없습니다.'));
+        dispatch(setFindPwAlert(true));
       } else {
         console.log(error.response);
       }
     }
+    setFindPwLoading(false);
   };
   //pw 찾기
 
   
-  return { findEmailResult, findPwResult, onClickFindEmailButton, onClickFindPwButton };
+  return { findPwLoading, onClickFindEmailButton, onClickFindPwButton };
 }
