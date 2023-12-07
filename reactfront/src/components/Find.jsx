@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Avatar, Button, CssBaseline, TextField, Box, Grid, Tab, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material'
+import { Avatar, Button, CssBaseline, TextField, Box, Grid, Tab, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress } from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -40,7 +40,7 @@ export default function Find() {
     handleFindEmailNameValidation, handleFindPwNameValidation,
     handleFindEmailPhoneValidation, handleFindPwPhoneValidation, 
     handleFindEmailDateChange, handleFindPwDateChange } = HandleValidationHook({});
-  const { onClickFindEmailButton, onClickFindPwButton } = FindAPI({});
+  const { findPwLoading, onClickFindEmailButton, onClickFindPwButton } = FindAPI({});
   
 
   // tab 이동
@@ -213,9 +213,9 @@ export default function Find() {
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
                         onClick={onClickFindPwButton}
-                        disabled={findPwButtonStatus}
+                        disabled={findPwButtonStatus  || findPwLoading}
                       >
-                        찾기
+                        {findPwLoading ? <CircularProgress size={24} /> : '찾기'}
                       </Button>
                     </Box>
                   </Grid>

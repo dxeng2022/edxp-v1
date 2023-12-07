@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFindEmailAlert, setFindPwAlert, 
   setFindEmailResult, setFindPwResult, } from '../actions';
+import { useState } from 'react';
 
 
 export default function FindAPI() {
@@ -49,9 +50,10 @@ export default function FindAPI() {
   };
   //email 찾기
 
-
+  const [findPwLoading, setFindPwLoading] = useState(false);
   //pw 찾기
   const onClickFindPwButton = async () => {
+    setFindPwLoading(true);
 
     const findPwInfo = {
       'username': findPwEmail,
@@ -78,9 +80,10 @@ export default function FindAPI() {
         console.log(error.response);
       }
     }
+    setFindPwLoading(false);
   };
   //pw 찾기
 
   
-  return { onClickFindEmailButton, onClickFindPwButton };
+  return { findPwLoading, onClickFindEmailButton, onClickFindPwButton };
 }
