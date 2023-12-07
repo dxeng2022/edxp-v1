@@ -2,18 +2,19 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { BrowserRouter } from 'react-router-dom';
+import {Provider} from 'react-redux';
+import store from './store';
 
-import './App.css';
-import './pages/Main.css';
-import './pages/Footer.css';
-import './pages/Sign.css';
-import './pages/Module.css';
+// import './App.css';
+// import './pages/Module.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  // <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  // </React.StrictMode>
+  <React.StrictMode>
+    <Provider store={store}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Provider>
+  </React.StrictMode>
 );
