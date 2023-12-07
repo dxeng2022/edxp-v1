@@ -23,7 +23,7 @@ export default function FindAPI() {
 
     const findEmailInfo = {
       'name': findEmailName,
-      'phone': findPwPhone,
+      'phone': findEmailPhone,
       'birth': findEmailBirth,
     };
     
@@ -56,7 +56,7 @@ export default function FindAPI() {
     const findPwInfo = {
       'username': findPwEmail,
       'name': findPwName,
-      'phone': findEmailPhone,
+      'phone': findPwPhone,
       'birth': findPwBirth,
     };
 
