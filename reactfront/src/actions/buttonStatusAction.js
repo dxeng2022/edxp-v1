@@ -5,6 +5,8 @@ export const SET_EMAIL_CHECK_BUTTON_STATUS = 'SET_EMAIL_CHECK_BUTTON_STATUS';
 export const SET_SEND_AUTH_CODE_BUTTON_STATUS = 'SET_SEND_AUTH_CODE_BUTTON_STATUS';
 export const SET_CHECK_AUTH_CODE_BUTTON_STATUS = 'SET_CHECK_AUTH_CODE_BUTTON_STATUS';
 export const SET_SIGN_UP_BUTTON_STATUS = 'SET_SIGN_UP_BUTTON_STATUS'
+export const SET_CHANGE_PHONE_BUTTON_STATUS = 'SET_CHANGE_PHONE_BUTTON_STATUS'
+export const SET_CHANGE_PW_BUTTON_STATUS = 'SET_CHANGE_PW_BUTTON_STATUS'
 
 export function setLoginButtonStatus(loginButtonStatus) {
   return {
@@ -54,3 +56,18 @@ export function setSignUpButtonStatus(signUpButtonStatus) {
     signUpButtonStatus,
   }
 }
+
+export function setChangePhoneButtonStatus(changePhoneButtonStatus) {
+  return {
+    type: SET_CHANGE_PHONE_BUTTON_STATUS,
+    changePhoneButtonStatus,
+  }
+}
+
+export function setChangePwButtonStatus(changePwButtonStatus) {
+  return {
+    type: SET_CHANGE_PW_BUTTON_STATUS,
+    changePwButtonStatus,
+  }
+}
+

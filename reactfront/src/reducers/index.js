@@ -28,5 +28,5 @@ export default combineReducers({
   ...orgReducer,
   ...jobReducer,
   ...genderReducer,
-  ...userInfoReducer,
+  userInfo: userInfoReducer.userInfo,
 });

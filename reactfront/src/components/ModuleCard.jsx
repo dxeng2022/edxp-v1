@@ -9,6 +9,7 @@ import { Box, Container, Grid, Tooltip } from '@mui/material';
 import { BrowserUpdatedOutlined as BrowserUpdatedOutlinedIcon, FilterDrama as FilterDramaIcon, InsertChartOutlinedRounded as InsertChartOutlinedRoundedIcon, CompareArrowsOutlined as CompareArrowsOutlinedIcon, SimCardAlertOutlined as SimCardAlertOutlinedIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
+
 export default function ModuleCard() {
 
   const navigate = useNavigate();
@@ -17,25 +18,23 @@ export default function ModuleCard() {
     <Box>
       <Grid
         item
-        xs={false}
-        sm={false}
         md={12}
         sx={{
           position: 'relative',
           height: '35vh',
-          backgroundImage: 'url(/home6.png)',
+          backgroundImage: 'url(/module.png)',
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <Typography variant="h4" component="h1" sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', whitespace: 'nowrap' }}>
+        <Typography variant="h4" component="h1" sx={{ position: 'absolute', top: '60%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', whitespace: 'nowrap' }}>
           디지털 변환
         </Typography>
       </Grid>
 
       <Grid item xs={12} sm={12} md={12}>
-        <Container maxWidth="xl" sx={{ mt: 8, mb: 2 }}>
+      <Container maxWidth="xl" sx={{ mt: '3%', mb: '3%' }}>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={4}>
               <Card>
@@ -56,15 +55,15 @@ export default function ModuleCard() {
                 </CardContent>
                 <CardActions sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Tooltip title="모듈 설치">
-                      <Button size="small" onClick={()=>{ navigate('/module/draw/download')}}> <BrowserUpdatedOutlinedIcon /> </Button>
-                    </Tooltip>
-                    <Tooltip title="데이터 관리">
-                      <Button size="small" onClick={() => { navigate('/module/draw/cloud') }}> <FilterDramaIcon /> </Button>
-                    </Tooltip>
-                    <Tooltip title="시각화">
-                      <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
-                    </Tooltip>
-                  </CardActions>
+                  <Button size="small" onClick={()=>{navigate('/module/drawdownload'); }}> <BrowserUpdatedOutlinedIcon /> </Button>
+                  </Tooltip>
+                  <Tooltip title="데이터 관리">
+                    <Button size="small" onClick={() => { navigate('/module/draw/cloud') }}> <FilterDramaIcon /> </Button>
+                  </Tooltip>
+                  <Tooltip title="시각화">
+                    <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
+                  </Tooltip>
+                </CardActions>
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
@@ -86,15 +85,15 @@ export default function ModuleCard() {
                 </CardContent>
                 <CardActions sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Tooltip title="모듈 설치">
-                      <Button size="small" onClick={() => { navigate('/module/sheet/download') }}> <BrowserUpdatedOutlinedIcon /> </Button>
-                    </Tooltip>
-                    <Tooltip title="데이터 관리">
-                      <Button size="small" onClick={() => { navigate('/module/sheet/cloud') }}> <FilterDramaIcon /> </Button>
-                    </Tooltip>
-                    <Tooltip title="시각화">
-                      <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
-                    </Tooltip>
-                  </CardActions>
+                    <Button size="small" onClick={()=>{navigate('/module/sheetdownload'); }}> <BrowserUpdatedOutlinedIcon /> </Button>
+                  </Tooltip>
+                  <Tooltip title="데이터 관리">
+                    <Button size="small" onClick={() => { navigate('/module/sheet/cloud') }}> <FilterDramaIcon /> </Button>
+                  </Tooltip>
+                  <Tooltip title="시각화">
+                    <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
+                  </Tooltip>
+                </CardActions>
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
@@ -116,18 +115,18 @@ export default function ModuleCard() {
                 </CardContent>
                 <CardActions sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Tooltip title="타공정 검증">
-                      <Button size="small" onClick={()=>{ navigate('/module/doc/visual') }}> <CompareArrowsOutlinedIcon /> </Button>
-                    </Tooltip>
-                    <Tooltip title="독소조항 추출">
-                      <Button size="small" onClick={()=>{ navigate('/module/doc/poison') }}> <SimCardAlertOutlinedIcon /> </Button>
-                    </Tooltip>
-                    <Tooltip title="데이터 관리">
-                      <Button size="small" onClick={() => { navigate('/module/doc/cloud') }}> <FilterDramaIcon /> </Button>
-                    </Tooltip>
-                    <Tooltip title="시각화">
-                      <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
-                    </Tooltip>
-                  </CardActions>
+                    <Button size="small" onClick={()=>{ navigate('/module/doc/visual') }}> <CompareArrowsOutlinedIcon /> </Button>
+                  </Tooltip>
+                  <Tooltip title="독소조항 추출">
+                    <Button size="small" onClick={()=>{ navigate('/module/doc/poison') }}> <SimCardAlertOutlinedIcon /> </Button>
+                  </Tooltip>
+                  <Tooltip title="데이터 관리">
+                    <Button size="small" onClick={() => { navigate('/module/doc/cloud') }}> <FilterDramaIcon /> </Button>
+                  </Tooltip>
+                  <Tooltip title="시각화">
+                    <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
+                  </Tooltip>
+                </CardActions>
               </Card>
             </Grid>
           </Grid>

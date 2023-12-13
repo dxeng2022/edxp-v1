@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Avatar, Box, Menu, MenuItem, Tooltip } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Box, Menu, MenuItem, Tooltip } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
-import { green } from '@mui/material/colors';
+// import { green } from '@mui/material/colors';
+import UserAPI from '../services/UserAPI.jsx'
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import userAPI from '../services/UserAPI.jsx';
 
 const AppBarContent = ({ toggleDrawer }) => {
 
   const navigate = useNavigate();
-  const userName = useSelector(state => state.userName);
 
-  const { logOutButton } = userAPI({});
+  const userInfo = useSelector(state => state.userInfo);
+  
+  const { logOutButton } = UserAPI({});
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -37,19 +38,20 @@ const AppBarContent = ({ toggleDrawer }) => {
             <MenuIcon />
           </IconButton>
         </Tooltip>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          DX Platform
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1, '&:hover': {cursor: 'pointer'}  }} onClick={()=>{ navigate('/module') }}>
+          Digital Transformation Platform
         </Typography>
         
         <Box>
-          <Tooltip title="더보기">
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton onClick={handleClick}>
-                <Typography color="white" size="large" > 안녕하세요. {Object.keys(userName).length !== 0 ? userName.result.name : ""} 님</Typography>
-              </IconButton>
-              <Avatar sx={{ bgcolor: green[300], width: 30, height: 30 }}> D </Avatar>
+              <Typography color="white" size="large" >안녕하세요.</Typography>
+              <Tooltip title="더보기">
+                <IconButton onClick={handleClick}>
+                  <Typography color="white" size="large" > {userInfo && userInfo.name ? userInfo.name : 'Guest'} 님</Typography>
+                </IconButton>
+              </Tooltip>
+              {/* <Avatar sx={{ bgcolor: green[300], width: 30, height: 30 }}> D </Avatar> */}
             </Box>
-          </Tooltip>
           <Menu
             id="basic-menu"
             anchorEl={anchorEl}
@@ -59,7 +61,7 @@ const AppBarContent = ({ toggleDrawer }) => {
               'aria-labelledby': 'basic-button',
             }}
           >
-            <MenuItem onClick={() => {navigate('/module/mypage')}}>마이페이지</MenuItem>
+            <MenuItem onClick={()=>{navigate('/module/mypage'); }}>마이페이지</MenuItem>
             <MenuItem onClick={logOutButton}>로그아웃</MenuItem>
             </Menu>
           </Box>
