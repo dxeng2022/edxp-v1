@@ -1,16 +1,17 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setLoginEmail, setFindPwEmail, setSignUpEmail,
-  setLoginPw, setSignUpPw,
+  setLoginPw, setSignUpPw, setChangeCurrentPw, setChangePw, setChangePwConfirm,
   setFindEmailName, setFindPwName, setSignUpName,
-  setFindEmailPhone, setFindPwPhone, setSignUpPhone,
+  setFindEmailPhone, setFindPwPhone, setSignUpPhone, setChangePhone,
   setFindEmailBirth, setFindPwBirth, setSignUpBirth,
   setAuthCode, setPwConfirm, setOrg, setJob, setGender,
   setLoginEmailError, setFindPwEmailError, setSignUpEmailError,
-  setLoginPwError, setSignUpPwError,
+  setLoginPwError, setSignUpPwError, setChangePhoneError,
   setFindEmailNameError, setFindPwNameError, setSignUpNameError,
   setFindEmailPhoneError, setFindPwPhoneError, setSignUpPhoneError,
-  setPwConfirmError, setOrgError, setJobError, } from '../actions';
+  setPwConfirmError, setOrgError, setJobError, setChangeCurrentPwError,
+  setChangePwError, setChangePwConfirmError } from '../actions';
 
 export default function HandleValidation() {
   
@@ -18,6 +19,9 @@ export default function HandleValidation() {
   
   const signUpPw = useSelector(state => state.signUpPw);
   const pwConfirm = useSelector(state => state.pwConfirm);
+  const changePw = useSelector(state => state.changePw);
+  const changePwConfirm = useSelector(state => state.changePwConfirm);
+  
   
   
   
@@ -78,6 +82,18 @@ export default function HandleValidation() {
     dispatch(setSignUpPwError(!validatePw(pwValue) && pwValue !== ''));
   };
 
+  const handleChangeCurrentPwValidation = (event) => {
+    const pwValue = event.target.value;
+    dispatch(setChangeCurrentPw(pwValue));
+    dispatch(setChangeCurrentPwError(!validatePw(pwValue) && pwValue !== ''));
+  };
+
+  const handleChangePwValidation = (event) => {
+    const pwValue = event.target.value;
+    dispatch(setChangePw(pwValue));
+    dispatch(setChangePwError(!validatePw(pwValue) && pwValue !== ''));
+  };
+
 
   // name 검증 로직
   const validateName = (nameValue) => {
@@ -134,6 +150,13 @@ export default function HandleValidation() {
     dispatch(setSignUpPhoneError(!validatePhone(phoneValue) && phoneValue !== ''));
   };
 
+  const handleChangePhoneValidation = (event) => {
+    const phoneValue = event.target.value;
+    dispatch(setChangePhone(phoneValue));
+    dispatch(setChangePhoneError(!validatePhone(phoneValue) && phoneValue !== ''));
+  };
+
+  // 생년월일 변환
   const handleFindEmailDateChange = (date) => {
     const jsDate = date.toDate();
     const yyyy = jsDate.getFullYear();
@@ -142,6 +165,7 @@ export default function HandleValidation() {
     
     dispatch(setFindEmailBirth(`${yyyy}${mm}${dd}`));
   };
+  // 생년월일 변환
 
   const handleFindPwDateChange = (date) => {
     const jsDate = date.toDate();
@@ -192,6 +216,24 @@ export default function HandleValidation() {
   }, [signUpPw, pwConfirm]);
   // pwConfirm 확인
 
+    // changePwConfirm 저장
+    const handleChangePwConfirm = (event) => {
+      dispatch(setChangePwConfirm(event.target.value));
+    };
+    // pwConfirm 저장
+  
+    // pwConfirm 확인
+    useEffect(() => {
+      if(changePw === changePwConfirm) {
+        dispatch(setChangePwConfirmError(false));
+        return;
+      } else {
+        dispatch(setChangePwConfirmError(true));
+      }
+      //eslint-disable-next-line
+    }, [changePw, changePwConfirm]);
+    // changePwConfirm 확인
+
 
   // org 검증 로직
   const validateOrg = (orgValue) => {
@@ -233,10 +275,11 @@ export default function HandleValidation() {
 
 
   return  { handleLoginEmailValidation, handleFindPwEmailValidation, handleSignUpEmailValidation,
-    handleLoginPwValidation, handleSignUpPwValidation,
+    handleLoginPwValidation, handleSignUpPwValidation, handleChangeCurrentPwValidation, handleChangePwValidation,
     handleFindEmailNameValidation, handleFindPwNameValidation, handleSignUpNameValidation,
     handleFindEmailPhoneValidation, handleFindPwPhoneValidation, handleSignUpPhoneValidation,
     handleFindEmailDateChange, handleFindPwDateChange, handleSignUpDateChange,
-    handleAuthCode, handlePwConfirm, handleOrgValidation, handleJobValidation, handleGender,
+    handleAuthCode, handlePwConfirm, handleChangePwConfirm, handleOrgValidation, handleJobValidation, handleGender,
+    handleChangePhoneValidation,
   };
 };

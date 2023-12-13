@@ -4,6 +4,8 @@ export const SET_FIND_PW_PHONE = 'SET_FIND_PW_PHONE';
 export const SET_FIND_PW_PHONE_ERROR = 'SET_FIND_PW_PHONE_ERROR';
 export const SET_SIGN_UP_PHONE = 'SET_SIGN_UP_PHONE';
 export const SET_SIGN_UP_PHONE_ERROR = 'SET_SIGN_UP_PHONE_ERROR';
+export const SET_CHANGE_PHONE = 'SET_CHANGE_PHONE';
+export const SET_CHANGE_PHONE_ERROR = 'SET_CHANGE_PHONE_ERROR';
 
 export function setFindEmailPhone(findEmailPhone) {
   return {
@@ -46,3 +48,18 @@ export function setSignUpPhoneError(signUpPhoneError) {
     signUpPhoneError,
   };
 }
+
+export function setChangePhone(changePhone) {
+  return {
+    type: SET_CHANGE_PHONE,
+    changePhone,
+  };
+}
+
+export function setChangePhoneError(changePhoneError) {
+  return {
+    type: SET_CHANGE_PHONE_ERROR,
+    changePhoneError,
+  };
+}
+

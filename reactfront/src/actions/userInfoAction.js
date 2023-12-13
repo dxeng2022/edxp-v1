@@ -1,8 +1,8 @@
-export const SET_USER_NAME = 'SET_USER_NAME';
+export const SET_USER_INFO = 'SET_USER_INFO';
 
-export function setUserName(userName) {
+export function setUserInfo(userInfo) {
   return {
-    type: SET_USER_NAME,
-    userName,
+    type: SET_USER_INFO,
+    userInfo,
   }
 }

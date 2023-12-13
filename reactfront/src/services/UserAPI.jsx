@@ -1,28 +1,40 @@
 import axios from 'axios';
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setUserName } from '../actions';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUserInfo, setChangePhoneResult, setChangePhoneAlert,
+  setCompleteDeactivateUserResult, setCompleteDeactivateUserAlert, setDeactivateUserAlert,
+  setCompleteChangePwResult, setCompleteChangePwAlert, setChangePwAlert } from '../actions';
+
 
 export default function UserAPI() {
 
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const fetchUserName = async () => {
-      try {
-        const response = await axios.get("/api/v1/user/my-info");
-        dispatch(setUserName(response.data));
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchUserName();
-    //eslint-disable-next-line
-  }, []);
-
-
   const navigate = useNavigate();
+
+  const userInfo = useSelector(state => state.userInfo);
+  const changePhone = useSelector(state => state.changePhone);
+  const changeCurrentPw = useSelector(state => state.changeCurrentPw);
+  const changePwConfirm = useSelector(state => state.changePwConfirm);
+  
+  
+
+  // useEffect(() => {
+  //   const userInfo = async () => {
+  //     try {
+  //       const response = await axios.get("/api/v1/user/my-info");
+  //       dispatch(setUserInfo(response.data.result));
+  //       console.log(response.data.result);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
+  //   userInfo();
+  //   //eslint-disable-next-line
+  // }, []);
+
+
+  
   const logOutButton = async () => {
       try {
         const response = await axios.get("/logout");
@@ -34,6 +46,90 @@ export default function UserAPI() {
       }
   };
 
-  return { logOutButton };
+  const onClickChangePhoneButton = async () => {
+    const changePhoneInfo = {
+      'id': userInfo.id,
+      'phone': changePhone,
+    }
+  
+    if (userInfo.phone === changePhone) {
+      dispatch(setChangePhoneResult('현재 전화번호와 같습니다. 다른 전화번호를 입력해주세요.'));
+      dispatch(setChangePhoneAlert(true));
+    } else {
+      try {
+        const response = await axios.put("/api/v1/user/" + changePhoneInfo.id, changePhoneInfo);
+        if (response.status === 200) {
+          dispatch(setChangePhoneResult('전화번호가 변경되었습니다.'));
+          dispatch(setChangePhoneAlert(true));
+          dispatch(setUserInfo(response.data.result));
+        }
+      } catch (error) {
+        if (error.response && error.response.status !== 200) {
+          dispatch(setChangePhoneResult('전화번호 변경에 실패하였습니다.'));
+          dispatch(setChangePhoneAlert(true));
+        }
+      }
+    }
+  }
+  
 
+
+  const onClickChangePwButton = async () => {
+
+    const changePwInfo = {
+      'id': userInfo.id,
+      'prePassword': changeCurrentPw,
+      'newPassword' : changePwConfirm,
+    }
+
+    if (changeCurrentPw === changePwConfirm) {
+      dispatch(setCompleteChangePwResult('현재 비밀번호와 같습니다. 다른 비밀번호를 입력해주세요.'));
+      dispatch(setChangePwAlert(false));
+      dispatch(setCompleteChangePwAlert(true));
+    } else {
+      try {
+        const response = await axios.put("/api/v1/user/" + changePwInfo.id, changePwInfo);
+        if (response.status === 200) {
+          dispatch(setCompleteChangePwResult('비밀번호가 변경되었습니다. 다시 로그인해주세요.'));
+          dispatch(setChangePwAlert(false));
+          dispatch(setCompleteChangePwAlert(true));
+        }
+      } catch (error) {
+        if (error.response && error.response.status !== 200) {
+          dispatch(setCompleteChangePwResult('비밀번호 변경에 실패하였습니다. Contact Us로 문의바랍니다.'));
+          dispatch(setChangePwAlert(false));
+          dispatch(setCompleteChangePwAlert(true));
+        } else {
+          console.log(error.response);
+        }
+      }
+    }
+  }
+
+
+  const onClickDeactivateUser = async () => {
+
+    const deactivateUserInfo = {
+      'id': userInfo.id,
+    }
+    try {
+      const response = await axios.delete("/api/v1/user/" + deactivateUserInfo.id,);
+      if (response.status === 200) {
+        dispatch(setCompleteDeactivateUserResult("저희 서비스를 사용해주셔서 감사합니다."));
+        dispatch(setDeactivateUserAlert(false));
+        dispatch(setCompleteDeactivateUserAlert(true));
+      } 
+    } catch (error) {
+      if (error.response && error.response.status !== 200) {
+        dispatch(setCompleteDeactivateUserResult("실패하였습니다. Contact Us로 문의바랍니다."));
+        dispatch(setDeactivateUserAlert(false));
+        dispatch(setCompleteDeactivateUserAlert(true));
+      } else {
+        console.log(error.response);
+      }
+    }
+
+  }
+
+  return { logOutButton, onClickChangePhoneButton, onClickChangePwButton, onClickDeactivateUser };
 };

@@ -1,24 +1,19 @@
 import React, { useState } from 'react';
 import { CssBaseline, Drawer, Grid } from '@mui/material';
+import { Route, Routes } from 'react-router-dom';
 import DrawerContent from '../components/DrawerContent.jsx';
 import AppBarContent from '../components/AppBarContent.jsx';
-import Footer from "../components/Footer.jsx"
 import ModuleCard from '../components/ModuleCard.jsx';
-import { Route, Routes } from 'react-router-dom';
+import MyPage from  '../components/MyPage.jsx';
+import Download from '../components/Download.jsx';
+import Footer from "../components/Footer.jsx";
 
-import Draw from "../pages/Draw.jsx";
-import DrawDownload from "../pages/DrawDownload.jsx";
-import DrawCloud from "../pages/DrawCloud.jsx";
-import Sheet from "../pages/Sheet.jsx";
-import SheetDownload from "../pages/SheetDownload.jsx";
-import SheetCloud from "../pages/SheetCloud.jsx";
-import Doc from "../pages/Doc.jsx";
-import DocChoice from "../pages/DocChoice.jsx";
-// import DocPoison from "../pages/DocPoison.jsx";
-import DocCloud from "../pages/DocCloud.jsx";
-// import DocVisual from "../pages/DocVisual.jsx";
-import MyPage from "../pages/MyPage.jsx";
 import Administer from "../pages/Administer";
+import DrawCloud from "../pages/DrawCloud.jsx";
+import SheetCloud from "../pages/SheetCloud.jsx";
+import DocCloud from "../pages/DocCloud.jsx";
+// import DocPoison from "../pages/DocPoison.jsx";
+// import DocVisual from "../pages/DocVisual.jsx";
 
 
 export default function Module() {
@@ -49,18 +44,14 @@ export default function Module() {
 
       <Routes>
         <Route path="/" element={<ModuleCard />} />
-        <Route path="/draw" element={<Draw />} />
-        <Route path="/draw/download" element={<DrawDownload />} />
         <Route path="/draw/cloud" element={<DrawCloud />} />
-        <Route path="/sheet" element={<Sheet />} />
-        <Route path="/sheet/download" element={<SheetDownload />} />
         <Route path="/sheet/cloud" element={<SheetCloud />} />
-        <Route path="/doc" element={<Doc />} />
-        <Route path="/doc/choice" element={<DocChoice />} />
-        {/* <Route path="/doc/poison/*" element={<DocPoison />} /> */}
         <Route path="/doc/cloud" element={<DocCloud />} />
+        {/* <Route path="/doc/poison/*" element={<DocPoison />} /> */}
         {/* <Route path="/doc/visual" element={<DocVisual />} /> */}
         <Route path="/mypage" element={<MyPage />} />
+        <Route path="/drawdownload" element={<Download />} />
+        <Route path="/sheetdownload" element={<Download />} />
         <Route path="/admin" element={<Administer />} />
       </Routes>
 
