@@ -1,17 +1,23 @@
-import { SET_USER_NAME } from '../actions';
+import { SET_USER_INFO } from '../actions';
+import { persistReducer } from 'redux-persist';
+import sessionStorage from 'redux-persist/lib/storage/session';
 
-const userInfoReducers = {
-  userName,
-}
+const userInfoPersistConfig = {
+  key: 'userInfo',
+  storage: sessionStorage,
+};
 
-function userName(state = {}, action) {
+function userInfo(state = {}, action) {
   switch (action.type) {
-    case SET_USER_NAME:
-      return action.userName;
+    case SET_USER_INFO:
+      return action.userInfo;
     default:
       return state;
   }
 }
 
+const persistedUserInfoReducer = persistReducer(userInfoPersistConfig, userInfo);
 
-export default userInfoReducers;
+const reducers = { userInfo: persistedUserInfoReducer };
+
+export default reducers;

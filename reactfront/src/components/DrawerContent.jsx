@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, List, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Toolbar, IconButton, Tooltip } from '@mui/material';
+import { Box, List, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Toolbar, IconButton, Tooltip, Typography } from '@mui/material';
 import { ChevronLeft as ChevronLeftIcon, Home as HomeIcon, ShapeLineOutlined as ShapeLineOutlinedIcon, BrowserUpdatedOutlined as BrowserUpdatedOutlinedIcon, FilterDrama as FilterDramaIcon, InsertChartOutlinedRounded as InsertChartOutlinedRoundedIcon, GridOn as GridOnIcon, DescriptionOutlined as DescriptionOutlinedIcon, CompareArrowsOutlined as CompareArrowsOutlinedIcon, SimCardAlertOutlined as SimCardAlertOutlinedIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,10 +28,11 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
           px: [1],
         }}
       >
+        <Typography sx={{ml:1}}>DX Platform</Typography>
         <Tooltip title='숨기기'>
           <IconButton onClick={toggleDrawer(false)}>
             <ChevronLeftIcon />
@@ -60,7 +61,7 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
         </ListItemButton>
         <Collapse in={openMenu.도면} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }} onClick={()=>{ navigate('/module/draw/download')}}>
+          <ListItemButton sx={{ pl: 4 }} onClick={()=>{navigate('/module/drawdownload'); }}>
               <ListItemIcon>
                 <BrowserUpdatedOutlinedIcon />
               </ListItemIcon>
@@ -92,7 +93,7 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
         </ListItemButton>
         <Collapse in={openMenu.시트} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }} onClick={() => { navigate('/module/sheet/download') }}>
+          <ListItemButton sx={{ pl: 4 }} onClick={()=>{navigate('/module/sheetdownload'); }}>
               <ListItemIcon>
                 <BrowserUpdatedOutlinedIcon />
               </ListItemIcon>

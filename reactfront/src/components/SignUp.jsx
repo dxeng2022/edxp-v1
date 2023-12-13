@@ -10,7 +10,7 @@ import ButtonStatusHook from '../hooks/ButtonStatusHook';
 import SignUpAPI from '../services/SignUpAPI';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { setEmailCheckAlert, setAuthCodeAlert, setSignUpAlert } from '../actions';
+import { setEmailCheckAlert, setAuthCodeAlert, setSignUpAlert, setSignUpCompleteAlert } from '../actions';
 
 
 export default function SignUp() {
@@ -336,29 +336,29 @@ export default function SignUp() {
             open={signUpCompleteAlert}
             onClose={(event, reason) => {
               if (reason !== 'backdropClick') {
-                dispatch(setSignUpAlert(false));
+                dispatch(setSignUpCompleteAlert(false));
               }
             }}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-            disableBackdropClick
           >
-            <DialogTitle id="alert-dialog-title">
+            <DialogTitle>
               {"회원가입 결과"}
             </DialogTitle>
             <DialogContent>
-              <DialogContentText id="alert-dialog-description">
+              <DialogContentText>
                 {signUpResult}
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={()=>{ navigate('/') }}> 닫기 </Button>
+              <Button
+                onClick={signUpResult === '완료되었습니다. 로그인 화면으로 이동합니다.' ? ()=>{ window.location.href = '/'; dispatch(setSignUpCompleteAlert(false)); } : ()=>{ dispatch(setSignUpCompleteAlert(false)) }}
+              > 닫기 
+              </Button>
             </DialogActions>
           </Dialog>
 
           <Grid item>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button onClick={()=>{ navigate('/') }} size="small">
+              <Button onClick={()=>{ navigate('/'); }} size="small">
                 되돌아가기
               </Button>
             </Box>

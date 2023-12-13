@@ -104,14 +104,14 @@ public class UserController {
     // 유저 비밀번호, 전화번호 변경
     @CrossOrigin
     @PutMapping("/{userId}")
-    public CommonResponse<Void> changeInfo(
+    public CommonResponse<UserInfoResponse> changeInfo(
             @PathVariable Long userId,
             @RequestBody UserChangeRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        User user = userService.updateUser(userId, request);
-        principal.setUser(user);
-        return CommonResponse.success();
+        User user = userService.updateUser(userId, request, principal);
+
+        return CommonResponse.success(UserInfoResponse.from(user));
     }
 
     // 회원 탈퇴

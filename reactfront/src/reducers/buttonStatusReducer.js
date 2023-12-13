@@ -1,7 +1,7 @@
 import { SET_LOGIN_BUTTON_STATUS, SET_FIND_EMAIL_BUTTON_STATUS,
   SET_FIND_PW_BUTTON_STATUS, SET_EMAIL_CHECK_BUTTON_STATUS,
   SET_SEND_AUTH_CODE_BUTTON_STATUS, SET_CHECK_AUTH_CODE_BUTTON_STATUS,
-  SET_SIGN_UP_BUTTON_STATUS,} from '../actions';
+  SET_SIGN_UP_BUTTON_STATUS, SET_CHANGE_PHONE_BUTTON_STATUS, SET_CHANGE_PW_BUTTON_STATUS} from '../actions';
 
 
 const buttonStatusReducers = {
@@ -12,6 +12,8 @@ const buttonStatusReducers = {
   sendAuthCodButtonStatus,
   checkAuthCodeButtonStatus,
   signUpButtonStatus,
+  changePhoneButtonStatus,
+  changePwButtonStatus,
 }
 
 function loginButtonStatus(state = true, action) {
@@ -77,6 +79,22 @@ function signUpButtonStatus(state = true, action) {
   }
 }
 
+function changePhoneButtonStatus(state = true, action) {
+  switch (action.type) {
+    case SET_CHANGE_PHONE_BUTTON_STATUS:
+      return action.changePhoneButtonStatus;
+    default:
+      return state;
+  }
+}
 
+function changePwButtonStatus(state = true, action) {
+  switch (action.type) {
+    case SET_CHANGE_PW_BUTTON_STATUS:
+      return action.changePwButtonStatus;
+    default:
+      return state;
+  }
+}
 
 export default buttonStatusReducers;
