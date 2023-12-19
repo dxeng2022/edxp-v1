@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setLoginButtonStatus, setFindEmailButtonStatus, setFindPwButtonStatus,
-  setEmailCheckButtonStatus, setSignUpButtonStatus } from '../actions';
+  setEmailCheckButtonStatus, setSignUpButtonStatus, setChangePhoneButtonStatus,
+  setChangePwButtonStatus } from '../actions';
 
 export default function ButtonStatus() {
 
@@ -18,6 +19,7 @@ export default function ButtonStatus() {
   
   const findEmailPhone = useSelector(state => state.findEmailPhone);
   const findPwPhone = useSelector(state => state.findPwPhone);
+  const changePhone = useSelector(state => state.changePhone);
 
   const findEmailBirth = useSelector(state => state.findEmailBirth);
   const findPwBirth = useSelector(state => state.findPwBirth);
@@ -39,14 +41,21 @@ export default function ButtonStatus() {
   const findPwNameError = useSelector(state => state.findPwNameError);
   const signUpNameError = useSelector(state => state.signUpNameError);
 
-
   const findEmailPhoneError = useSelector(state => state.findEmailPhoneError);
   const findPwPhoneError = useSelector(state => state.findPwPhoneError);
   const signUpPhoneError = useSelector(state => state.signUpPhoneError);
+  const changePhoneError = useSelector(state => state.changePhoneError);
 
   const pwConfirmError = useSelector(state => state.pwConfirmError);
   const orgError = useSelector(state => state.orgError);
   const jobError = useSelector(state => state.jobError);
+
+  const changePwError = useSelector(state => state.changePwError);
+  const changePw = useSelector(state => state.changePw);
+  const changeCurrentPwError = useSelector(state => state.changeCurrentPwError);
+  const changeCurrentPw = useSelector(state => state.changeCurrentPw);
+  const changePwConfirmError = useSelector(state => state.changePwConfirmError);
+  const changePwConfirm = useSelector(state => state.changePwConfirm);
 
   const emailReadOnlyStatus = useSelector(state => state.emailReadOnlyStatus);
   const sendAuthCodButtonStatus = useSelector(state => state.sendAuthCodButtonStatus);
@@ -113,5 +122,30 @@ export default function ButtonStatus() {
     //eslint-disable-next-line
   }, [emailReadOnlyStatus, sendAuthCodButtonStatus, checkAuthCodeButtonStatus, signUpPwError, pwConfirmError, signUpNameError, signUpPhoneError, orgError, jobError, authCode, gender, signUpBirth]);
     // signUp button 활성화 여부(SignUp.jsx-setSignUpButtonStatus)
+
+  // changePhone button 활성화 여부(MyPage.jsx-setChangePhoneButtonStatus)
+  useEffect(() => {
+    if(!changePhoneError && changePhone) {
+      dispatch(setChangePhoneButtonStatus(false));
+      return;
+    } else {
+      dispatch(setChangePhoneButtonStatus(true));
+    }
+    //eslint-disable-next-line
+  }, [changePhoneError, changePhone]);
+  // changePhone button 활성화 여부(MyPage.jsx-setChangePhoneButtonStatus)
+
+  // changePhone button 활성화 여부(MyPage.jsx-setChangePwButtonStatus)
+  useEffect(() => {
+    if(!changePwError && changePw && !changeCurrentPwError && changeCurrentPw && !changePwConfirmError && changePwConfirm) {
+      dispatch(setChangePwButtonStatus(false));
+      return;
+    } else {
+      dispatch(setChangePwButtonStatus(true));
+    }
+    //eslint-disable-next-line
+  }, [changePwError, changePw, changeCurrentPwError, changeCurrentPw, changePwConfirmError, changePwConfirm]);
+  // changePhone button 활성화 여부(MyPage.jsx-setChangePwButtonStatus)
+    
 
 };

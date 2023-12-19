@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { JSEncrypt } from "jsencrypt";
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoginAlert } from '../actions';
+import { setLoginAlert, setUserInfo } from '../actions';
 
 export default function LoginAPI() {
 
@@ -41,6 +41,10 @@ export default function LoginAPI() {
       });
 
       if (response.status === 200) {
+        const userInfoResponse = await axios.get("/api/v1/user/my-info");
+        if (userInfoResponse.status === 200) {
+          dispatch(setUserInfo(userInfoResponse.data.result));
+        }
         navigate('/module');
       } else {
       }

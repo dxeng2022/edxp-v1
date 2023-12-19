@@ -109,9 +109,8 @@ public class UserController {
             @RequestBody UserChangeRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        User user = userService.updateUser(userId, request);
-        principal.setUser(user);
-        log.debug("전번: {}", user.getPhone());
+        User user = userService.updateUser(userId, request, principal);
+
         return CommonResponse.success(UserInfoResponse.from(user));
     }
 

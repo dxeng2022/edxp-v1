@@ -1,5 +1,6 @@
 package com.edxp.service;
 
+import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.domain.SessionInfo;
@@ -17,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,7 +103,7 @@ public class UserService {
 
     // 회원정보 변경
     @Transactional
-    public User updateUser(Long userId, UserChangeRequest request) {
+    public User updateUser(Long userId, UserChangeRequest request, PrincipalDetails principal) {
         UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
                 new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
         );
@@ -109,7 +113,13 @@ public class UserService {
         if (request.getPhone() != null) {
             entity.setPhone(request.getPhone());
         }
-        return User.fromEntity(entity);
+
+        principal.setUser(User.fromEntity(entity));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication updatedAuthentication = new UsernamePasswordAuthenticationToken(principal, authentication.getCredentials(), principal.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(updatedAuthentication);
+
+        return principal.getUser();
     }
 
     // 이메일 중복확인
