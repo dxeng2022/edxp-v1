@@ -7,11 +7,8 @@ import ModuleCard from '../components/ModuleCard.jsx';
 import MyPage from  '../components/MyPage.jsx';
 import Download from '../components/Download.jsx';
 import Footer from "../components/Footer.jsx";
-
+import Cloud  from './Cloud.jsx';
 import Administer from "../pages/Administer";
-import DrawCloud from "../pages/DrawCloud.jsx";
-import SheetCloud from "../pages/SheetCloud.jsx";
-import DocCloud from "../pages/DocCloud.jsx";
 // import DocPoison from "../pages/DocPoison.jsx";
 // import DocVisual from "../pages/DocVisual.jsx";
 
@@ -44,15 +41,15 @@ export default function Module() {
 
       <Routes>
         <Route path="/" element={<ModuleCard />} />
-        <Route path="/draw/cloud" element={<DrawCloud />} />
-        <Route path="/sheet/cloud" element={<SheetCloud />} />
-        <Route path="/doc/cloud" element={<DocCloud />} />
-        {/* <Route path="/doc/poison/*" element={<DocPoison />} /> */}
-        {/* <Route path="/doc/visual" element={<DocVisual />} /> */}
+        <Route path="/drawcloud" element={<Cloud />} />
+        <Route path="/sheetcloud" element={<Cloud />} />
+        <Route path="/doccloud" element={<Cloud />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/drawdownload" element={<Download />} />
         <Route path="/sheetdownload" element={<Download />} />
         <Route path="/admin" element={<Administer />} />
+        {/* <Route path="/doc/poison/*" element={<DocPoison />} /> */}
+        {/* <Route path="/doc/visual" element={<DocVisual />} /> */}
       </Routes>
 
 

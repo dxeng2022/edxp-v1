@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { Box, List, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Toolbar, IconButton, Tooltip, Typography } from '@mui/material';
 import { ChevronLeft as ChevronLeftIcon, Home as HomeIcon, ShapeLineOutlined as ShapeLineOutlinedIcon, BrowserUpdatedOutlined as BrowserUpdatedOutlinedIcon, FilterDrama as FilterDramaIcon, InsertChartOutlinedRounded as InsertChartOutlinedRoundedIcon, GridOn as GridOnIcon, DescriptionOutlined as DescriptionOutlinedIcon, CompareArrowsOutlined as CompareArrowsOutlinedIcon, SimCardAlertOutlined as SimCardAlertOutlinedIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setCurrentPath } from '../actions';
 
 export default function DrawerContent({ anchor, toggleDrawer }) {
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [openMenu, setOpenMenu] = useState({
     도면: false,
@@ -67,7 +70,7 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
               </ListItemIcon>
               <ListItemText primary="모듈 설치" />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }} onClick={() => { navigate('/module/draw/cloud') }}>
+            <ListItemButton sx={{ pl: 4 }} onClick={()=>{ dispatch(setCurrentPath('draw/')); navigate('/module/drawcloud'); }}>
               <ListItemIcon>
                 <FilterDramaIcon />
               </ListItemIcon>
@@ -99,7 +102,7 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
               </ListItemIcon>
               <ListItemText primary="모듈 설치" />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }} onClick={() => { navigate('/module/sheet/cloud') }}>
+            <ListItemButton sx={{ pl: 4 }} onClick={()=>{ dispatch(setCurrentPath('sheet/')); navigate('/module/sheetcloud'); }}>
               <ListItemIcon>
                 <FilterDramaIcon />
               </ListItemIcon>
@@ -137,7 +140,7 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
               </ListItemIcon>
               <ListItemText primary="독소조항 추출" />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }} onClick={() => { navigate('/module/doc/cloud') }}>
+            <ListItemButton sx={{ pl: 4 }} onClick={()=>{ dispatch(setCurrentPath('doc/')); navigate('/module/doccloud'); }}>
               <ListItemIcon>
                 <FilterDramaIcon />
               </ListItemIcon>
