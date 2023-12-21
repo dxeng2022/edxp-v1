@@ -13,6 +13,7 @@ import orgReducer from './orgReducer';
 import jobReducer from './jobReducer';
 import genderReducer from './genderReducer';
 import userInfoReducer from './userInfoReducer';
+import cloudReducer from './cloudReducer';
 
 export default combineReducers({
   ...emailReducer,
@@ -28,5 +29,6 @@ export default combineReducers({
   ...orgReducer,
   ...jobReducer,
   ...genderReducer,
-  userInfo: userInfoReducer.userInfo,
+  ...userInfoReducer,
+  ...cloudReducer,
 });

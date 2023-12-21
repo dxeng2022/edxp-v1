@@ -8,11 +8,14 @@ import Typography from '@mui/material/Typography';
 import { Box, Container, Grid, Tooltip } from '@mui/material';
 import { BrowserUpdatedOutlined as BrowserUpdatedOutlinedIcon, FilterDrama as FilterDramaIcon, InsertChartOutlinedRounded as InsertChartOutlinedRoundedIcon, CompareArrowsOutlined as CompareArrowsOutlinedIcon, SimCardAlertOutlined as SimCardAlertOutlinedIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setCurrentPath } from '../actions';
 
 
 export default function ModuleCard() {
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   return (
     <Box>
@@ -58,7 +61,7 @@ export default function ModuleCard() {
                   <Button size="small" onClick={()=>{navigate('/module/drawdownload'); }}> <BrowserUpdatedOutlinedIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="데이터 관리">
-                    <Button size="small" onClick={() => { navigate('/module/draw/cloud') }}> <FilterDramaIcon /> </Button>
+                    <Button size="small" onClick={()=>{ dispatch(setCurrentPath('draw/')); navigate('/module/drawcloud'); }}> <FilterDramaIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="시각화">
                     <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
@@ -88,7 +91,7 @@ export default function ModuleCard() {
                     <Button size="small" onClick={()=>{navigate('/module/sheetdownload'); }}> <BrowserUpdatedOutlinedIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="데이터 관리">
-                    <Button size="small" onClick={() => { navigate('/module/sheet/cloud') }}> <FilterDramaIcon /> </Button>
+                    <Button size="small" onClick={()=>{ dispatch(setCurrentPath('sheet/')); navigate('/module/sheetcloud'); }}> <FilterDramaIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="시각화">
                     <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
@@ -121,7 +124,7 @@ export default function ModuleCard() {
                     <Button size="small" onClick={()=>{ navigate('/module/doc/poison') }}> <SimCardAlertOutlinedIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="데이터 관리">
-                    <Button size="small" onClick={() => { navigate('/module/doc/cloud') }}> <FilterDramaIcon /> </Button>
+                    <Button size="small" onClick={()=>{ dispatch(setCurrentPath('doc/')); navigate('/module/doccloud'); }}> <FilterDramaIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="시각화">
                     <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>

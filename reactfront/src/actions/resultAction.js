@@ -6,6 +6,9 @@ export const SET_SIGN_UP_RESULT = 'SET_SIGN_UP_RESULT'
 export const SET_CHANGE_PHONE_RESULT = 'SET_CHANGE_PHONE_RESULT'
 export const SET_COMPLETE_CHANGE_PW_RESULT = 'SET_COMPLETE_CHANGE_PW_RESULT'
 export const SET_COMPLETE_DEACTIVATE_USER_RESULT = 'SET_COMPLETE_DEACTIVATE_USER_RESULT'
+export const SET_ADD_FOLDER_RESULT = 'SET_ADD_FOLDER_RESULT'
+export const SET_UPLOAD_FILE_RESULT = 'SET_UPLOAD_FILE_RESULT'
+export const SET_CHANGE_NAME_RESULT = 'SET_CHANGE_NAME_RESULT'
 
 export function setFindEmailResult(findEmailResult) {
   return {
@@ -62,3 +65,25 @@ export function setCompleteChangePwResult(completeChangePwResult) {
     completeChangePwResult,
   };
 };
+
+export function setAddFolderResult(addFolderResult) {
+  return {
+    type: SET_ADD_FOLDER_RESULT,
+    addFolderResult,
+  };
+};
+
+export function setUploadFileResult(uploadFileResult) {
+  return {
+    type: SET_UPLOAD_FILE_RESULT,
+    uploadFileResult,
+  };
+};
+
+export function setChangeNameResult(changeNameResult) {
+  return {
+    type: SET_CHANGE_NAME_RESULT,
+    changeNameResult,
+  };
+};
+

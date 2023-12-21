@@ -11,6 +11,14 @@ export const SET_CHANGE_PW_ALERT = 'SET_CHANGE_PW_ALERT'
 export const SET_COMPLETE_CHANGE_PW_ALERT = 'SET_COMPLETE_CHANGE_PW_ALERT'
 export const SET_DEACTIVATE_USER_ALERT = 'SET_DEACTIVATE_USER_ALERT'
 export const SET_COMPLETE_DEACTIVATE_USER_ALERT = 'SET_COMPLETE_DEACTIVATE_USER_ALERT'
+export const SET_FOLDER_ALERT = 'SET_FOLDER_ALERT'
+export const SET_ADD_FOLDER_ALERT = 'SET_ADD_FOLDER_ALERT'
+export const SET_UPLOAD_FILE_ALERT = 'SET_UPLOAD_FILE_ALERT'
+export const SET_DOWNLOAD_FILE_ALERT = 'SET_DOWNLOAD_FILE_ALERT'
+export const SET_DELETE_FILE_ALERT = 'SET_DELETE_FILE_ALERT'
+export const SET_COMPLETE_DELETE_FILE_ALERT = 'SET_COMPLETE_DELETE_FILE_ALERT'
+export const SET_CHANGE_NAME_ALERT = 'SET_CHANGE_NAME_ALERT'
+export const SET_CHANGE_NAME_INPUT_ALERT = 'SET_CHANGE_NAME_INPUT_ALERT'
 
 export function setLoginAlert(loginAlert) {
   return {
@@ -102,3 +110,61 @@ export function setCompleteDeactivateUserAlert(completeDeactivateUserAlert) {
     completeDeactivateUserAlert,
   }
 }
+
+export function setFolderAlert(folderAlert) {
+  return {
+    type: SET_FOLDER_ALERT,
+    folderAlert,
+  }
+}
+
+export function setAddFolderAlert(addFolderAlert) {
+  return {
+    type: SET_ADD_FOLDER_ALERT,
+    addFolderAlert,
+  }
+}
+
+export function setUploadFileAlert(uploadFileAlert) {
+  return {
+    type: SET_UPLOAD_FILE_ALERT,
+    uploadFileAlert,
+  }
+}
+
+export function setDownloadFileAlert(downloadFileAlert) {
+  return {
+    type: SET_DOWNLOAD_FILE_ALERT,
+    downloadFileAlert,
+  }
+}
+
+export function setDeleteFileAlert(deleteFileAlert) {
+  return {
+    type: SET_DELETE_FILE_ALERT,
+    deleteFileAlert,
+  }
+}
+
+export function setCompleteDeleteFileAlert(completeDeleteFileAlert) {
+  return {
+    type: SET_COMPLETE_DELETE_FILE_ALERT,
+    completeDeleteFileAlert,
+  }
+}
+
+export function setChangeNameAlert(changeNameAlert) {
+  return {
+    type: SET_CHANGE_NAME_ALERT,
+    changeNameAlert,
+  }
+}
+
+export function setChangeNameInputAlert(changeNameInputAlert) {
+  return {
+    type: SET_CHANGE_NAME_INPUT_ALERT,
+    changeNameInputAlert,
+  }
+}
+
+
