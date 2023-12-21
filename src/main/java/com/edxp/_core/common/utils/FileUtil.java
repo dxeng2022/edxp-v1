@@ -48,12 +48,10 @@ public class FileUtil {
             String value = httpRequest.getHeader(name);
             headerMap.put(name, value);
         }
-        
-        String agent = headerMap.get("User-Agent");
 
-        if (agent == null) {
-            return "downloaded_file";
-        } else {
+        String agent = headerMap.get("user-agent");
+
+        if (agent != null) {
             if (agent.contains("Edge") || agent.contains("MSIE") || agent.contains("Trident")) {
                 return URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
             }
@@ -64,12 +62,13 @@ public class FileUtil {
 
             if (agent.contains("Postman")) {
                 String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-                log.debug(test);
                 return test;
             }
         }
 
-        return "downloaded_file";
+        String extension = fileName.substring(fileName.lastIndexOf("."));
+
+        return "downloaded_file" + extension;
     }
 
     public static boolean isDownOver(ArrayList<Transfer> list) {

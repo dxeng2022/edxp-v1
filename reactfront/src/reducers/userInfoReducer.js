@@ -16,8 +16,8 @@ function userInfo(state = {}, action) {
   }
 }
 
-const persistedUserInfoReducer = persistReducer(userInfoPersistConfig, userInfo);
+const userInfoReducers = {
+  userInfo: persistReducer(userInfoPersistConfig, userInfo),
+};
 
-const reducers = { userInfo: persistedUserInfoReducer };
-
-export default reducers;
+export default userInfoReducers;

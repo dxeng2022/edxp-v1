@@ -2,7 +2,10 @@ import { SET_LOGIN_ALERT, SET_FIND_EMAIL_ALERT, SET_FIND_PW_ALERT,
   SET_EMAIL_CHECK_ALERT, SET_AUTH_CODE_ALERT, SET_SIGN_UP_ALERT,
   SET_SIGN_UP_COMPLETE_ALERT, SET_MODULE_DOWNLOAD_ALERT,
   SET_CHANGE_PHONE_ALERT, SET_CHANGE_PW_ALERT, SET_COMPLETE_CHANGE_PW_ALERT,
-  SET_DEACTIVATE_USER_ALERT, SET_COMPLETE_DEACTIVATE_USER_ALERT } from '../actions';
+  SET_DEACTIVATE_USER_ALERT, SET_COMPLETE_DEACTIVATE_USER_ALERT,
+  SET_FOLDER_ALERT, SET_ADD_FOLDER_ALERT, SET_UPLOAD_FILE_ALERT,
+  SET_DOWNLOAD_FILE_ALERT, SET_DELETE_FILE_ALERT, SET_COMPLETE_DELETE_FILE_ALERT,
+  SET_CHANGE_NAME_ALERT, SET_CHANGE_NAME_INPUT_ALERT } from '../actions';
 
 const alertReducers = {
   loginAlert,
@@ -18,6 +21,14 @@ const alertReducers = {
   completeChangePwAlert,
   deactivateUserAlert,
   completeDeactivateUserAlert,
+  folderAlert,
+  addFolderAlert,
+  uploadFileAlert,
+  downloadFileAlert,
+  deleteFileAlert,
+  completeDeleteFileAlert,
+  changeNameAlert,
+  changeNameInputAlert,
 }
 
 function loginAlert(state = false, action) {
@@ -132,6 +143,78 @@ function completeDeactivateUserAlert(state = false, action) {
   switch (action.type) {
     case SET_COMPLETE_DEACTIVATE_USER_ALERT:
       return action.completeDeactivateUserAlert;
+    default:
+      return state;
+  }
+}
+
+function folderAlert(state = false, action) {
+  switch (action.type) {
+    case SET_FOLDER_ALERT:
+      return action.folderAlert;
+    default:
+      return state;
+  }
+}
+
+function addFolderAlert(state = false, action) {
+  switch (action.type) {
+    case SET_ADD_FOLDER_ALERT:
+      return action.addFolderAlert;
+    default:
+      return state;
+  }
+}
+
+function uploadFileAlert(state = false, action) {
+  switch (action.type) {
+    case SET_UPLOAD_FILE_ALERT:
+      return action.uploadFileAlert;
+    default:
+      return state;
+  }
+}
+
+function downloadFileAlert(state = false, action) {
+  switch (action.type) {
+    case SET_DOWNLOAD_FILE_ALERT:
+      return action.downloadFileAlert;
+    default:
+      return state;
+  }
+}
+
+function deleteFileAlert(state = false, action) {
+  switch (action.type) {
+    case SET_DELETE_FILE_ALERT:
+      return action.deleteFileAlert;
+    default:
+      return state;
+  }
+}
+
+function completeDeleteFileAlert(state = false, action) {
+  switch (action.type) {
+    case SET_COMPLETE_DELETE_FILE_ALERT:
+      return action.completeDeleteFileAlert;
+    default:
+      return state;
+  }
+}
+
+function changeNameAlert(state = false, action) {
+  switch (action.type) {
+    case SET_CHANGE_NAME_ALERT:
+      return action.changeNameAlert;
+    default:
+      return state;
+  }
+}
+
+function changeNameInputAlert(state = false, action) {
+  switch (action.type) {
+    case SET_CHANGE_NAME_INPUT_ALERT:
+      return action.changeNameInputAlert;
     default:
       return state;
   }
