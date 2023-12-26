@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CssBaseline, Drawer, Grid } from '@mui/material';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import DrawerContent from '../components/DrawerContent.jsx';
 import AppBarContent from '../components/AppBarContent.jsx';
 import ModuleCard from '../components/ModuleCard.jsx';
@@ -8,12 +8,19 @@ import MyPage from  '../components/MyPage.jsx';
 import Download from '../components/Download.jsx';
 import Footer from "../components/Footer.jsx";
 import Cloud  from './Cloud.jsx';
-import Administer from "../pages/Administer";
+import Administrator from './Administrator.jsx';
+import { useSelector } from 'react-redux';
 // import DocPoison from "../pages/DocPoison.jsx";
 // import DocVisual from "../pages/DocVisual.jsx";
 
 
 export default function Module() {
+
+  const userInfo = useSelector(state => state.userInfo);
+
+  const RedirectToHomeIfNotAdmin = ({ children }) => {
+    return userInfo.role === "ROLE_ADMIN" ? children : <Navigate to="/module" />;
+  };
 
   const [drawer, setDrawer] = useState(false);
 
@@ -47,7 +54,11 @@ export default function Module() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/drawdownload" element={<Download />} />
         <Route path="/sheetdownload" element={<Download />} />
-        <Route path="/admin" element={<Administer />} />
+        <Route path="/admin" element={
+          <RedirectToHomeIfNotAdmin>
+            <Administrator />
+          </RedirectToHomeIfNotAdmin>
+        } />
         {/* <Route path="/doc/poison/*" element={<DocPoison />} /> */}
         {/* <Route path="/doc/visual" element={<DocVisual />} /> */}
       </Routes>

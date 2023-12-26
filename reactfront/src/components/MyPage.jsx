@@ -11,6 +11,7 @@ import ApartmentIcon from '@mui/icons-material/Apartment';
 import WorkIcon from '@mui/icons-material/Work';
 import ButtonStatusHook from '../hooks/ButtonStatusHook';
 import { useNavigate } from 'react-router-dom';
+import AdministratorListAPI from '../services/AdministratorListAPI'
 
 
 export default function MyPage() {
@@ -36,6 +37,7 @@ export default function MyPage() {
   
   const { handleChangePhoneValidation, handleChangeCurrentPwValidation, handleChangePwValidation, handleChangePwConfirm } = HandleValidationHook({});
   const { onClickChangePhoneButton, onClickChangePwButton, onClickDeactivateUser } = UserAPI({});
+  const { administratorInfo } = AdministratorListAPI({});
 
   const userInfoArray = [
     { label: '이름', value: userInfo && userInfo.name ? userInfo.name : null },
@@ -254,7 +256,7 @@ export default function MyPage() {
         </Grid>
         <Divider/>
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          {userInfo.role === "ROLE_ADMIN" ? <Button onClick={() => {navigate('/module/admin')}}>관리자 모드</Button> : <Box /> }
+        {userInfo.role === "ROLE_ADMIN" ? <Button onClick={() => {navigate('/module/admin'); administratorInfo(); }}>관리자 모드</Button> : <Box /> }
           <Button onClick={() => dispatch(setDeactivateUserAlert(true))} sx={{my: 2, color: '#bdbdbd'}}>
             회원탈퇴
           </Button>
