@@ -6,7 +6,7 @@ import { SET_FILE_LIST, SET_CURRENT_PATH, SET_CURRENT_VOLUME,
   SET_CHANGE_NAME_COMPLETE, SET_CLOUD_SNACKBAR } from '../actions';
 
 
-const fileList = (state = [], action) => {
+function fileList(state = [], action) {
   switch (action.type) {
     case SET_FILE_LIST:
       return action.fileList;
@@ -15,7 +15,7 @@ const fileList = (state = [], action) => {
   }
 };
 
-const currentVolume = (state = '', action) => {
+function currentVolume(state = '', action){
   switch (action.type) {
     case SET_CURRENT_VOLUME:
       return action.currentVolume;
@@ -24,7 +24,7 @@ const currentVolume = (state = '', action) => {
   }
 }
 
-const originalVolume = (state = 0, action) => {
+function originalVolume(state = 0, action){
   switch (action.type) {
     case SET_ORIGINAL_VOLUME:
       return action.originalVolume;
@@ -33,7 +33,7 @@ const originalVolume = (state = 0, action) => {
   }
 }
 
-const folderList = (state = [], action) => {
+function folderList(state = [], action){
   switch (action.type) {
     case SET_FOLDER_LIST:
       return action.folderList;
@@ -42,7 +42,7 @@ const folderList = (state = [], action) => {
   }
 }
 
-const folderName = (state = '', action) => {
+function folderName(state = '', action){
   switch (action.type) {
     case SET_FOLDER_NAME:
       return action.folderName;
@@ -60,7 +60,7 @@ function folderNameComplete(state = '', action) {
   }
 }
 
-const uploadFile = (state = [], action) => {
+function uploadFile(state = [], action){
   switch (action.type) {
     case SET_UPLOAD_FILE:
       return action.uploadFile;
@@ -70,7 +70,7 @@ const uploadFile = (state = [], action) => {
 }
 
 
-const selectFilePath = (state = [], action) => {
+function selectFilePath(state = [], action){
   switch (action.type) {
     case SET_SELECT_FILE_PATH:
       return action.selectFilePath;
@@ -79,7 +79,7 @@ const selectFilePath = (state = [], action) => {
   }
 }
 
-const selectCheckbox = (state = [], action) => {
+function selectCheckbox(state = [], action){
   switch (action.type) {
     case SET_SELECT_CHECKBOX:
       return action.selectCheckbox;
@@ -88,7 +88,7 @@ const selectCheckbox = (state = [], action) => {
   }
 }
 
-const deleteFilePath = (state = [], action) => {
+function deleteFilePath(state = [], action){
   switch (action.type) {
     case SET_DELETE_FILE_PATH:
       return action.deleteFilePath;
@@ -97,7 +97,7 @@ const deleteFilePath = (state = [], action) => {
   }
 }
 
-const changeName = (state = '', action) => {
+function changeName(state = '', action){
   switch (action.type) {
     case SET_CHANGE_NAME:
       return action.changeName;
@@ -106,7 +106,7 @@ const changeName = (state = '', action) => {
   }
 }
 
-const changeNameComplete = (state = '', action) => {
+function changeNameComplete(state = '', action){
   switch (action.type) {
     case SET_CHANGE_NAME_COMPLETE:
       return action.changeNameComplete;
