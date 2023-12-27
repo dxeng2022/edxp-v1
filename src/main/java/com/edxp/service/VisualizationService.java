@@ -6,7 +6,6 @@ import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.domain.doc.PlantModel;
 import com.edxp.dto.request.VisualizationDrawRequest;
 import com.edxp.dto.response.VisualizationDrawResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -36,8 +35,8 @@ public class VisualizationService {
         File file = fileService.downloadAnalysisFile(userId, request.getFileName(), "draw");
         unzipFile(changeFileName(file));
 
-        String targetPath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "\\" + "PlantModel.xml";
-        String imagePath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "\\" + "SourceImage.png";
+        String targetPath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "/" + "PlantModel.xml";
+        String imagePath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "/" + "SourceImage.png";
         try {
             File targetFile = new File(targetPath);
             FileSystemResource imageFile = new FileSystemResource(imagePath);
