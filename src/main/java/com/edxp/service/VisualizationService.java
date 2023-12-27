@@ -6,10 +6,14 @@ import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.domain.doc.PlantModel;
 import com.edxp.dto.request.VisualizationDrawRequest;
 import com.edxp.dto.response.VisualizationDrawResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -26,15 +30,18 @@ import java.util.zip.ZipInputStream;
 @Service
 public class VisualizationService {
     private final FileService fileService;
+
     @Transactional(readOnly = true)
-    public VisualizationDrawResponse getResultDraw(Long userId, VisualizationDrawRequest request) throws IOException {
+    public MultiValueMap<String, Object> getResultDraw(Long userId, VisualizationDrawRequest request) throws IOException {
         File file = fileService.downloadAnalysisFile(userId, request.getFileName(), "draw");
         unzipFile(changeFileName(file));
 
         String targetPath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "\\" + "PlantModel.xml";
-        File targetFile = new File(targetPath);
-
+        String imagePath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "\\" + "SourceImage.png";
         try {
+            File targetFile = new File(targetPath);
+            FileSystemResource imageFile = new FileSystemResource(imagePath);
+
             // JAXBContext 생성
             JAXBContext jaxbContext = JAXBContext.newInstance(PlantModel.class);
 
@@ -44,11 +51,13 @@ public class VisualizationService {
             // XML 을 자바 객체로 언마샬링
             PlantModel plantModel = (PlantModel) jaxbUnmarshaller.unmarshal(targetFile);
 
-            return VisualizationDrawResponse.from(plantModel);
+            return new LinkedMultiValueMap<>() {{
+                add("result", VisualizationDrawResponse.from(plantModel));
+                add("file", imageFile);
+            }};
         } catch (JAXBException e) {
-            e.printStackTrace();
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "xml converting is failed");
         }
-        return null;
     }
 
     // 파일 이름 변경
@@ -67,7 +76,7 @@ public class VisualizationService {
         } finally {
             assert zipPath != null;
             log.info("File name changed to: {}", zipPath.getFileName());
-            FileUtil.removeFile(ipidPath.toFile());
+            FileUtil.remove(ipidPath.toFile());
         }
 
         return zipPath;
@@ -114,7 +123,7 @@ public class VisualizationService {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "압축 해제에 실패하였습니다.");
         } finally {
             log.info("unzip is success: {}", sourceFilePath.getFileName());
-            FileUtil.removeFile(sourceFilePath.toFile());
+            FileUtil.remove(sourceFilePath.toFile());
         }
     }
 
