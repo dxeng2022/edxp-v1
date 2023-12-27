@@ -127,7 +127,7 @@ public class RiskExtractService {
     }
 
     public List<ParsedDocument> analysis(Long userId, RiskAnalyzeRequest request) throws IOException {
-        File jsonFile = fileService.downloadAnalysisFile(userId, request.getFileName());
+        File jsonFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
 
         try {
             MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();

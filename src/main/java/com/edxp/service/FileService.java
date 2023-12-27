@@ -334,15 +334,16 @@ public class FileService {
      *
      * @param userId   signed in
      * @param fileName filename to download
+     * @param myPath filePath to download
      * @return file
      * @apiNote 분석용 파일을 다운로드 하는 API
      * @since 2023.09.27
      */
     @Transactional
-    public File downloadAnalysisFile(Long userId, String fileName) {
+    public File downloadAnalysisFile(Long userId, String fileName, String myPath) {
         StringBuilder userPath = new StringBuilder();
         userPath.append("dxeng/").append(location).append("/")
-                .append("user_").append(String.format("%06d", userId)).append("/").append("doc_risk").append("/")
+                .append("user_").append(String.format("%06d", userId)).append("/").append(myPath).append("/")
                 .append(fileName);
 
         try {
@@ -362,6 +363,7 @@ public class FileService {
                 );
             }
             log.info("single file download - {} : success", fileName);
+
             return file;
         } catch (InterruptedException e) {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
