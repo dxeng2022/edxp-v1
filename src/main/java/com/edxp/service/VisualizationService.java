@@ -8,11 +8,9 @@ import com.edxp.dto.request.VisualizationDrawRequest;
 import com.edxp.dto.response.VisualizationDrawResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -30,16 +28,25 @@ import java.util.zip.ZipInputStream;
 public class VisualizationService {
     private final FileService fileService;
 
-    @Transactional(readOnly = true)
-    public MultiValueMap<String, Object> getResultDraw(Long userId, VisualizationDrawRequest request) throws IOException {
+    @Value("${file.path}")
+    private String downloadFolder;
+
+    public FileSystemResource getResultImage(Long userId, VisualizationDrawRequest request) {
+        String folderPath = downloadFolder + "/" + request.getFileName().substring(0, request.getFileName().lastIndexOf("."));
+        try {
+            return new FileSystemResource(folderPath + "/" + "SourceImage.png");
+        } catch (Exception e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "이미지를 불러올 수 없습니다.");
+        }
+    }
+
+    public VisualizationDrawResponse getResultDraw(Long userId, VisualizationDrawRequest request) throws IOException {
         File file = fileService.downloadAnalysisFile(userId, request.getFileName(), "draw");
         unzipFile(changeFileName(file));
 
         String targetPath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "/" + "PlantModel.xml";
-        String imagePath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "/" + "SourceImage.png";
         try {
             File targetFile = new File(targetPath);
-            FileSystemResource imageFile = new FileSystemResource(imagePath);
 
             // JAXBContext 생성
             JAXBContext jaxbContext = JAXBContext.newInstance(PlantModel.class);
@@ -50,13 +57,16 @@ public class VisualizationService {
             // XML 을 자바 객체로 언마샬링
             PlantModel plantModel = (PlantModel) jaxbUnmarshaller.unmarshal(targetFile);
 
-            return new LinkedMultiValueMap<>() {{
-                add("result", VisualizationDrawResponse.from(plantModel));
-                add("file", imageFile);
-            }};
+//            return imageFile;
+            return VisualizationDrawResponse.from(plantModel);
         } catch (JAXBException e) {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "xml converting is failed");
         }
+    }
+
+    public void deleteResult(Long userId, VisualizationDrawRequest request) throws IOException {
+        String folderPath = downloadFolder + "/" + request.getFileName().substring(0, request.getFileName().lastIndexOf("."));
+        FileUtil.remove(new File(folderPath));
     }
 
     // 파일 이름 변경
@@ -80,7 +90,8 @@ public class VisualizationService {
 
         return zipPath;
     }
-
+    
+    // 파일 확장자 변경
     private String changeFileExtension(String fileName, String newExtension) {
         int lastDotIndex = fileName.lastIndexOf(".");
         if (lastDotIndex != -1) {
@@ -125,7 +136,8 @@ public class VisualizationService {
             FileUtil.remove(sourceFilePath.toFile());
         }
     }
-
+    
+    // 파일 추출 및 폴더 생성
     private static Path extractAndCreateFolder(Path sourceZipPath) throws IOException {
         // Extract folder name from the zip file name
         String zipFileName = sourceZipPath.getFileName().toString();
@@ -143,7 +155,8 @@ public class VisualizationService {
 
         return destFolderPath;
     }
-
+    
+    // 압축 해제 보안
     public static Path zipSlipProtect(ZipEntry zipEntry, Path targetDir) throws IOException {
         // test zip slip vulnerability
         Path targetDirResolved = targetDir.resolve(zipEntry.getName());
