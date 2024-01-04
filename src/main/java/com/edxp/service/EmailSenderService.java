@@ -43,7 +43,7 @@ public class EmailSenderService {
 
         mailSender.send(message);
 
-        System.out.println("Mail sent Successfully...");
+        log.info("Mail sent Successfully...");
 
         return true;
     }

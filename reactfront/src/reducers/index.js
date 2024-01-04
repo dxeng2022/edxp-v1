@@ -14,6 +14,7 @@ import jobReducer from './jobReducer';
 import genderReducer from './genderReducer';
 import userInfoReducer from './userInfoReducer';
 import cloudReducer from './cloudReducer';
+import administratorReducer from './administratorReducer';
 
 export default combineReducers({
   ...emailReducer,
@@ -31,4 +32,5 @@ export default combineReducers({
   ...genderReducer,
   ...userInfoReducer,
   ...cloudReducer,
+  ...administratorReducer,
 });

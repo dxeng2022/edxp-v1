@@ -5,7 +5,8 @@ import { SET_LOGIN_ALERT, SET_FIND_EMAIL_ALERT, SET_FIND_PW_ALERT,
   SET_DEACTIVATE_USER_ALERT, SET_COMPLETE_DEACTIVATE_USER_ALERT,
   SET_FOLDER_ALERT, SET_ADD_FOLDER_ALERT, SET_UPLOAD_FILE_ALERT,
   SET_DOWNLOAD_FILE_ALERT, SET_DELETE_FILE_ALERT, SET_COMPLETE_DELETE_FILE_ALERT,
-  SET_CHANGE_NAME_ALERT, SET_CHANGE_NAME_INPUT_ALERT } from '../actions';
+  SET_CHANGE_NAME_ALERT, SET_CHANGE_NAME_INPUT_ALERT, SET_PASSWORD_RESET_ALERT,
+  SET_COMPLETE_PASSWORD_RESET_ALERT, SET_USER_DELETE_ALERT, SET_COMPLETE_USER_DELETE_ALERT} from '../actions';
 
 const alertReducers = {
   loginAlert,
@@ -29,6 +30,10 @@ const alertReducers = {
   completeDeleteFileAlert,
   changeNameAlert,
   changeNameInputAlert,
+  passwordResetAlert,
+  CompletepasswordResetAlert,
+  userDeleteAlert,
+  CompleteUserDeleteAlert
 }
 
 function loginAlert(state = false, action) {
@@ -215,6 +220,42 @@ function changeNameInputAlert(state = false, action) {
   switch (action.type) {
     case SET_CHANGE_NAME_INPUT_ALERT:
       return action.changeNameInputAlert;
+    default:
+      return state;
+  }
+}
+
+function passwordResetAlert(state = false, action) {
+  switch (action.type) {
+    case SET_PASSWORD_RESET_ALERT:
+      return action.passwordResetAlert;
+    default:
+      return state;
+  }
+}
+
+function CompletepasswordResetAlert(state = false, action) {
+  switch (action.type) {
+    case SET_COMPLETE_PASSWORD_RESET_ALERT:
+      return action.CompletepasswordResetAlert;
+    default:
+      return state;
+  }
+}
+
+function userDeleteAlert(state = false, action) {
+  switch (action.type) {
+    case SET_USER_DELETE_ALERT:
+      return action.userDeleteAlert;
+    default:
+      return state;
+  }
+}
+
+function CompleteUserDeleteAlert(state = false, action) {
+  switch (action.type) {
+    case SET_COMPLETE_USER_DELETE_ALERT:
+      return action.CompleteUserDeleteAlert;
     default:
       return state;
   }
