@@ -8,5 +8,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class VisualizationDrawRequest {
-    private String fileName;
+    private String filePath;
 }

@@ -26,24 +26,6 @@ public class VisualizationController {
     private final VisualizationService visualizationService;
 
     @CrossOrigin
-    @PostMapping("/result-img")
-    public ResponseEntity<Object> downloadImage(
-            @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestBody VisualizationDrawRequest request
-    ) {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_PNG);
-
-        final FileSystemResource resultImage = visualizationService.getResultImage(principal.getUser().getId(), request);
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resultImage);
-    }
-
-    @CrossOrigin
     @PostMapping("/result-draw")
     public CommonResponse<VisualizationDrawResponse> downloadJson(
             @AuthenticationPrincipal PrincipalDetails principal,
@@ -57,13 +39,31 @@ public class VisualizationController {
     }
 
     @CrossOrigin
-    @PostMapping("/result-delete")
-    public CommonResponse<Void> deleteResult(
+    @PostMapping("/result-img")
+    public ResponseEntity<Object> downloadImage(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody VisualizationDrawRequest request
+    ) {
+        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        final FileSystemResource resultImage = visualizationService.getResultImage(principal.getUser().getId(), request);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resultImage);
+    }
+
+    @CrossOrigin
+    @DeleteMapping("/result-delete")
+    public CommonResponse<Void> deleteResult(
+            @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-        visualizationService.deleteResult(principal.getUser().getId(), request);
+
+        visualizationService.deleteResult(principal.getUser().getId());
+
         return CommonResponse.success();
     }
 }

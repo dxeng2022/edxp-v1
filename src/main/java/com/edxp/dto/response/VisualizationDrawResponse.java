@@ -47,6 +47,7 @@ public class VisualizationDrawResponse {
                 if (element instanceof PlantSymbol) {
                     countSymbol++;
                     String name = ((PlantSymbol) element).getComponentClass();
+                    if (name.equals("")) name = ((PlantSymbol) element).getSymbolType();
                     symbols.put(name, symbols.getOrDefault(name, 0) + 1);
                 }
 

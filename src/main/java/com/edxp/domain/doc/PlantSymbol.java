@@ -16,6 +16,8 @@ public class PlantSymbol {
     private boolean isVisible;
     @XmlElement(name = "Extent")
     private Extent extent;
+    @XmlElement(name = "SymbolType")
+    private String symbolType;
     @XmlElement(name = "ComponentClass")
     private String componentClass;
 }
