@@ -31,17 +31,11 @@ public class VisualizationService {
     @Value("${file.path}")
     private String downloadFolder;
 
-    public FileSystemResource getResultImage(Long userId, VisualizationDrawRequest request) {
-        String folderPath = downloadFolder + "/" + request.getFileName().substring(0, request.getFileName().lastIndexOf("."));
-        try {
-            return new FileSystemResource(folderPath + "/" + "SourceImage.png");
-        } catch (Exception e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "이미지를 불러올 수 없습니다.");
-        }
-    }
+    @Value("${file.location}")
+    private String location;
 
     public VisualizationDrawResponse getResultDraw(Long userId, VisualizationDrawRequest request) throws IOException {
-        File file = fileService.downloadAnalysisFile(userId, request.getFileName(), "draw");
+        File file = fileService.downloadAnalysisFile(userId, request.getFilePath(), "draw");
         unzipFile(changeFileName(file));
 
         String targetPath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "/" + "PlantModel.xml";
@@ -64,9 +58,27 @@ public class VisualizationService {
         }
     }
 
-    public void deleteResult(Long userId, VisualizationDrawRequest request) throws IOException {
-        String folderPath = downloadFolder + "/" + request.getFileName().substring(0, request.getFileName().lastIndexOf("."));
+    public FileSystemResource getResultImage(Long userId, VisualizationDrawRequest request) {
+        StringBuilder userPath = getUserPath(userId);
+        String folderPath = downloadFolder + "/" + userPath + "/" + request.getFilePath().substring(0, request.getFilePath().lastIndexOf("."));
+        try {
+            return new FileSystemResource(folderPath + "/" + "SourceImage.png");
+        } catch (Exception e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "이미지를 불러올 수 없습니다.");
+        }
+    }
+
+    public void deleteResult(Long userId) throws IOException {
+        StringBuilder userPath = getUserPath(userId);
+        String folderPath = downloadFolder + "/" + userPath;
         FileUtil.remove(new File(folderPath));
+    }
+
+    // 다운로드 경로 확인
+    private StringBuilder getUserPath(Long userId) {
+        StringBuilder userPath = new StringBuilder();
+        userPath.append("user_").append(String.format("%06d", userId)).append("/").append("draw");
+        return userPath;
     }
 
     // 파일 이름 변경

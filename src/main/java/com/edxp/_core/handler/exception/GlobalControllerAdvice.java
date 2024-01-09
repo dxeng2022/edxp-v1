@@ -24,7 +24,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> applicationHandler(RuntimeException e) {
         log.error("Error occurs : {}", e.toString());
-        log.error("Caused by : {}", Arrays.toString(e.getStackTrace()));
+        log.debug("Caused by : {}", Arrays.toString(e.getStackTrace()));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(CommonResponse.error(ErrorCode.INTERNAL_SERVER_ERROR.name()));
     }
