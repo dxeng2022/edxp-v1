@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -31,31 +32,32 @@ public class VisualizationService {
     @Value("${file.path}")
     private String downloadFolder;
 
-    @Value("${file.location}")
-    private String location;
-
     public VisualizationDrawResponse getResultDraw(Long userId, VisualizationDrawRequest request) throws IOException {
         File file = fileService.downloadAnalysisFile(userId, request.getFilePath(), "draw");
+
         unzipFile(changeFileName(file));
 
-        String targetPath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "/" + "PlantModel.xml";
+        PlantModel plantModel = getPlantModel(file);
+
+        return VisualizationDrawResponse.from(plantModel);
+    }
+
+    public VisualizationDrawResponse getResultLocal(Long userId, MultipartFile multipartFile) throws IOException {
+        StringBuilder userPath = getUserPath(userId);
+        FileUtil.createFolder(downloadFolder + "/" + userPath);
+        File file = new File(downloadFolder + "/" + userPath + "/" + multipartFile.getOriginalFilename());
+
         try {
-            File targetFile = new File(targetPath);
-
-            // JAXBContext 생성
-            JAXBContext jaxbContext = JAXBContext.newInstance(PlantModel.class);
-
-            // Unmarshaller 생성
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-
-            // XML 을 자바 객체로 언마샬링
-            PlantModel plantModel = (PlantModel) jaxbUnmarshaller.unmarshal(targetFile);
-
-//            return imageFile;
-            return VisualizationDrawResponse.from(plantModel);
-        } catch (JAXBException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "xml converting is failed");
+            multipartFile.transferTo(file);
+        } catch (IOException e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "file create is failed");
         }
+
+        unzipFile(changeFileName(file));
+
+        PlantModel plantModel = getPlantModel(file);
+
+        return VisualizationDrawResponse.from(plantModel);
     }
 
     public FileSystemResource getResultImage(Long userId, VisualizationDrawRequest request) {
@@ -72,6 +74,28 @@ public class VisualizationService {
         StringBuilder userPath = getUserPath(userId);
         String folderPath = downloadFolder + "/" + userPath;
         FileUtil.remove(new File(folderPath));
+    }
+
+    // xml 데이터 파싱
+    private static PlantModel getPlantModel(File file) {
+        String targetPath = file.getPath().substring(0, file.getPath().lastIndexOf(".")) + "/" + "PlantModel.xml";
+        PlantModel plantModel;
+        try {
+            File targetFile = new File(targetPath);
+
+            // JAXBContext 생성
+            JAXBContext jaxbContext = JAXBContext.newInstance(PlantModel.class);
+
+            // Unmarshaller 생성
+            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+
+            // XML 을 자바 객체로 언마샬링
+            plantModel = (PlantModel) jaxbUnmarshaller.unmarshal(targetFile);
+        } catch (JAXBException e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "xml converting is failed");
+        }
+
+        return plantModel;
     }
 
     // 다운로드 경로 확인
@@ -102,7 +126,7 @@ public class VisualizationService {
 
         return zipPath;
     }
-    
+
     // 파일 확장자 변경
     private String changeFileExtension(String fileName, String newExtension) {
         int lastDotIndex = fileName.lastIndexOf(".");
@@ -148,7 +172,7 @@ public class VisualizationService {
             FileUtil.remove(sourceFilePath.toFile());
         }
     }
-    
+
     // 파일 추출 및 폴더 생성
     private static Path extractAndCreateFolder(Path sourceZipPath) throws IOException {
         // Extract folder name from the zip file name
@@ -167,7 +191,7 @@ public class VisualizationService {
 
         return destFolderPath;
     }
-    
+
     // 압축 해제 보안
     public static Path zipSlipProtect(ZipEntry zipEntry, Path targetDir) throws IOException {
         // test zip slip vulnerability

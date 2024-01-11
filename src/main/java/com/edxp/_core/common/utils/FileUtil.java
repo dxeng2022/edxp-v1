@@ -9,6 +9,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -37,6 +40,16 @@ public class FileUtil {
             return;
         }
         throw new FileNotFoundException("File [" + file.getName() + "] delete fail");
+    }
+
+    public static void createFolder(String folderPath) throws IOException {
+        // 폴더 경로를 나타내는 Path 객체 생성
+        Path path = Paths.get(folderPath);
+
+        // 폴더가 존재하지 않으면 생성
+        if (!Files.exists(path)) {
+            Files.createDirectories(path);
+        }
     }
 
     public static String getEncodedFileName(HttpServletRequest httpRequest, String fileName) {
