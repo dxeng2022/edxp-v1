@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -34,6 +35,19 @@ public class VisualizationController {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
 
         final VisualizationDrawResponse response = visualizationService.getResultDraw(principal.getUser().getId(), request);
+
+        return CommonResponse.success(response);
+    }
+
+    @CrossOrigin
+    @PostMapping("/result-loc")
+    public CommonResponse<VisualizationDrawResponse> downloadLocal(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @RequestPart("file") MultipartFile multipartFile
+    ) throws IOException {
+        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+
+        final VisualizationDrawResponse response = visualizationService.getResultLocal(principal.getUser().getId(), multipartFile);
 
         return CommonResponse.success(response);
     }
