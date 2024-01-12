@@ -19,11 +19,11 @@ export const SET_DELETE_FILE_ALERT = 'SET_DELETE_FILE_ALERT'
 export const SET_COMPLETE_DELETE_FILE_ALERT = 'SET_COMPLETE_DELETE_FILE_ALERT'
 export const SET_CHANGE_NAME_ALERT = 'SET_CHANGE_NAME_ALERT'
 export const SET_CHANGE_NAME_INPUT_ALERT = 'SET_CHANGE_NAME_INPUT_ALERT'
-
 export const SET_PASSWORD_RESET_ALERT = 'SET_PASSWORD_RESET_ALERT'
 export const SET_COMPLETE_PASSWORD_RESET_ALERT = 'SET_COMPLETE_PASSWORD_RESET_ALERT'
 export const SET_USER_DELETE_ALERT = 'SET_USER_DELETE_ALERT'
 export const SET_COMPLETE_USER_DELETE_ALERT = 'SET_COMPLETE_USER_DELETE_ALERT'
+export const SET_VISUAL_DRAW_POST_ALERT = 'SET_VISUAL_DRAW_POST_ALERT'
 
 export function setLoginAlert(loginAlert) {
   return {
@@ -197,5 +197,12 @@ export function setCompleteUserDeleteAlert(CompleteUserDeleteAlert) {
   return {
     type: SET_COMPLETE_USER_DELETE_ALERT,
     CompleteUserDeleteAlert,
+  }
+}
+
+export function setVisualDrawPostAlert(visualDrawPostAlert) {
+  return {
+    type: SET_VISUAL_DRAW_POST_ALERT,
+    visualDrawPostAlert,
   }
 }
