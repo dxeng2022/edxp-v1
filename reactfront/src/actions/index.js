@@ -14,3 +14,4 @@ export * from './genderAction';
 export * from './userInfoAction';
 export * from './cloudAction';
 export * from './administratorAction';
+export * from './visualAction';

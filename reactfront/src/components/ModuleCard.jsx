@@ -9,7 +9,7 @@ import { Box, Container, Grid, Tooltip } from '@mui/material';
 import { BrowserUpdatedOutlined as BrowserUpdatedOutlinedIcon, FilterDrama as FilterDramaIcon, InsertChartOutlinedRounded as InsertChartOutlinedRoundedIcon, CompareArrowsOutlined as CompareArrowsOutlinedIcon, SimCardAlertOutlined as SimCardAlertOutlinedIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setCurrentPath } from '../actions';
+import { setCurrentPath, setVisualDrawImg } from '../actions';
 
 
 export default function ModuleCard() {
@@ -37,7 +37,7 @@ export default function ModuleCard() {
       </Grid>
 
       <Grid item xs={12} sm={12} md={12}>
-      <Container maxWidth="xl" sx={{ mt: '3%', mb: '3%' }}>
+        <Container maxWidth="xl" sx={{ mt: '3%', mb: '3%' }}>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={4}>
               <Card>
@@ -58,13 +58,13 @@ export default function ModuleCard() {
                 </CardContent>
                 <CardActions sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Tooltip title="모듈 설치">
-                  <Button size="small" onClick={()=>{navigate('/module/drawdownload'); }}> <BrowserUpdatedOutlinedIcon /> </Button>
+                    <Button size="small" onClick={()=>{navigate('/module/drawdownload'); }}> <BrowserUpdatedOutlinedIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="데이터 관리">
                     <Button size="small" onClick={()=>{ dispatch(setCurrentPath('draw/')); navigate('/module/drawcloud'); }}> <FilterDramaIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="시각화">
-                    <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
+                    <Button size="small" onClick={()=>{ dispatch(setCurrentPath('draw/')); dispatch(setVisualDrawImg(null)); navigate('/module/drawvisual'); }}> <InsertChartOutlinedRoundedIcon /> </Button>
                   </Tooltip>
                 </CardActions>
               </Card>
@@ -118,10 +118,10 @@ export default function ModuleCard() {
                 </CardContent>
                 <CardActions sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Tooltip title="타공정 검증">
-                    <Button size="small" onClick={()=>{ navigate('/module/doc/visual') }}> <CompareArrowsOutlinedIcon /> </Button>
+                    <Button size="small"> <CompareArrowsOutlinedIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="독소조항 추출">
-                    <Button size="small" onClick={()=>{ navigate('/module/doc/poison') }}> <SimCardAlertOutlinedIcon /> </Button>
+                    <Button size="small"> <SimCardAlertOutlinedIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="데이터 관리">
                     <Button size="small" onClick={()=>{ dispatch(setCurrentPath('doc/')); navigate('/module/doccloud'); }}> <FilterDramaIcon /> </Button>

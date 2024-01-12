@@ -6,8 +6,8 @@ import com.edxp.domain.doc.PlantSymbol;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
@@ -25,10 +25,13 @@ public class VisualizationDrawResponse {
             int countSymbol,
             int countLine
     ) {
+        HashMap<String, Integer> sortedSymbols = sortHashMapWithValue(symbols);
+        HashMap<String, Integer> sortedLines = sortHashMapWithValue(lines);
+
         return new VisualizationDrawResponse(
                 plantModel,
-                symbols,
-                lines,
+                sortedSymbols,
+                sortedLines,
                 countSymbol,
                 countLine
         );
@@ -40,13 +43,14 @@ public class VisualizationDrawResponse {
         int countSymbol = 0;
         int countLine = 0;
 
-        if (plantModel != null && plantModel.getChildren() != null && plantModel.getChildren().getElements() != null) {
-            List<Object> elements = plantModel.getChildren().getElements();
+        if (plantModel != null && plantModel.getChildren() != null && plantModel.getChildren() != null) {
+            List<Object> elements = plantModel.getChildren();
 
             for (Object element : elements) {
                 if (element instanceof PlantSymbol) {
                     countSymbol++;
                     String name = ((PlantSymbol) element).getComponentClass();
+                    if (name.equals("")) name = ((PlantSymbol) element).getSymbolType();
                     symbols.put(name, symbols.getOrDefault(name, 0) + 1);
                 }
 
@@ -59,5 +63,16 @@ public class VisualizationDrawResponse {
         }
 
         return VisualizationDrawResponse.of(plantModel, symbols, lines, countSymbol, countLine);
+    }
+
+    private static HashMap<String, Integer> sortHashMapWithValue(HashMap<String, Integer> hashMap) {
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(hashMap.entrySet());
+
+        // Sort the list based on values
+        entryList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+
+        // Convert the sorted list back to HashMap
+        return entryList.stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 }

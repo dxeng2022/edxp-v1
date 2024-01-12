@@ -342,13 +342,14 @@ public class FileService {
     @Transactional
     public File downloadAnalysisFile(Long userId, String fileName, String myPath) {
         StringBuilder userPath = new StringBuilder();
-        userPath.append("dxeng/").append(location).append("/")
-                .append("user_").append(String.format("%06d", userId)).append("/").append(myPath).append("/")
-                .append(fileName);
+        userPath.append("user_").append(String.format("%06d", userId)).append("/").append(myPath);
+
+        StringBuilder s3Path = new StringBuilder();
+        s3Path.append("dxeng").append("/").append(location).append("/").append(userPath);
 
         try {
-            File file = new File(downloadFolder + "/" + fileName);
-            Download download = transferManager.download(bucket, String.valueOf(userPath), file);
+            File file = new File(downloadFolder + "/" + userPath + "/" + fileName);
+            Download download = transferManager.download(bucket, String.valueOf(s3Path.append("/").append(fileName)), file);
 
             log.info("[" + fileName + "] download progressing... start");
             DecimalFormat decimalFormat = new DecimalFormat("##0.00");

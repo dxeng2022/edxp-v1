@@ -2,10 +2,8 @@ package com.edxp.domain.doc;
 
 import lombok.Data;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
+import java.util.List;
 
 @Data
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -17,8 +15,13 @@ public class PlantModel {
     private String name;
     @XmlElement(name = "IsVisible")
     private boolean isVisible;
-    @XmlElement(name = "Children")
-    private Children children;
+    @XmlElementWrapper(name = "Children")
+    @XmlElements({
+            @XmlElement(name = "PlantSymbol", type = PlantSymbol.class),
+            @XmlElement(name = "PlantLine", type = PlantLine.class),
+            @XmlElement(name = "Label", type = Label.class)
+    })
+    private List<Object> children;
     @XmlElement(name = "PaperSize")
     private PaperSize paperSize;
 

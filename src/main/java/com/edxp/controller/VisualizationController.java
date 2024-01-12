@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -24,24 +25,6 @@ import java.io.IOException;
 @RestController
 public class VisualizationController {
     private final VisualizationService visualizationService;
-
-    @CrossOrigin
-    @PostMapping("/result-img")
-    public ResponseEntity<Object> downloadImage(
-            @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestBody VisualizationDrawRequest request
-    ) {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_PNG);
-
-        final FileSystemResource resultImage = visualizationService.getResultImage(principal.getUser().getId(), request);
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resultImage);
-    }
 
     @CrossOrigin
     @PostMapping("/result-draw")
@@ -57,13 +40,44 @@ public class VisualizationController {
     }
 
     @CrossOrigin
-    @PostMapping("/result-delete")
-    public CommonResponse<Void> deleteResult(
+    @PostMapping("/result-loc")
+    public CommonResponse<VisualizationDrawResponse> downloadLocal(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestBody VisualizationDrawRequest request
+            @RequestPart("file") MultipartFile multipartFile
     ) throws IOException {
         if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-        visualizationService.deleteResult(principal.getUser().getId(), request);
+
+        final VisualizationDrawResponse response = visualizationService.getResultLocal(principal.getUser().getId(), multipartFile);
+
+        return CommonResponse.success(response);
+    }
+
+    @CrossOrigin
+    @PostMapping("/result-img")
+    public ResponseEntity<Object> downloadImage(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @RequestBody VisualizationDrawRequest request
+    ) {
+        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        final FileSystemResource resultImage = visualizationService.getResultImage(principal.getUser().getId(), request);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resultImage);
+    }
+
+    @CrossOrigin
+    @DeleteMapping("/result-delete")
+    public CommonResponse<Void> deleteResult(
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) throws IOException {
+        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+
+        visualizationService.deleteResult(principal.getUser().getId());
+
         return CommonResponse.success();
     }
 }

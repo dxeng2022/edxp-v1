@@ -15,6 +15,7 @@ import genderReducer from './genderReducer';
 import userInfoReducer from './userInfoReducer';
 import cloudReducer from './cloudReducer';
 import administratorReducer from './administratorReducer';
+import visualReducer from './visualReducer';
 
 export default combineReducers({
   ...emailReducer,
@@ -33,4 +34,5 @@ export default combineReducers({
   ...userInfoReducer,
   ...cloudReducer,
   ...administratorReducer,
+  ...visualReducer,
 });
