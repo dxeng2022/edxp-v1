@@ -6,12 +6,11 @@ import AppBarContent from '../components/AppBarContent.jsx';
 import ModuleCard from '../components/ModuleCard.jsx';
 import MyPage from  '../components/MyPage.jsx';
 import Download from '../components/Download.jsx';
-import Footer from "../components/Footer.jsx";
 import Cloud  from './Cloud.jsx';
+import Visual  from './Visual.jsx';
 import Administrator from './Administrator.jsx';
+import Footer from "../components/Footer.jsx";
 import { useSelector } from 'react-redux';
-// import DocPoison from "../pages/DocPoison.jsx";
-// import DocVisual from "../pages/DocVisual.jsx";
 
 
 export default function Module() {
@@ -48,24 +47,22 @@ export default function Module() {
 
       <Routes>
         <Route path="/" element={<ModuleCard />} />
-        <Route path="/drawcloud" element={<Cloud />} />
-        <Route path="/sheetcloud" element={<Cloud />} />
-        <Route path="/doccloud" element={<Cloud />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/drawdownload" element={<Download />} />
         <Route path="/sheetdownload" element={<Download />} />
+        <Route path="/drawcloud" element={<Cloud />} />
+        <Route path="/sheetcloud" element={<Cloud />} />
+        <Route path="/doccloud" element={<Cloud />} />
+        <Route path="/drawvisual" element={<Visual />} />
         <Route path="/admin" element={
           <RedirectToHomeIfNotAdmin>
             <Administrator />
           </RedirectToHomeIfNotAdmin>
         } />
-        {/* <Route path="/doc/poison/*" element={<DocPoison />} /> */}
-        {/* <Route path="/doc/visual" element={<DocVisual />} /> */}
       </Routes>
 
-
-
       <Footer />
+
     </Grid>
   );
 }
