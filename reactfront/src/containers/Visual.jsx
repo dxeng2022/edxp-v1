@@ -20,13 +20,13 @@ export default function Visual() {
 
           <Grid item xs={12} sm={6} md={6} sx={{ height: 'calc(100vh - 160px)' }}>
             <Paper elevation={6} sx={{height: '100%'}}>
-              { visualDrawImg ? ( <VisualDrawGraph /> ) : ( <VisualLocalFile /> ) }
+              { visualDrawImg ? ( <VisualDrawPreview /> ) : ( <VisualLocalFile /> ) }
             </Paper>
           </Grid>
 
           <Grid item xs={12} sm={6} md={6} sx={{ height: 'calc(100vh - 160px)' }}>
             <Paper elevation={6} sx={{height: '100%'}}>
-              { visualDrawImg ? ( <VisualDrawPreview /> ) : ( < VisualCloudFile /> ) } 
+              { visualDrawImg ? ( <VisualDrawGraph /> ) : ( < VisualCloudFile /> ) } 
             </Paper>
           </Grid>
 

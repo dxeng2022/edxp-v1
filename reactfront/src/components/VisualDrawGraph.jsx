@@ -1,14 +1,19 @@
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SquareRoundedIcon from "@mui/icons-material/SquareRounded";
-import { Box, Container, Divider, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { useSelector } from 'react-redux';
+import RestorePageOutlinedIcon from '@mui/icons-material/RestorePageOutlined';
+import { Box, Button, Container, Divider, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCurrentPath } from '../actions';
 import { cheerfulFiestaPaletteLight } from '@mui/x-charts/colorPalettes';
 import { ResponsiveBar } from '@nivo/bar';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveTreeMap } from '@nivo/treemap';
+import { useEffect, useRef } from 'react';
 
 
 export default function VisualDrawGraph() {
+
+  const dispatch = useDispatch();
 
   const visualDrawFile = useSelector(state => state.visualDrawFile);
   const visualDrawJson = useSelector(state => state.visualDrawJson);
@@ -101,37 +106,56 @@ export default function VisualDrawGraph() {
     )
   );
 
+  const handleBeforeUnload = useRef((e) => {
+    e.preventDefault();
+    e.returnValue = '';
+  });
 
+  useEffect(() => {
+    window.addEventListener('beforeunload', handleBeforeUnload.current);
+    return () => {
+      // eslint-disable-next-line
+      window.removeEventListener('beforeunload', handleBeforeUnload.current);
+    };
+  }, []);
+
+  const handleButtonClick = () => {
+    window.removeEventListener('beforeunload', handleBeforeUnload.current);
+    dispatch(setCurrentPath('draw/'));
+    window.location.reload();
+  };
 
 
   return (
     <>
-      <Box sx={{ zIndex:1, px:1, py:0.8, display:'flex', alignItems:'center', justifyContent: 'space-between',  position: 'sticky', top: 0, backgroundColor:'#FFFFFF' }}>
-        <Typography
-          sx={{ 
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {visualDrawFile.split('/').pop()}
-        </Typography>
+      <Box sx={{ zIndex:1, px:1, display:'flex', alignItems:'center', justifyContent: 'flex-end',  position: 'sticky', top: 0, backgroundColor:'#FFFFFF' }}>
+        <Button sx={{display:'flex', alignItems:'center', px:1, whiteSpace: 'nowrap' }} size="small" onClick={handleButtonClick}> <RestorePageOutlinedIcon fontSize='small' /> 되돌아가기 </Button>
       </Box>
 
       <Container sx={{ width: '100%', height: 'calc(100vh - 218px)', overflow:'auto' }}>
         
-          <Box sx={{ width: '100%', py: 1 }}>
-            <Typography variant='h6'>
-              Component 개요
+          <Box sx={{ width: '100%', pb: 1 }}>
+            <Typography
+              variant='h5'
+              sx={{ 
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {visualDrawFile.split('/').pop()} 시각화
             </Typography>
-            <Divider sx={{ mb: 2 }}/>
+            <Divider/>
 
 
             <Grid container spacing={1} sx={{ mb: 3 }}>
 
               <Grid item xs={12} sm={12} md={12} >
 
-                <Box sx={{width: '100%', height: 350}}>
+                <Box sx={{width: '100%', height: 350, mt:4}}>
+                  <Box>
+                    <Typography sx={{ ml:1, display: 'flex', alignItems:'center'}} variant="body1"> <BarChartIcon color="disabled" /> Component 분포도 </Typography>
+                  </Box>
                   <ResponsiveTreeMap
                     data={visualDrawCirclepackingData}
                     identity="name"
@@ -179,20 +203,20 @@ export default function VisualDrawGraph() {
                     }}
                     motionConfig="slow"
                   />
-                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <Typography sx={{ display: 'flex', alignItems:'center'}} variant="caption"> <BarChartIcon color="disabled" /> Component 분포도 </Typography>
-                  </Box>
                 </Box>
               </Grid>
 
               <Grid item xs={12} sm={12} md={12} >
 
-                <Box sx={{width: '100%', height: 300}}>
+                <Box sx={{width: '100%', height: 300, mt:6}}>
+                  <Box>
+                    <Typography sx={{ ml:1, display: 'flex', alignItems:'center'}} variant="body1" > <BarChartIcon color="disabled" /> Symbol & Line Component 갯수 </Typography>
+                  </Box>
                   <ResponsiveBar
                     data={data}
                     keys={[ 'Symbol', 'Line' ]}
                     indexBy="name"
-                    margin={{ top: 50, right: 30, bottom: 55, left: 50 }}
+                    margin={{ top: 10, right: 30, bottom: 70, left: 50 }}
                     padding={0.3}
                     groupMode="grouped"
                     valueScale={{ type: 'linear' }}
@@ -223,9 +247,6 @@ export default function VisualDrawGraph() {
                     ]}
                     role="application"
                   />
-                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <Typography sx={{ display: 'flex', alignItems:'center'}} variant="caption" > <BarChartIcon color="disabled" /> Symbol & Line Component 갯수 </Typography>
-                  </Box>
                 </Box>
               </Grid>
 
@@ -233,17 +254,13 @@ export default function VisualDrawGraph() {
 
           </Box>
           
-          <Box>
-            <Typography variant='h6' sx={{ mt: 3 }}>
-              Symbol 및 Line 상세 정보
-            </Typography>
-          </Box>
-          <Divider />
-
           <Grid container sx={{ mb: 3 }}>
             
             <Grid item xs={12} sm={12} md={12} >
-              <Box sx={{ width:'100%', height: 350 }}>
+              <Box sx={{ width:'100%', height: 350, mt:4 }}>
+                <Box>
+                  <Typography sx={{ ml:1, display: 'flex', alignItems:'center'}} variant="body1"> <BarChartIcon color="disabled" /> Symbol Component 상세정보 </Typography>
+                </Box>
                 <ResponsivePie
                   data={visualDrawSymbolData}
                   margin={{ top: 30, right: 30, bottom: 40, left: 30 }}
@@ -266,7 +283,7 @@ export default function VisualDrawGraph() {
 
             <Grid item xs={12} sm={12} md={12}>
               <Box>
-                <TableContainer sx={{ overflow: 'auto', maxHeight: '230px', width: '100%' }}>
+                <TableContainer sx={{ overflow: 'auto', maxHeight: '230px', width: '100%', mt:3 }}>
                   <Table stickyHeader size="small">
                     <TableHead>
                       <TableRow>
@@ -313,7 +330,10 @@ export default function VisualDrawGraph() {
           <Grid container sx={{ mb: 3 }}>
 
             <Grid item xs={12} sm={12} md={12} >
-              <Box sx={{ width:'100%', height: 350 }}>
+              <Box sx={{ width:'100%', height: 350, mt:4 }}>
+                <Box>
+                  <Typography sx={{ ml:1, display: 'flex', alignItems:'center'}} variant="body1"> <BarChartIcon color="disabled" /> Line Component 상세정보 </Typography>
+                </Box>
                 <ResponsivePie
                   data={visualDrawLineData}
                   margin={{ top: 30, right: 30, bottom: 40, left: 30 }}
@@ -336,7 +356,7 @@ export default function VisualDrawGraph() {
 
             <Grid item xs={12} sm={12} md={12}>
               <Box>
-                <TableContainer sx={{ overflow: 'auto', maxHeight: '230px', width: '100%' }}>
+                <TableContainer sx={{ overflow: 'auto', maxHeight: '230px', width: '100%', mt:3 }}>
                   <Table stickyHeader size="small">
                     <TableHead>
                       <TableRow>
