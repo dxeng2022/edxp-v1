@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Avatar, Button, CssBaseline, TextField, Box, Grid, Tab, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress } from '@mui/material'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import 'dayjs/locale/ko';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import SearchIcon from '@mui/icons-material/Search';
 import HandleValidationHook from '../hooks/HandleValidationHook';
 import ButtonStatusHook from '../hooks/ButtonStatusHook';
 import FindAPI from '../services/FindAPI';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFindEmailAlert, setFindPwAlert } from '../actions';
 
@@ -18,13 +19,14 @@ export default function Find() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
   
   
   const findPwEmailError = useSelector(state => state.findPwEmailError);
   const findEmailNameError = useSelector(state => state.findEmailNameError);
   const findPwNameError = useSelector(state => state.findPwNameError);
-  const findEmailphoneError = useSelector(state => state.findEmailphoneError);
-  const findPwphoneError = useSelector(state => state.findPwphoneError);
+  const findEmailPhoneError = useSelector(state => state.findEmailPhoneError);
+  const findPwPhoneError = useSelector(state => state.findPwPhoneError);
 
   const findEmailButtonStatus = useSelector(state => state.findEmailButtonStatus);
   const findPwButtonStatus = useSelector(state => state.findPwButtonStatus);
@@ -39,27 +41,24 @@ export default function Find() {
   const { handleFindPwEmailValidation,
     handleFindEmailNameValidation, handleFindPwNameValidation,
     handleFindEmailPhoneValidation, handleFindPwPhoneValidation, 
-    handleFindEmailDateChange, handleFindPwDateChange } = HandleValidationHook({});
+    handleFindEmailDateChange, handleFindPwDateChange, findTabReset } = HandleValidationHook({});
   const { findPwLoading, onClickFindEmailButton, onClickFindPwButton } = FindAPI({});
   
 
   // tab 이동
   const [value, setValue] = useState('1');
-
-  // tab 변수 초기화
-  // const findTabReset = () => {
-  //   console.log('findTabReset is called');
-  //   dispatch(setEmail(''));
-  //   dispatch(setName(''));
-  //   dispatch(setPhone(''));
-  //   dispatch(setBirth(''));
-  // };
-
   const handleChange = (event, newValue) => {
-    // findTabReset();
+    findTabReset();
     setValue(newValue);
   };
   // tab 이동
+
+  useEffect(() => {
+    return () => {
+      findTabReset();
+    };
+  // eslint-disable-next-line
+  }, [location.pathname]);
 
   
   return (
@@ -100,7 +99,7 @@ export default function Find() {
                   label="이름"
                 />
                 <TextField
-                  error={findEmailphoneError}
+                  error={findEmailPhoneError}
                   placeholder=" -(하이픈) 없이 입력"
                   // helperText={phoneError ? " - 없이 입력해주세요." : ""}
                   onChange={handleFindEmailPhoneValidation}
@@ -111,9 +110,11 @@ export default function Find() {
                 <Grid container spacing={2} alignItems="center">
                   <Grid item xs={12} sm={8}>
                     <Box>
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
                         <DesktopDatePicker
                           label = "생년월일"
+                          views={['year', 'month', 'day']}
+                          format="YYYY/MM/DD"
                           onChange={handleFindEmailDateChange}
                         />
                       </LocalizationProvider>
@@ -155,7 +156,7 @@ export default function Find() {
                 </Grid>
                 <Grid item>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                    <Button onClick={()=>{ navigate('/') }} size="small">
+                    <Button onClick={()=>{ findTabReset(); navigate('/'); }} size="small">
                       되돌아가기
                     </Button>
                   </Box>
@@ -184,7 +185,7 @@ export default function Find() {
                   label="이름"
                 />
                 <TextField
-                  error={findPwphoneError}
+                  error={findPwPhoneError}
                   placeholder=" -(하이픈) 없이 입력"
                   // helperText={phoneError ? " - 없이 입력해주세요." : ""}
                   onChange={handleFindPwPhoneValidation}
@@ -197,8 +198,10 @@ export default function Find() {
                 <Grid container spacing={2} alignItems="center">
                   <Grid item xs={12} sm={8}>
                     <Box>
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
                         <DesktopDatePicker
+                          views={['year', 'month', 'day']}
+                          format="YYYY/MM/DD"
                           label = "생년월일"
                           onChange={handleFindPwDateChange}
                         />

@@ -216,23 +216,23 @@ export default function HandleValidation() {
   }, [signUpPw, pwConfirm]);
   // pwConfirm 확인
 
-    // changePwConfirm 저장
-    const handleChangePwConfirm = (event) => {
-      dispatch(setChangePwConfirm(event.target.value));
-    };
-    // pwConfirm 저장
+  // changePwConfirm 저장
+  const handleChangePwConfirm = (event) => {
+    dispatch(setChangePwConfirm(event.target.value));
+  };
+  // pwConfirm 저장
   
-    // pwConfirm 확인
-    useEffect(() => {
-      if(changePw === changePwConfirm) {
-        dispatch(setChangePwConfirmError(false));
-        return;
-      } else {
-        dispatch(setChangePwConfirmError(true));
-      }
-      //eslint-disable-next-line
-    }, [changePw, changePwConfirm]);
-    // changePwConfirm 확인
+  // pwConfirm 확인
+  useEffect(() => {
+    if(changePw === changePwConfirm) {
+      dispatch(setChangePwConfirmError(false));
+      return;
+    } else {
+      dispatch(setChangePwConfirmError(true));
+    }
+    //eslint-disable-next-line
+  }, [changePw, changePwConfirm]);
+  // changePwConfirm 확인
 
 
   // org 검증 로직
@@ -268,10 +268,48 @@ export default function HandleValidation() {
     dispatch(setJobError(!validateJob(jobValue) && jobValue !== ''));
   };
   // job 검증 결과 반영
+  
+  const loginReset = () => {
+    dispatch(setLoginEmail(''));
+    dispatch(setLoginEmailError(false));
+    dispatch(setLoginPw(''));
+    dispatch(setLoginPwError(false));
+  }
 
+  const findTabReset = () => {
+    dispatch(setFindEmailName(''));
+    dispatch(setFindEmailNameError(false));
+    dispatch(setFindEmailPhone(''));
+    dispatch(setFindEmailPhoneError(false));
+    dispatch(setFindEmailBirth(''));
+    dispatch(setFindPwEmail(''));
+    dispatch(setFindPwEmailError(false));
+    dispatch(setFindPwName(''));
+    dispatch(setFindPwNameError(false));
+    dispatch(setFindPwPhone(''));
+    dispatch(setFindPwPhoneError(false));
+    dispatch(setFindPwBirth(''));
+  };
 
-
-
+  const signUpReset = () => {
+    dispatch(setSignUpEmail(''));
+    dispatch(setSignUpEmailError(false));
+    dispatch(setSignUpPw(''));
+    dispatch(setSignUpPwError(false));
+    dispatch(setSignUpName(''));
+    dispatch(setSignUpNameError(false));
+    dispatch(setSignUpPhone(''));
+    dispatch(setSignUpPhoneError(false));
+    dispatch(setSignUpBirth(''));
+    dispatch(setAuthCode(''));
+    dispatch(setGender(''));
+    dispatch(setPwConfirm(''));
+    dispatch(setPwConfirmError(false));
+    dispatch(setOrg(''));
+    dispatch(setOrgError(false));
+    dispatch(setJob(''));
+    dispatch(setJobError(false));
+  }
 
 
   return  { handleLoginEmailValidation, handleFindPwEmailValidation, handleSignUpEmailValidation,
@@ -280,6 +318,6 @@ export default function HandleValidation() {
     handleFindEmailPhoneValidation, handleFindPwPhoneValidation, handleSignUpPhoneValidation,
     handleFindEmailDateChange, handleFindPwDateChange, handleSignUpDateChange,
     handleAuthCode, handlePwConfirm, handleChangePwConfirm, handleOrgValidation, handleJobValidation, handleGender,
-    handleChangePhoneValidation,
+    handleChangePhoneValidation, loginReset, findTabReset, signUpReset,
   };
 };
