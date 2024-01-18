@@ -13,10 +13,12 @@ export default function LoginAPI() {
   const loginEmail = useSelector(state => state.loginEmail);
   const loginPw = useSelector(state => state.loginPw);
 
+  const [loginLoading, setLoginLoading] = useState(false);
   //eslint-disable-next-line
   const [keyRes, setKeyRes] = useState({"publicKeyModulus": '', "publicKeyExponent": '' });
 
   const onClickLoginButton = async () => {
+    setLoginLoading(true);
 
     const rsa = new JSEncrypt();
 
@@ -52,8 +54,9 @@ export default function LoginAPI() {
         console.log(error.response);
       }
     }
+    setLoginLoading(false);
   };
 
 
-  return { onClickLoginButton };
+  return { loginLoading, onClickLoginButton };
 }

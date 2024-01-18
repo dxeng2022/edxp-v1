@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Avatar, Button, CssBaseline, Grid, Box, Typography, InputLabel, MenuItem, FormControl, Select } from '@mui/material'
 import { CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import 'dayjs/locale/ko';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import HandleValidationHook from '../hooks/HandleValidationHook';
 import ButtonStatusHook from '../hooks/ButtonStatusHook';
 import SignUpAPI from '../services/SignUpAPI';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { setEmailCheckAlert, setAuthCodeAlert, setSignUpAlert, setSignUpCompleteAlert } from '../actions';
 
@@ -17,6 +18,7 @@ export default function SignUp() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const signUpEmailError = useSelector(state => state.signUpEmailError);
   const signUpNameError = useSelector(state => state.signUpNameError);
@@ -49,7 +51,7 @@ export default function SignUp() {
 
   const { handleSignUpEmailValidation, handleSignUpPwValidation, handleSignUpNameValidation,
     handleSignUpPhoneValidation, handleSignUpDateChange, handleAuthCode, handlePwConfirm,
-    handleOrgValidation, handleJobValidation, handleGender,
+    handleOrgValidation, handleJobValidation, handleGender, signUpReset,
   } = HandleValidationHook({});
   
   const { sendAuthCodeLoading,
@@ -57,10 +59,12 @@ export default function SignUp() {
     onClickCheckAuthCodeButton, onClickSignUp,
   } = SignUpAPI({});
   
-  
-
-
-
+  useEffect(() => {
+    return () => {
+      signUpReset();
+    };
+  // eslint-disable-next-line
+  }, [location.pathname]);
 
 
   return (
@@ -265,8 +269,10 @@ export default function SignUp() {
             </Grid>
             <Grid item xs={12} sm={6}>
               <Box>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
                   <DesktopDatePicker
+                    views={['year', 'month', 'day']}
+                    format="YYYY/MM/DD"
                     label = "생년월일"
                     onChange={handleSignUpDateChange}
                   />
@@ -358,7 +364,7 @@ export default function SignUp() {
 
           <Grid item>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button onClick={()=>{ navigate('/'); }} size="small">
+              <Button onClick={()=>{ signUpReset(); navigate('/'); }} size="small">
                 되돌아가기
               </Button>
             </Box>
