@@ -4,11 +4,14 @@ import { ChevronLeft as ChevronLeftIcon, Home as HomeIcon, ShapeLineOutlined as 
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCurrentPath, setVisualDrawImg } from '../actions';
+import UserAPI from '../services/UserAPI';
 
 export default function DrawerContent({ anchor, toggleDrawer }) {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const { onClickKist } = UserAPI({});
 
   const [openMenu, setOpenMenu] = useState({
     도면: false,
@@ -128,7 +131,7 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
         </ListItemButton>
         <Collapse in={openMenu.문서} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton sx={{ pl: 4 }} onClick={onClickKist}>
               <ListItemIcon>
                 <CompareArrowsOutlinedIcon />
               </ListItemIcon>

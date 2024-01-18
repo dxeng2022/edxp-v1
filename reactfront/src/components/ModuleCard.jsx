@@ -10,12 +10,15 @@ import { BrowserUpdatedOutlined as BrowserUpdatedOutlinedIcon, FilterDrama as Fi
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCurrentPath, setVisualDrawImg } from '../actions';
+import UserAPI from '../services/UserAPI';
 
 
 export default function ModuleCard() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const { onClickKist } = UserAPI({});
 
   return (
     <Box>
@@ -118,7 +121,7 @@ export default function ModuleCard() {
                 </CardContent>
                 <CardActions sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Tooltip title="타공정 검증">
-                    <Button size="small"> <CompareArrowsOutlinedIcon /> </Button>
+                    <Button size="small" onClick={onClickKist}> <CompareArrowsOutlinedIcon /> </Button>
                   </Tooltip>
                   <Tooltip title="독소조항 추출">
                     <Button size="small"> <SimCardAlertOutlinedIcon /> </Button>
