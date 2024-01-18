@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, Button, CssBaseline, TextField, Box, Grid, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Avatar, Button, CssBaseline, TextField, Box, Grid, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CircularProgress } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import HandleValidationHook from '../hooks/HandleValidationHook';
 import ButtonStatusHook from '../hooks/ButtonStatusHook';
@@ -19,15 +19,22 @@ export default function Login() {
   const loginButtonStatus = useSelector(state => state.loginButtonStatus);
   const loginAlert = useSelector(state => state.loginAlert);
 
-  const { handleLoginEmailValidation, handleLoginPwValidation } = HandleValidationHook({});
-  const { onClickLoginButton } = loginAPI({});
+  const { handleLoginEmailValidation, handleLoginPwValidation, loginReset } = HandleValidationHook({});
+  const { loginLoading, onClickLoginButton } = loginAPI({});
 
+  const handleSubmit = (event) => {
+    event.preventDefault(); // 폼 제출 기본 동작 방지
+    onClickLoginButton(); // 로그인 버튼 클릭 이벤트 핸들러 호출
+  };
+  
   
   return (
     <Grid item>
       <ButtonStatusHook />
       <CssBaseline />
       <Box
+        component={"form"}
+        onSubmit={handleSubmit}
         sx={{
           my: 8,
           mx: 4,
@@ -76,9 +83,9 @@ export default function Login() {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
-            disabled={loginButtonStatus}
+            disabled={loginButtonStatus || loginLoading}
           >
-            로그인
+            {loginLoading ? <CircularProgress size={24} /> : '로그인'}
           </Button>
 
           <Dialog
@@ -102,12 +109,12 @@ export default function Login() {
 
           <Grid container>
             <Grid item xs>
-              <Button onClick={()=>{ navigate('/find') }} size="small">
+              <Button onClick={()=>{ loginReset(); navigate('/find'); }} size="small">
                 이메일/비밀번호 찾기
               </Button>
             </Grid>
             <Grid item>
-              <Button onClick={()=>{ navigate('/signpolicy') }} size="small">
+              <Button onClick={()=>{ loginReset(); navigate('/signpolicy') }} size="small">
                 회원가입
               </Button>
             </Grid>
