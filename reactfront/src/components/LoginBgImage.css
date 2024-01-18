@@ -20,7 +20,7 @@
 
 .text1 {
   position: absolute;
-  top: 13vh;
+  top: 8vh;
   left: 2vw;
   min-width: 500px;
   width: 40vw;
@@ -30,7 +30,7 @@
 
 .text2 {
   position: absolute;
-  top: 20vh;
+  top: 15vh;
   left: 8vw; 
   min-width: 600px;
   width: 50vw;
