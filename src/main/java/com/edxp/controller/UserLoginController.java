@@ -2,6 +2,8 @@ package com.edxp.controller;
 
 import com.edxp._core.common.response.CommonResponse;
 import com.edxp._core.config.auth.PrincipalDetails;
+import com.edxp._core.constant.ErrorCode;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.dto.request.UserLoginRequest;
 import com.edxp.dto.response.UserRSAResponse;
 import com.edxp.service.UserLoginService;
@@ -24,8 +26,9 @@ public class UserLoginController {
     @CrossOrigin
     @GetMapping("/isLogin")
     public CommonResponse<Boolean> isUserLogin(@AuthenticationPrincipal PrincipalDetails principal) {
-        if (principal != null) return CommonResponse.success(true);
-        else return CommonResponse.success(false);
+        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
+
+        return CommonResponse.success(true);
     }
 
     @GetMapping("/public-key")
