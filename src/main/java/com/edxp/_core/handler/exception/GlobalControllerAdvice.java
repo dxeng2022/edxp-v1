@@ -17,6 +17,7 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(EdxpApplicationException.class)
     public ResponseEntity<?> applicationHandler(EdxpApplicationException e) {
         log.error("Error occurs {}", e.toString());
+        log.debug("Caused by : {}", Arrays.toString(e.getStackTrace()));
         return ResponseEntity.status(e.getErrorCode().getStatus())
                 .body(CommonResponse.error(e.getErrorCode().name()));
     }
