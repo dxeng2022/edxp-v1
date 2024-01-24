@@ -32,7 +32,6 @@ public class RiskExtractController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestParam("file") MultipartFile file
     ) throws IOException {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
         Map<String, List<ParsedDocument>> response = riskExtractService.parse(principal.getUser().getId(), file);
         String fileName = null;
@@ -51,7 +50,6 @@ public class RiskExtractController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody RiskAnalyzeRequest request
     ) throws IOException {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         return CommonResponse.success(riskExtractService.analysis(principal.getUser().getId(), request));
     }
 }
