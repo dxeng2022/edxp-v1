@@ -25,6 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         // 모든 경로에 대해 Interceptor 를 적용
         registry.addInterceptor(securityInterceptor())
+                .addPathPatterns("/api/**")
                 .excludePathPatterns(OPEN_ADDRESS);
     }
 
