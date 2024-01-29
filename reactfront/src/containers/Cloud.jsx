@@ -7,7 +7,7 @@ import CloudContent from '../components/CloudContent';
 export default function Cloud() {
 
   return (
-    <Box sx={{mt: 12, mb: 3}}>
+    <Box sx={{my: 3}}>
 
       <CloudListAPI />
 
