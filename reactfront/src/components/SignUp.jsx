@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Avatar, Button, CssBaseline, Grid, Box, Typography, InputLabel, MenuItem, FormControl, Select } from '@mui/material'
+import { Avatar, Button, CssBaseline, Grid, Box, Typography, InputLabel, MenuItem, FormControl, Select, Tooltip } from '@mui/material'
 import { CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/ko';
@@ -200,20 +200,22 @@ export default function SignUp() {
 
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6}>
-              <TextField
-                error={signUpPwError}
-                placeholder="영문, 숫자, 특수문자 포함 8자 이상"
-                // helperText={pwError ? "영문, 숫자, 특수문자 포함 8자 이상" : ""}
-                onChange={handleSignUpPwValidation}
-                margin="normal"
-                variant="outlined"
-                fullWidth
-                id="password"
-                label="비밀번호"
-                type="password"
-                name="password"
-                autoComplete="off"
-              />
+              <Tooltip title="영문, 숫자, 특수문자 포함 8자 이상" arrow open={signUpPwError} slotProps={{ popper: { modifiers: [{name: 'offset', options: { offset: [0, -15]}}]}}}>
+                <TextField
+                  error={signUpPwError}
+                  placeholder="영문, 숫자, 특수문자 포함 8자 이상"
+                  // helperText={pwError ? "영문, 숫자, 특수문자 포함 8자 이상" : ""}
+                  onChange={handleSignUpPwValidation}
+                  margin="normal"
+                  variant="outlined"
+                  fullWidth
+                  id="password"
+                  label="비밀번호"
+                  type="password"
+                  name="password"
+                  autoComplete="off"
+                />
+              </Tooltip>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField

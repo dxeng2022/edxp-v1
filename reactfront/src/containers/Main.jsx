@@ -8,12 +8,15 @@ import Find from "../components/Find.jsx";
 import SignPolicy from "../components/SignPolicy.jsx";
 import SignUp from "../components/SignUp.jsx";
 import Footer from "../components/Footer.jsx"
+import UserLoginCheckAPI from '../services/UserLoginCheckAPI.jsx'
+
 
 
 export default function Main() {
 
   return (
     <Grid container sx={{ height: '100vh' }}>
+      <UserLoginCheckAPI/>
       <CssBaseline />
 
       <LoginBgImage />

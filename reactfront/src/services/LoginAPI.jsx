@@ -4,6 +4,7 @@ import { JSEncrypt } from "jsencrypt";
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setLoginAlert, setUserLoginAuth } from '../actions';
+import UserAPI from './UserAPI';
 
 export default function LoginAPI() {
 
@@ -12,6 +13,8 @@ export default function LoginAPI() {
 
   const loginEmail = useSelector(state => state.loginEmail);
   const loginPw = useSelector(state => state.loginPw);
+
+  const { userNameInfo } = UserAPI({});
 
   const [loginLoading, setLoginLoading] = useState(false);
   //eslint-disable-next-line
@@ -43,6 +46,7 @@ export default function LoginAPI() {
       });
 
       if (response.status === 200) {
+        userNameInfo();
         dispatch(setUserLoginAuth(true));
         navigate('/module');
       } else {
