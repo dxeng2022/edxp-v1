@@ -7,6 +7,7 @@ import com.edxp.dto.request.UserChangeRequest;
 import com.edxp.dto.request.UserCheckRequest;
 import com.edxp.dto.request.UserFindRequest;
 import com.edxp.dto.request.UserSignUpRequest;
+import com.edxp.dto.response.GoDocResponse;
 import com.edxp.dto.response.SessionInfoResponse;
 import com.edxp.dto.response.UserFindResponse;
 import com.edxp.dto.response.UserInfoResponse;
@@ -18,7 +19,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,6 +33,20 @@ public class UserController {
     private final UserService userService;
     private final UserAuthService userAuthService;
     private final EmailSenderService emailSenderService;
+
+    @PostMapping("/go-doc")
+    public CommonResponse<GoDocResponse> getKey(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+
+        Optional<String> session = Arrays.stream(cookies)
+                .filter(cookie -> "SESSION".equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst();
+
+        GoDocResponse response = new GoDocResponse(session.orElse("need login"));
+
+        return CommonResponse.success(response);
+    }
 
     // 로그인 리스트 확인하기
     @CrossOrigin
