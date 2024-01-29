@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CssBaseline, Drawer, Grid } from '@mui/material';
+import { Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Drawer, Grid } from '@mui/material';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import DrawerContent from '../components/DrawerContent.jsx';
 import AppBarContent from '../components/AppBarContent.jsx';
@@ -10,22 +10,23 @@ import Cloud  from './Cloud.jsx';
 import Visual  from './Visual.jsx';
 import Administrator from './Administrator.jsx';
 import Footer from "../components/Footer.jsx";
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import UserAuthCheckAPI from '../services/UserAuthCheckAPI.jsx'
+import { setUserDialog, setUserLoginAuth } from '../actions';
 
 
 export default function Module() {
 
-  const userInfo = useSelector(state => state.userInfo);
+  const dispatch = useDispatch();
 
-  const RedirectToHomeIfNotAdmin = ({ children }) => {
-    return userInfo.role === "ROLE_ADMIN" ? children : <Navigate to="/module" />;
-  };
+  const userInfo = useSelector(state => state.userInfo);
+  const userDialog = useSelector(state => state.userDialog);
+
+  const RedirectToHomeIfNotAdmin = ({ children }) => { return userInfo.role === "ROLE_ADMIN" ? children : <Navigate to="/module" />; };
 
   const [drawer, setDrawer] = useState(false);
 
-  const toggleDrawer = (open) => (event) => {
-    setDrawer({ ...drawer, left: open });
-  };
+  const toggleDrawer = (open) => (event) => { setDrawer({ ...drawer, left: open }); };
 
   return (
     <Grid
@@ -35,12 +36,14 @@ export default function Module() {
         minHeight: '100vh',
       }}
     >
+      <UserAuthCheckAPI/>
       <CssBaseline/>
       <AppBarContent toggleDrawer={toggleDrawer} />
       <Drawer
         anchor="left"
         open={drawer["left"]}
         onClose={toggleDrawer(false)}
+        transitionDuration={{ enter: 400, exit: 800}}
       >
         <DrawerContent anchor="left" toggleDrawer={toggleDrawer} />
       </Drawer>
@@ -62,6 +65,30 @@ export default function Module() {
       </Routes>
 
       <Footer />
+
+      <Dialog
+        open={userDialog}
+        onClose={(event, reason) => {
+          if (reason !== 'backdropClick') {
+            dispatch(setUserDialog(false));
+          }
+        }}
+        BackdropProps={{
+          style: {
+            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+          },
+        }}
+      >
+        <DialogTitle>회원 정보 만료</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            다시 로그인 해주세요.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { dispatch(setUserLoginAuth(false)); dispatch(setUserDialog(false)); window.location.reload();}}>닫기</Button>
+        </DialogActions>
+      </Dialog>
 
     </Grid>
   );

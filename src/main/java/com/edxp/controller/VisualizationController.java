@@ -2,8 +2,6 @@ package com.edxp.controller;
 
 import com.edxp._core.common.response.CommonResponse;
 import com.edxp._core.config.auth.PrincipalDetails;
-import com.edxp._core.constant.ErrorCode;
-import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.dto.request.VisualizationDrawRequest;
 import com.edxp.dto.response.VisualizationDrawResponse;
 import com.edxp.service.VisualizationService;
@@ -32,8 +30,6 @@ public class VisualizationController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody VisualizationDrawRequest request
     ) throws IOException {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-
         final VisualizationDrawResponse response = visualizationService.getResultDraw(principal.getUser().getId(), request);
 
         return CommonResponse.success(response);
@@ -45,8 +41,6 @@ public class VisualizationController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestPart("file") MultipartFile multipartFile
     ) throws IOException {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-
         final VisualizationDrawResponse response = visualizationService.getResultLocal(principal.getUser().getId(), multipartFile);
 
         return CommonResponse.success(response);
@@ -58,8 +52,6 @@ public class VisualizationController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody VisualizationDrawRequest request
     ) {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG);
         final FileSystemResource resultImage = visualizationService.getResultImage(principal.getUser().getId(), request);
@@ -74,8 +66,6 @@ public class VisualizationController {
     public CommonResponse<Void> deleteResult(
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
-
         visualizationService.deleteResult(principal.getUser().getId());
 
         return CommonResponse.success();

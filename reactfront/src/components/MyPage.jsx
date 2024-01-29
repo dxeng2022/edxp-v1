@@ -12,6 +12,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import ButtonStatusHook from '../hooks/ButtonStatusHook';
 import { useNavigate } from 'react-router-dom';
 import AdministratorListAPI from '../services/AdministratorListAPI'
+import { useEffect } from 'react';
 
 
 export default function MyPage() {
@@ -49,7 +50,12 @@ export default function MyPage() {
     { label: <WorkIcon fontSize='large'/>, value: userInfo && userInfo.job ? userInfo.job : null },
   ];
 
-  
+  const { mypageUserInfo } = UserAPI({});
+  useEffect(() => {
+    mypageUserInfo();
+    //eslint-disable-next-line
+  }, []);
+
   return (
     <Grid>
       <ButtonStatusHook />
@@ -58,14 +64,14 @@ export default function MyPage() {
         md={12}
         sx={{
           position: 'relative',
-          height: '35vh',
+          height: '23vh',
           backgroundImage: 'url(/module.png)',
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <Typography variant="h4" component="h1" sx={{ position: 'absolute', top: '60%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', whitespace: 'nowrap' }}>
+        <Typography variant="h4" component="h1" sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', whitespace: 'nowrap' }}>
           마이페이지
         </Typography>
       </Grid>

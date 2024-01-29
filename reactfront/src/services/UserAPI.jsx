@@ -1,64 +1,44 @@
 import axios from 'axios';
-import { useEffect } from 'react';
+import createAxiosConfig from './AxiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserInfo, setChangePhoneResult, setChangePhoneAlert,
   setCompleteDeactivateUserResult, setCompleteDeactivateUserAlert, setDeactivateUserAlert,
-  setCompleteChangePwResult, setCompleteChangePwAlert, setChangePwAlert, setUserLoginAuth, setChangePhone } from '../actions';
+  setCompleteChangePwResult, setCompleteChangePwAlert, setChangePwAlert, setUserLoginAuth,
+  setChangePhone, setUserNameInfo } from '../actions';
 
 
 export default function UserAPI() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const axiosConfig = createAxiosConfig(dispatch);
 
   const userInfo = useSelector(state => state.userInfo);
   const changePhone = useSelector(state => state.changePhone);
   const changeCurrentPw = useSelector(state => state.changeCurrentPw);
   const changePwConfirm = useSelector(state => state.changePwConfirm);
   
-  useEffect(() => {
-    const userInfo = async () => {
-      try {
-        const response = await axios.get("/api/v1/user/my-info");
-        dispatch(setUserInfo(response.data.result));
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    userInfo();
-    //eslint-disable-next-line
-  }, []);
 
-  // useEffect(() => {
-  //   const userLoginAuth = async () => {
-  //     try {
-  //       const response = await axios.get("/isLogin");
-        
-  //       // 로그인 상태가 아니라면 로그인 페이지로 리다이렉트
-  //       if (!response.data.result) {
-  //         alert('세션이 만료되어 다시 로그인해주세요.');
-  //         window.location.href = '/';
-  //       }
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   };
-  
-  //   // 로그인 확인 후, 55분 후에 다시 확인
-  //   const timerId = setTimeout(userLoginAuth, 30000);
-  
-  //   const intervalId = setInterval(() => {
-  //     console.log('1분 지났습니다.');
-  //   }, 3000);
-  
-  //   return () => {
-  //     clearTimeout(timerId);
-  //     clearInterval(intervalId);  // 컴포넌트 언마운트 시 인터벌 제거
-  //   };
-    
-  //   //eslint-disable-next-line
-  // }, []);
+  const userNameInfo = async () => {
+    try {
+      const response = await axios.get("/api/v1/user/my-info");
+      const userName = (response.data.result.name);
+      dispatch(setUserNameInfo(userName));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
+  const mypageUserInfo = async () => {
+    try {
+      const response = await axiosConfig.get("/api/v1/user/my-info");
+      dispatch(setUserInfo(response.data.result));
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
 
   const logOutButton = async () => {
@@ -85,7 +65,7 @@ export default function UserAPI() {
       dispatch(setChangePhoneAlert(true));
     } else {
       try {
-        const response = await axios.put("/api/v1/user/" + changePhoneInfo.id, changePhoneInfo);
+        const response = await axiosConfig.put("/api/v1/user/" + changePhoneInfo.id, changePhoneInfo);
         if (response.status === 200) {
           dispatch(setChangePhoneResult('전화번호가 변경되었습니다.'));
           dispatch(setChangePhoneAlert(true));
@@ -117,7 +97,7 @@ export default function UserAPI() {
       dispatch(setCompleteChangePwAlert(true));
     } else {
       try {
-        const response = await axios.put("/api/v1/user/" + changePwInfo.id, changePwInfo);
+        const response = await axiosConfig.put("/api/v1/user/" + changePwInfo.id, changePwInfo);
         if (response.status === 200) {
           dispatch(setCompleteChangePwResult('비밀번호가 변경되었습니다. 다시 로그인해주세요.'));
           dispatch(setChangePwAlert(false));
@@ -143,7 +123,7 @@ export default function UserAPI() {
       'id': userInfo.id,
     }
     try {
-      const response = await axios.delete("/api/v1/user/" + deactivateUserInfo.id,);
+      const response = await axiosConfig.delete("/api/v1/user/" + deactivateUserInfo.id,);
       if (response.status === 200) {
         dispatch(setCompleteDeactivateUserResult("저희 서비스를 사용해주셔서 감사합니다."));
         dispatch(setDeactivateUserAlert(false));
@@ -159,20 +139,26 @@ export default function UserAPI() {
         console.log(error.response);
       }
     }
-  }
 
+  }
+  
   const onClickKist = async () => {
     try {
-      const response= await axios.post('/go-doc')
+      const response= await axiosConfig.post('/api/v1/user/go-doc')
 
       if(response.status === 200) {
         let session = response.data.result.session;
         window.location.href = `http://125.131.72.225:18180/slogin/${session}`;
       }
     } catch(error) {
-      console.error(error);
+      if (error.response && error.response.status === 401) {
+        alert('회원정보가 없습니다.\n다시 로그인을 해주시길 바랍니다.');
+        dispatch(setUserLoginAuth(false));
+      } else {
+        console.log(error.response);
+      }
     }
   };
 
-  return { logOutButton, onClickChangePhoneButton, onClickChangePwButton, onClickDeactivateUser, onClickKist };
+  return { userNameInfo, mypageUserInfo, logOutButton, onClickChangePhoneButton, onClickChangePwButton, onClickDeactivateUser, onClickKist };
 };

@@ -18,14 +18,14 @@ export default function Download() {
         md={12}
         sx={{
           position: 'relative',
-          height: '35vh',
+          height: '23vh',
           backgroundImage: 'url(/module.png)',
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <Typography variant="h4" component="h1" sx={{ position: 'absolute', top: '60%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', whitespace: 'nowrap' }}>
+        <Typography variant="h4" component="h1" sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white', whitespace: 'nowrap' }}>
           모듈 다운로드 및 설치
         </Typography>
       </Grid>

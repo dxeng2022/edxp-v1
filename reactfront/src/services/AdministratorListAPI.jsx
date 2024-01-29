@@ -1,14 +1,15 @@
-import axios from 'axios';
+import createAxiosConfig from './AxiosConfig';
 import { setAdministratorInfo, setPasswordResetAlert, setUserDeleteAlert } from '../actions';
 import { useDispatch } from 'react-redux';
 
 export default function AdministratorListAPI() {
 
   const dispatch = useDispatch();
+  const axiosConfig = createAxiosConfig(dispatch);
 
   const administratorInfo = async () => {
     try {
-      const response= await axios.get('/admin/v1/user')
+      const response= await axiosConfig.get('/admin/v1/user')
 
       if(response.status === 200) {
         dispatch(setAdministratorInfo(response.data.result));
@@ -20,7 +21,7 @@ export default function AdministratorListAPI() {
 
   const passwordReset = async (id) => {
     try {
-      const response = await axios.put('/admin/v1/user/' + id);
+      const response = await axiosConfig.put('/admin/v1/user/' + id);
 
       if (response.status === 200) {
         dispatch(setPasswordResetAlert(false));
@@ -35,7 +36,7 @@ export default function AdministratorListAPI() {
 
   const userDelete = async (id) => {
     try {
-      const response = await axios.delete('/admin/v1/user/' + id);
+      const response = await axiosConfig.delete('/admin/v1/user/' + id);
 
       if (response.status === 200) {
         dispatch(setUserDeleteAlert(false));

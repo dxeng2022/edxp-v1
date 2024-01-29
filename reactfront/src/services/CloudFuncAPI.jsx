@@ -1,4 +1,4 @@
-import axios from 'axios';
+import createAxiosConfig from './AxiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAddFolderResult, setAddFolderAlert, setFolderAlert,
   setUploadFileResult, setUploadFileAlert, setCompleteDeleteFileAlert, setDeleteFilePath, setSelectCheckbox, setChangeNameResult, setChangeNameInputAlert, setChangeNameAlert, setChangeNameComplete, setCloudSnackbar, setFolderNameComplete, setSelectFilePath, setUploadFile } from '../actions';
@@ -7,6 +7,7 @@ import { setAddFolderResult, setAddFolderAlert, setFolderAlert,
 export default function CloudFuncAPI() {
 
   const dispatch = useDispatch();
+  const axiosConfig = createAxiosConfig(dispatch);
 
   const currentPath = useSelector(state => state.currentPath);
   const folderName = useSelector(state => state.folderName);
@@ -24,7 +25,7 @@ export default function CloudFuncAPI() {
     };
 
     try {
-      const response = await axios.post('/api/v1/file/add-folder', addFolderInfo, {
+      const response = await axiosConfig.post('/api/v1/file/add-folder', addFolderInfo, {
         headers: {
           'Content-Type': 'application/json;charset=UTF-8'
         },
@@ -41,7 +42,6 @@ export default function CloudFuncAPI() {
         dispatch(setAddFolderResult('폴더 추가에 실패하였습니다. 중복된 폴더명이 있는지 확인해주세요. 지속될 시 관리자 문의바랍니다.'));
         dispatch(setAddFolderAlert(false));
         dispatch(setFolderAlert(true));
-      } else {
         console.log(error.response);
       }
     }
@@ -59,7 +59,7 @@ export default function CloudFuncAPI() {
     formData.append("data", new Blob([JSON.stringify({ currentPath: currentPath.path })], { type: 'application/json' }));
   
     try {
-      const response = await axios.post('/api/v1/file/upload', formData);
+      const response = await axiosConfig.post('/api/v1/file/upload', formData);
   
       if (response.status === 200) {
         dispatch(setUploadFileResult('업로드가 완료되었습니다!'));
@@ -67,11 +67,10 @@ export default function CloudFuncAPI() {
         dispatch(setUploadFile(filesToUpload));
       } 
     } catch (error) {
-      console.error(error);
       if (error.response && error.response.status === 409) {
         dispatch(setUploadFileResult("파일 이름이 중복되었습니다."));
         dispatch(setUploadFileAlert(true));
-      } else {
+      } else if (error.response && error.response.status !== 200) {
         dispatch(setUploadFileResult("업로드에 실패하였습니다."));
         dispatch(setUploadFileAlert(true));
       }
@@ -107,7 +106,7 @@ export default function CloudFuncAPI() {
     dispatch(setCloudSnackbar(true));
   
     try {
-      const response = await axios.post("/api/v1/file/download", 
+      const response = await axiosConfig.post("/api/v1/file/download", 
         { currentPath: currentPath.path, filePaths: selectFilePath },
         { responseType: 'blob' } // blob 형태의 데이터를 받기 위해 responseType을 지정
       );
@@ -130,7 +129,9 @@ export default function CloudFuncAPI() {
         dispatch(setSelectCheckbox([]));
       }
     } catch (error) {
-      alert("다운로드 실패! 서버에서 오류가 발생했습니다.");
+      if (error.response && error.response.status !== 200) {
+        alert("다운로드 실패! 서버에서 오류가 발생했습니다.");
+      }
     }
   }
   //파일 다운로드
@@ -139,7 +140,7 @@ export default function CloudFuncAPI() {
   const deleteFileAPI = async () => {
 
     try {
-      const response = await axios.delete('/api/v1/file', {
+      const response = await axiosConfig.delete('/api/v1/file', {
         data: { filePaths: selectFilePath },
       });
 
@@ -151,8 +152,6 @@ export default function CloudFuncAPI() {
     } catch(error) {
       if (error.response && error.response.status !== 200) {
         alert('삭제 중 문제가 발생했습니다. 관리자에게 문의바랍니다.');
-      } else {
-        console.log(error.response);
       }
     }
   };
@@ -173,7 +172,7 @@ export default function CloudFuncAPI() {
     };
 
     try {
-      const response = await axios.put('/api/v1/file', changeNameInfo, {
+      const response = await axiosConfig.put('/api/v1/file', changeNameInfo, {
         headers: {
           'Content-Type': 'application/json;charset=UTF-8'
         },
@@ -191,8 +190,6 @@ export default function CloudFuncAPI() {
         dispatch(setChangeNameResult('이름 변경을 실패하였습니다. 중복된 파일명이 있는지 확인해주세요. 지속될 시 관리자 문의바랍니다.'));
         dispatch(setChangeNameInputAlert(false));
         dispatch(setChangeNameAlert(true));
-      } else {
-        console.log(error.response);
       }
     }
 

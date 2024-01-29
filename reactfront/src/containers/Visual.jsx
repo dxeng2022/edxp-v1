@@ -13,7 +13,7 @@ export default function Visual() {
   const visualBackdropText = useSelector(state => state.visualBackdropText);
   
   return (
-    <Box sx={{mt: 12, mb: 3}}>
+    <Box sx={{my: 3}}>
       
       <Container maxWidth="false">
         <Grid container spacing={2}>

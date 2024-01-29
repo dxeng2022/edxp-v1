@@ -33,7 +33,6 @@ public class FileController {
             @RequestParam(required = false) String currentPath,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         List<FileListResponse> files = fileService.getFiles(principal.getUser().getId(), currentPath);
         return CommonResponse.success(files);
     }
@@ -44,7 +43,6 @@ public class FileController {
             @RequestParam(required = false) String currentPath,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         List<FolderListResponse> folders = fileService.getFolders(principal.getUser().getId(), currentPath);
         return CommonResponse.success(folders);
     }
@@ -55,7 +53,6 @@ public class FileController {
             @RequestParam(required = false) String currentPath,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         FileVolumeResponse response = fileService.getVolume(principal.getUser().getId(), currentPath);
         return CommonResponse.success(response);
     }
@@ -67,7 +64,6 @@ public class FileController {
             @RequestBody FolderAddRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         fileService.addFolder(principal.getUser().getId(), request);
         return CommonResponse.success();
     }
@@ -80,7 +76,6 @@ public class FileController {
             @RequestPart(value = "files") List<MultipartFile> files,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         if (files == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
         fileService.uploadFile(principal.getUser().getId(), new FileUploadRequest(request.getCurrentPath(), files));
         return CommonResponse.success();
@@ -96,7 +91,6 @@ public class FileController {
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
         log.debug("json: {}", request.toString());
-        if (principal == null) throw new EdxpApplicationException(ErrorCode.USER_NOT_LOGIN);
         httpResponse.setStatus(HttpServletResponse.SC_OK);
         fileService.downloadFiles(httpRequest, httpResponse, request, principal.getUser().getId());
     }
