@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MobileStepper from '@mui/material/MobileStepper';
 import Button from '@mui/material/Button';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
-import SwipeableViews from 'react-swipeable-views';
-import { autoPlay } from 'react-swipeable-views-utils';
-
-const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
+import SwipeableViews from "react-swipeable-views-react-18-fix";
 
 const images = [
   { label: 'Banner1', imgPath: '/banner1.png'},
@@ -33,15 +30,23 @@ export default function MouduleCardBanner() {
   const handleStepChange = (step) => {
     setActiveStep(step);
   };
-  
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveStep((prevActiveStep) => (prevActiveStep + 1) % maxSteps);
+    }, 3000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [maxSteps]);
+  
   return (
     <Box sx={{ position:"relative"}} >
-      <AutoPlaySwipeableViews
+      <SwipeableViews
         axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
         index={activeStep}
         onChangeIndex={handleStepChange}
-        interval={5000}
         enableMouseEvents
       >
         {images.map((step, index) => (
@@ -61,7 +66,7 @@ export default function MouduleCardBanner() {
             ) : null}
           </div>
         ))}
-      </AutoPlaySwipeableViews>
+      </SwipeableViews>
       <Box sx={{display: 'flex', justifyContent: 'center'}}>
         <MobileStepper
           sx={{
