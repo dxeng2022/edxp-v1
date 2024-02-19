@@ -1,8 +1,8 @@
 package com.edxp.dto.response;
 
-import com.edxp.domain.doc.PlantLine;
-import com.edxp.domain.doc.PlantModel;
-import com.edxp.domain.doc.PlantSymbol;
+import com.edxp.domain.draw.PlantLine;
+import com.edxp.domain.draw.PlantModel;
+import com.edxp.domain.draw.PlantSymbol;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

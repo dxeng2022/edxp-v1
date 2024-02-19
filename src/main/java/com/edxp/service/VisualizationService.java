@@ -3,7 +3,7 @@ package com.edxp.service;
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
-import com.edxp.domain.doc.PlantModel;
+import com.edxp.domain.draw.PlantModel;
 import com.edxp.dto.request.VisualizationDrawRequest;
 import com.edxp.dto.response.VisualizationDrawResponse;
 import lombok.RequiredArgsConstructor;
