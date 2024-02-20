@@ -1,4 +1,4 @@
-package com.edxp.domain.doc;
+package com.edxp.domain.draw;
 
 import lombok.Data;
 

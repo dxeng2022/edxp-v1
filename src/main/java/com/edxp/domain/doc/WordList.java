@@ -1,4 +1,4 @@
-package com.edxp.domain;
+package com.edxp.domain.doc;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

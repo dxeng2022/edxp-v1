@@ -134,6 +134,10 @@ logging:
         controller: debug
         service: debug
 
+server:
+  ssl:
+    enabled: false
+
 ---
 
 spring:
