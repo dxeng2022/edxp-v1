@@ -13,4 +13,8 @@ import java.util.List;
 public class FileUploadRequest {
     private String currentPath;
     private List<MultipartFile> files;
+
+    public static FileUploadRequest of(String currentPath, List<MultipartFile> files) {
+        return new FileUploadRequest(currentPath, files);
+    }
 }

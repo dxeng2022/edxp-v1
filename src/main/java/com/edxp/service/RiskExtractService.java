@@ -2,40 +2,40 @@ package com.edxp.service;
 
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
-import com.edxp.domain.ParsedDocument;
+import com.edxp._core.handler.exception.EdxpApplicationException;
+import com.edxp.domain.doc.ParsedDocument;
 import com.edxp.dto.request.FileUploadRequest;
 import com.edxp.dto.request.RiskAnalyzeRequest;
-import com.edxp._core.handler.exception.EdxpApplicationException;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.edxp.dto.request.VisualizationDocRequest;
+import com.edxp.dto.response.VisualizationDocParseResponse;
+import com.edxp.dto.response.VisualizationDocRiskResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItem;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static com.edxp._core.common.client.ModelClient.executeModelClient;
+import static com.edxp._core.common.converter.FileConverter.convertFileToMultipartFile;
+import static com.edxp._core.common.converter.FileConverter.convertMultipartFileToResource;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -43,141 +43,170 @@ import java.util.Map;
 public class RiskExtractService {
     private final FileService fileService;
 
+    private final ObjectMapper objectMapper;
+    private final TypeReference<List<ParsedDocument>> typeReference = new TypeReference<>() {
+    };
+
     @Value("${module.parser}")
     private String parserUrl;
     @Value("${module.analyze}")
     private String modelUrl;
+    @Value("${file.path}")
+    private String downloadFolder;
 
-    public Map<String, List<ParsedDocument>> parse(Long userId, MultipartFile file) throws IOException {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+    public Map<String, FileSystemResource> parseDown(Long userId, VisualizationDocRequest request) {
+        File file = fileService.downloadAnalysisFile(userId, request.getFilePath(), "doc");
+        String filePath = request.getFilePath();
 
-        Resource fileResource;
-        try {
-            fileResource = convertMultipartFileToResource(file);
-        } catch (IOException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Converting failed");
-        }
+        return Map.of(filePath, new FileSystemResource(file));
+    }
 
+    /**
+     * [ 클라우드 파싱 실행 ]
+     *
+     * @param userId  log in user id
+     * @param request file path
+     * @return response map(filepath, response dto)
+     * @throws IOException remove fail
+     */
+    public Map<String, VisualizationDocParseResponse> parseExecute(Long userId, VisualizationDocRequest request) throws IOException {
+        StringBuilder userPath = getUserPath(userId);
+        String folderPath = downloadFolder + "/" + userPath + "/" + request.getFilePath();
+        File inputFile = new File(folderPath);
+
+        return parse(userId, convertFileToMultipartFile(inputFile));
+    }
+
+    /**
+     * [ ITB 파싱 ]
+     *
+     * @param userId user id log in
+     * @param file   input file to request
+     * @return parsed data
+     * @throws IOException for file remove
+     */
+    public Map<String, VisualizationDocParseResponse> parse(Long userId, MultipartFile file) throws IOException {
+        // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
-        requestMap.add("file", fileResource);
+        requestMap.add("file", convertMultipartFileToResource(file));
         requestMap.add("userId", userId);
+        final ResponseEntity<String> response = executeModelClient(parserUrl, requestMap);
 
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(requestMap, headers);
+        // 1) 오브젝트 맵퍼로 객체로 받음
+        List<ParsedDocument> documents = objectMapper.readValue(response.getBody(), typeReference);
+        List<ParsedDocument> resizeDocs = copyDocumentsWithEmptyWordList(documents);
 
-        ResponseEntity<String> response = restTemplate.postForEntity(parserUrl, requestEntity, String.class);
+        // 2) 오브젝트 맵퍼로 파일에 씀
+        String fileName = generateTempFileName() + "-parsed.json";
+        File targetFile = new File(fileName);
+        saveResultFile(objectMapper, documents, targetFile);
 
+        String resizeFileName = generateTempFileName() + "-resize.json";
+        File resizeTargetFile = new File(resizeFileName);
+        saveResultFile(objectMapper, resizeDocs, resizeTargetFile);
 
-        String resultName = RandomStringUtils.randomAlphanumeric(6);
-        File resultFile = new File(resultName + "-parsed.json");
-        File downsizedFile = new File(resultName + "-downsized.json");
+        // 3) 쓴 파일을 멀티파트 파일로 바꾸고 삭제
+        MultipartFile result = convertFileToMultipartFile(targetFile);
+        MultipartFile resizeResult = convertFileToMultipartFile(resizeTargetFile);
 
-        log.debug("resultFile: {}", resultFile);
-        log.debug("downsizedFile: {}", downsizedFile);
+        // 4) 업로드
+        fileService.uploadFile(userId, new FileUploadRequest("doc_risk/", List.of(result)));
+        fileService.uploadFile(userId, new FileUploadRequest("doc_risk/", List.of(resizeResult)));
 
-        List<ParsedDocument> copiedDocuments;
-        try (
-                FileOutputStream fos1 = new FileOutputStream(resultFile);
-                FileOutputStream fos2 = new FileOutputStream(downsizedFile)
-        ) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            TypeReference<List<ParsedDocument>> typeReference = new TypeReference<>() {
-            };
-            List<ParsedDocument> parsedDocuments = objectMapper.readValue(response.getBody(), typeReference);
-            objectMapper.writeValue(fos1, parsedDocuments);
+        // 5) 객체 반환
+        if (response.getStatusCode().is2xxSuccessful())
+            return Map.of(Objects.requireNonNull(resizeResult.getOriginalFilename()), VisualizationDocParseResponse.from(resizeDocs));
+        else
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Parser is failed");
+    }
 
-            for (ParsedDocument p : parsedDocuments) p.setWordList(null);
+    /**
+     * [ 독소조항 추출 ]
+     *
+     * @param userId  user id log in
+     * @param request request file name
+     * @return document
+     */
+    public VisualizationDocRiskResponse analysis(Long userId, RiskAnalyzeRequest request) throws IOException {
+        File parsedFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
 
-            objectMapper.writeValue(fos2, parsedDocuments);
+        // 모델 실행
+        MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
+        requestMap.add("file", new FileSystemResource(parsedFile));
+        requestMap.add("userId", userId);
+        ResponseEntity<String> response = executeModelClient(modelUrl, requestMap);
 
-            copiedDocuments = objectMapper.readValue(resultFile, typeReference);
+        // 1) 오브젝트 맵퍼로 객체로 받음
+        List<ParsedDocument> documents = objectMapper.readValue(response.getBody(), typeReference);
+
+        // 2) 오브젝트 맵퍼로 파일에 씀
+        String filename = getFilenameFromHeader(response);
+        File targetFile = new File(filename);
+        saveResultFile(objectMapper, documents, targetFile);
+
+        // 3) 쓴 파일을 멀티파트 파일로 바꾸고 삭제
+        MultipartFile result = convertFileToMultipartFile(targetFile);
+        FileUtil.remove(parsedFile);
+
+        // 4) 업로드
+        fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(result)));
+
+        // 5) 객체 반환
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return VisualizationDocRiskResponse.from(documents);
+        } else {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Analysis is failed");
+        }
+    }
+
+    /**
+     * [ 파일 삭제 ]
+     *
+     * @param userId login user id
+     * @throws IOException remove fail
+     */
+    public void deleteResult(Long userId) throws IOException {
+        StringBuilder userPath = getUserPath(userId);
+        String folderPath = downloadFolder + "/" + userPath;
+        FileUtil.remove(new File(folderPath));
+    }
+
+    private StringBuilder getUserPath(Long userId) {
+        StringBuilder userPath = new StringBuilder();
+        userPath.append("user_").append(String.format("%06d", userId)).append("/").append("doc");
+        return userPath;
+    }
+
+    public List<ParsedDocument> copyDocumentsWithEmptyWordList(List<ParsedDocument> originalDocuments) {
+        return originalDocuments.stream()
+                .map(document -> ParsedDocument.builder()
+                        .index(document.getIndex())
+                        .label(document.getLabel())
+                        .page(document.getPage())
+                        .section(document.getSection())
+                        .sentence(document.getSentence())
+                        .wordList(List.of())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    private void saveResultFile(ObjectMapper objectMapper, List<ParsedDocument> documents, File targetFile) throws IOException {
+        try (FileOutputStream fos1 = new FileOutputStream(targetFile)) {
+            objectMapper.writeValue(fos1, documents);
         } catch (IOException e) {
-            FileUtil.remove(resultFile);
-            FileUtil.remove(downsizedFile);
+            FileUtil.remove(targetFile);
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Mapping failed");
         }
-
-        List<MultipartFile> files = new ArrayList<>();
-        MultipartFile result;
-        MultipartFile resultResized;
-        try {
-            result = convertFileToMultipartFile(resultFile);
-            resultResized = convertFileToMultipartFile(downsizedFile);
-        } catch (IOException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Converting failed");
-        } finally {
-            FileUtil.remove(resultFile);
-            FileUtil.remove(downsizedFile);
-        }
-
-        files.add(result);
-        files.add(resultResized);
-        FileUploadRequest uploadRequest = new FileUploadRequest("doc_risk/", files);
-
-        fileService.uploadFile(userId, uploadRequest);
-
-        Map<String, List<ParsedDocument>> responseMap = new HashMap<>();
-        responseMap.put(result.getOriginalFilename(), copiedDocuments);
-
-        if (response.getStatusCode().is2xxSuccessful())
-            return responseMap;
-        else
-            return null;
     }
 
-    public List<ParsedDocument> analysis(Long userId, RiskAnalyzeRequest request) throws IOException {
-        File jsonFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
-
-        try {
-            MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
-            formData.add("file", new FileSystemResource(jsonFile));
-
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, headers);
-
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity(modelUrl, requestEntity, String.class);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            List<ParsedDocument> analysisDocuments;
-            analysisDocuments = objectMapper.readValue(responseEntity.getBody(), objectMapper.getTypeFactory().constructCollectionType(List.class, ParsedDocument.class));
-
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                return analysisDocuments;
-            } else {
-                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Analysis is failed");
-            }
-        } catch (JsonProcessingException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Mapping is failed");
-        } finally {
-            FileUtil.remove(jsonFile);
-        }
+    private String generateTempFileName() {
+        // 임시 파일 이름 생성 (UUID 사용)
+        return UUID.randomUUID().toString();
     }
 
-    public MultipartFile convertFileToMultipartFile(File file) throws IOException {
-        FileItem fileItem = new DiskFileItem("file", Files.probeContentType(file.toPath()), false, file.getName(), (int) file.length(), file.getParentFile());
-
-        InputStream fis = new FileInputStream(file);
-        OutputStream fos = fileItem.getOutputStream();
-        IOUtils.copy(fis, fos);
-
-        fis.close();
-        fos.close();
-
-        return new CommonsMultipartFile(fileItem);
-    }
-
-    private Resource convertMultipartFileToResource(MultipartFile multipartFile) throws IOException {
-        byte[] fileBytes = multipartFile.getBytes();
-
-        return new ByteArrayResource(fileBytes) {
-            @Override
-            public String getFilename() {
-                return multipartFile.getOriginalFilename(); // 파일 이름 설정
-            }
-        };
+    private String getFilenameFromHeader(ResponseEntity<String> response) {
+        String contentDispositionHeader = response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION);
+        ContentDisposition contentDisposition = ContentDisposition.parse(Objects.requireNonNull(contentDispositionHeader));
+        return contentDisposition.getFilename();
     }
 }
