@@ -1,6 +1,6 @@
 package com.edxp.dto.response;
 
-import com.edxp.domain.doc.ParsedDocument;
+import com.edxp.order.doc.domain.ParsedDocument;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

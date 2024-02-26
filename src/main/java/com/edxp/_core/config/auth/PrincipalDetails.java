@@ -1,6 +1,6 @@
 package com.edxp._core.config.auth;
 
-import com.edxp.dto.User;
+import com.edxp.user.dto.User;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
