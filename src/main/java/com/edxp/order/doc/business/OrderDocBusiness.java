@@ -1,9 +1,9 @@
-package com.edxp.order.doc.service;
+package com.edxp.order.doc.business;
 
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
-import com.edxp.order.doc.domain.ParsedDocument;
+import com.edxp.order.doc.model.ParsedDocument;
 import com.edxp.s3file.dto.requset.FileUploadRequest;
 import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
 import com.edxp.order.doc.dto.request.OrderDocParseRequest;
@@ -41,7 +41,7 @@ import static com.edxp._core.common.converter.FileConverter.convertMultipartFile
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class OrderDocService {
+public class OrderDocBusiness {
     private final FileService fileService;
 
     private final ObjectMapper objectMapper;

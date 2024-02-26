@@ -3,7 +3,7 @@ package com.edxp.order.draw.service;
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
-import com.edxp.order.draw.domain.PlantModel;
+import com.edxp.order.draw.model.PlantModel;
 import com.edxp.order.draw.dto.request.OrderDrawRequest;
 import com.edxp.order.draw.dto.response.OrderDrawResponse;
 import com.edxp.s3file.service.FileService;

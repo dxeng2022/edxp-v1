@@ -1,4 +1,4 @@
-package com.edxp.order.draw.domain;
+package com.edxp.order.draw.model;
 
 import lombok.*;
 

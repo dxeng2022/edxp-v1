@@ -8,7 +8,7 @@ import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
 import com.edxp.order.doc.dto.request.OrderDocParseRequest;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
-import com.edxp.order.doc.service.OrderDocService;
+import com.edxp.order.doc.business.OrderDocBusiness;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -26,7 +26,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/doc")
 @RestController
 public class OrderDocController {
-    private final OrderDocService orderDocService;
+    private final OrderDocBusiness orderDocBusiness;
 
     @CrossOrigin
     @PostMapping("/parser-pdf")
@@ -34,7 +34,7 @@ public class OrderDocController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseRequest request
     ) {
-        Map<String, FileSystemResource> response = orderDocService.parseDown(principal.getUser().getId(), request);
+        Map<String, FileSystemResource> response = orderDocBusiness.parseDown(principal.getUser().getId(), request);
 
         String filePath = null;
         for (String key : response.keySet()) filePath = key;
@@ -51,7 +51,7 @@ public class OrderDocController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseRequest request
     ) throws IOException {
-        Map<String, OrderDocParseResponse> response = orderDocService.parseExecute(principal.getUser().getId(), request);
+        Map<String, OrderDocParseResponse> response = orderDocBusiness.parseExecute(principal.getUser().getId(), request);
 
         String fileName = null;
         for (String key : response.keySet()) fileName = key;
@@ -69,7 +69,7 @@ public class OrderDocController {
             @RequestParam("file") MultipartFile file
     ) throws IOException {
         if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
-        Map<String, OrderDocParseResponse> response = orderDocService.parse(principal.getUser().getId(), file);
+        Map<String, OrderDocParseResponse> response = orderDocBusiness.parse(principal.getUser().getId(), file);
 
         String fileName = null;
         for (String key : response.keySet()) fileName = key;
@@ -86,7 +86,7 @@ public class OrderDocController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocRiskRequest request
     ) throws IOException {
-        return CommonResponse.success(orderDocService.analysis(principal.getUser().getId(), request));
+        return CommonResponse.success(orderDocBusiness.analysis(principal.getUser().getId(), request));
     }
 
     @CrossOrigin
@@ -94,7 +94,7 @@ public class OrderDocController {
     public CommonResponse<Void> deleteFile(
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
-        orderDocService.deleteResult(principal.getUser().getId());
+        orderDocBusiness.deleteResult(principal.getUser().getId());
 
         return CommonResponse.success();
     }

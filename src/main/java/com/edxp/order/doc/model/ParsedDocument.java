@@ -1,4 +1,4 @@
-package com.edxp.order.doc.domain;
+package com.edxp.order.doc.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
