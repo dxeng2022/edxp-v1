@@ -2,9 +2,9 @@ package com.edxp.order.draw.controller;
 
 import com.edxp._core.common.response.CommonResponse;
 import com.edxp._core.config.auth.PrincipalDetails;
-import com.edxp.dto.request.VisualizationDrawRequest;
-import com.edxp.dto.response.VisualizationDrawResponse;
-import com.edxp.service.VisualizationService;
+import com.edxp.order.draw.dto.request.OrderDrawRequest;
+import com.edxp.order.draw.dto.response.OrderDrawResponse;
+import com.edxp.order.draw.service.OrderDrawService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -22,26 +22,26 @@ import java.io.IOException;
 @RequestMapping("/api/v1/visual")
 @RestController
 public class OrderDrawController {
-    private final VisualizationService visualizationService;
+    private final OrderDrawService orderDrawService;
 
     @CrossOrigin
     @PostMapping("/result-draw")
-    public CommonResponse<VisualizationDrawResponse> downloadJson(
+    public CommonResponse<OrderDrawResponse> downloadJson(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestBody VisualizationDrawRequest request
+            @RequestBody OrderDrawRequest request
     ) throws IOException {
-        final VisualizationDrawResponse response = visualizationService.getResultDraw(principal.getUser().getId(), request);
+        final OrderDrawResponse response = orderDrawService.getResultDraw(principal.getUser().getId(), request);
 
         return CommonResponse.success(response);
     }
 
     @CrossOrigin
     @PostMapping("/result-loc")
-    public CommonResponse<VisualizationDrawResponse> downloadLocal(
+    public CommonResponse<OrderDrawResponse> downloadLocal(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestPart("file") MultipartFile multipartFile
     ) throws IOException {
-        final VisualizationDrawResponse response = visualizationService.getResultLocal(principal.getUser().getId(), multipartFile);
+        final OrderDrawResponse response = orderDrawService.getResultLocal(principal.getUser().getId(), multipartFile);
 
         return CommonResponse.success(response);
     }
@@ -50,11 +50,11 @@ public class OrderDrawController {
     @PostMapping("/result-img")
     public ResponseEntity<Object> downloadImage(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestBody VisualizationDrawRequest request
+            @RequestBody OrderDrawRequest request
     ) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG);
-        final FileSystemResource resultImage = visualizationService.getResultImage(principal.getUser().getId(), request);
+        final FileSystemResource resultImage = orderDrawService.getResultImage(principal.getUser().getId(), request);
 
         return ResponseEntity.ok()
                 .headers(headers)
@@ -66,7 +66,7 @@ public class OrderDrawController {
     public CommonResponse<Void> deleteResult(
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
-        visualizationService.deleteResult(principal.getUser().getId());
+        orderDrawService.deleteResult(principal.getUser().getId());
 
         return CommonResponse.success();
     }

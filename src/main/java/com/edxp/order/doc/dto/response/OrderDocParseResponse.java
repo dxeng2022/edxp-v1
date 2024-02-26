@@ -1,4 +1,4 @@
-package com.edxp.dto.response;
+package com.edxp.order.doc.dto.response;
 
 import com.edxp.order.doc.domain.ParsedDocument;
 import lombok.AllArgsConstructor;
@@ -10,21 +10,21 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class VisualizationDocParseResponse {
+public class OrderDocParseResponse {
     private List<ParsedDocument> documents;
     private int allCounts;
 
-    public static VisualizationDocParseResponse of(
+    public static OrderDocParseResponse of(
             List<ParsedDocument> documents,
             int allCounts
     ) {
-        return new VisualizationDocParseResponse(
+        return new OrderDocParseResponse(
                 documents,
                 allCounts
         );
     }
 
-    public static VisualizationDocParseResponse from(List<ParsedDocument> documents) {
-        return VisualizationDocParseResponse.of(documents, documents.size());
+    public static OrderDocParseResponse from(List<ParsedDocument> documents) {
+        return OrderDocParseResponse.of(documents, documents.size());
     }
 }

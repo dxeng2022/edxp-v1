@@ -1,4 +1,4 @@
-package com.edxp.dto.response;
+package com.edxp.order.draw.dto.response;
 
 import com.edxp.order.draw.domain.PlantLine;
 import com.edxp.order.draw.domain.PlantModel;
@@ -11,14 +11,14 @@ import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
-public class VisualizationDrawResponse {
+public class OrderDrawResponse {
     private PlantModel plantModel;
     private HashMap<String, Integer> symbols;
     private HashMap<String, Integer> lines;
     private int countSymbol;
     private int countLine;
 
-    public static VisualizationDrawResponse of (
+    public static OrderDrawResponse of (
             PlantModel plantModel,
             HashMap<String, Integer> symbols,
             HashMap<String, Integer> lines,
@@ -28,7 +28,7 @@ public class VisualizationDrawResponse {
         HashMap<String, Integer> sortedSymbols = sortHashMapWithValue(symbols);
         HashMap<String, Integer> sortedLines = sortHashMapWithValue(lines);
 
-        return new VisualizationDrawResponse(
+        return new OrderDrawResponse(
                 plantModel,
                 sortedSymbols,
                 sortedLines,
@@ -37,7 +37,7 @@ public class VisualizationDrawResponse {
         );
     }
 
-    public static VisualizationDrawResponse from(PlantModel plantModel) {
+    public static OrderDrawResponse from(PlantModel plantModel) {
         HashMap<String, Integer> symbols = new HashMap<>();
         HashMap<String, Integer> lines = new HashMap<>();
         int countSymbol = 0;
@@ -62,7 +62,7 @@ public class VisualizationDrawResponse {
             }
         }
 
-        return VisualizationDrawResponse.of(plantModel, symbols, lines, countSymbol, countLine);
+        return OrderDrawResponse.of(plantModel, symbols, lines, countSymbol, countLine);
     }
 
     private static HashMap<String, Integer> sortHashMapWithValue(HashMap<String, Integer> hashMap) {

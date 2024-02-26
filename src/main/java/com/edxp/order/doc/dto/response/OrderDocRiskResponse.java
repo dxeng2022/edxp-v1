@@ -1,4 +1,4 @@
-package com.edxp.dto.response;
+package com.edxp.order.doc.dto.response;
 
 import com.edxp.order.doc.domain.ParsedDocument;
 import lombok.AllArgsConstructor;
@@ -11,19 +11,19 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class VisualizationDocRiskResponse {
+public class OrderDocRiskResponse {
     private List<ParsedDocument> documents;
     private List<ParsedDocument> onlyRisks;
     private int allCounts;
     private int riskCounts;
 
-    public static VisualizationDocRiskResponse of(
+    public static OrderDocRiskResponse of(
             List<ParsedDocument> documents,
             List<ParsedDocument> onlyRisks,
             int allCounts,
             int riskCounts
     ) {
-        return new VisualizationDocRiskResponse(
+        return new OrderDocRiskResponse(
                 documents,
                 onlyRisks,
                 allCounts,
@@ -31,10 +31,10 @@ public class VisualizationDocRiskResponse {
         );
     }
 
-    public static VisualizationDocRiskResponse from(List<ParsedDocument> documents) {
+    public static OrderDocRiskResponse from(List<ParsedDocument> documents) {
         List<ParsedDocument> onlyRisks = documents.stream().filter(
                 item -> item.getLabel().equals("Risk")).collect(Collectors.toList()
         );
-        return VisualizationDocRiskResponse.of(documents, onlyRisks, documents.size(), onlyRisks.size());
+        return OrderDocRiskResponse.of(documents, onlyRisks, documents.size(), onlyRisks.size());
     }
 }

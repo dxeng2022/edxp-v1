@@ -1,11 +1,11 @@
-package com.edxp.service;
+package com.edxp.order.draw.service;
 
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.draw.domain.PlantModel;
-import com.edxp.dto.request.VisualizationDrawRequest;
-import com.edxp.dto.response.VisualizationDrawResponse;
+import com.edxp.order.draw.dto.request.OrderDrawRequest;
+import com.edxp.order.draw.dto.response.OrderDrawResponse;
 import com.edxp.s3file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,23 +27,23 @@ import java.util.zip.ZipInputStream;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class VisualizationService {
+public class OrderDrawService {
     private final FileService fileService;
 
     @Value("${file.path}")
     private String downloadFolder;
 
-    public VisualizationDrawResponse getResultDraw(Long userId, VisualizationDrawRequest request) throws IOException {
+    public OrderDrawResponse getResultDraw(Long userId, OrderDrawRequest request) throws IOException {
         File file = fileService.downloadAnalysisFile(userId, request.getFilePath(), "draw");
 
         unzipFile(changeFileName(file));
 
         PlantModel plantModel = getPlantModel(file);
 
-        return VisualizationDrawResponse.from(plantModel);
+        return OrderDrawResponse.from(plantModel);
     }
 
-    public VisualizationDrawResponse getResultLocal(Long userId, MultipartFile multipartFile) throws IOException {
+    public OrderDrawResponse getResultLocal(Long userId, MultipartFile multipartFile) throws IOException {
         StringBuilder userPath = getUserPath(userId);
         FileUtil.createFolder(downloadFolder + "/" + userPath);
         File file = new File(downloadFolder + "/" + userPath + "/" + multipartFile.getOriginalFilename());
@@ -58,10 +58,10 @@ public class VisualizationService {
 
         PlantModel plantModel = getPlantModel(file);
 
-        return VisualizationDrawResponse.from(plantModel);
+        return OrderDrawResponse.from(plantModel);
     }
 
-    public FileSystemResource getResultImage(Long userId, VisualizationDrawRequest request) {
+    public FileSystemResource getResultImage(Long userId, OrderDrawRequest request) {
         StringBuilder userPath = getUserPath(userId);
         String folderPath = downloadFolder + "/" + userPath + "/" + request.getFilePath().substring(0, request.getFilePath().lastIndexOf("."));
         try {

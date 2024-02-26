@@ -1,14 +1,14 @@
-package com.edxp.service;
+package com.edxp.order.doc.service;
 
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.doc.domain.ParsedDocument;
 import com.edxp.s3file.dto.requset.FileUploadRequest;
-import com.edxp.dto.request.RiskAnalyzeRequest;
-import com.edxp.dto.request.VisualizationDocRequest;
-import com.edxp.dto.response.VisualizationDocParseResponse;
-import com.edxp.dto.response.VisualizationDocRiskResponse;
+import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
+import com.edxp.order.doc.dto.request.OrderDocParseRequest;
+import com.edxp.order.doc.dto.response.OrderDocParseResponse;
+import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
 import com.edxp.s3file.service.FileService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +41,7 @@ import static com.edxp._core.common.converter.FileConverter.convertMultipartFile
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class RiskExtractService {
+public class OrderDocService {
     private final FileService fileService;
 
     private final ObjectMapper objectMapper;
@@ -55,7 +55,7 @@ public class RiskExtractService {
     @Value("${file.path}")
     private String downloadFolder;
 
-    public Map<String, FileSystemResource> parseDown(Long userId, VisualizationDocRequest request) {
+    public Map<String, FileSystemResource> parseDown(Long userId, OrderDocParseRequest request) {
         File file = fileService.downloadAnalysisFile(userId, request.getFilePath(), "doc");
         String filePath = request.getFilePath();
 
@@ -70,7 +70,7 @@ public class RiskExtractService {
      * @return response map(filepath, response dto)
      * @throws IOException remove fail
      */
-    public Map<String, VisualizationDocParseResponse> parseExecute(Long userId, VisualizationDocRequest request) throws IOException {
+    public Map<String, OrderDocParseResponse> parseExecute(Long userId, OrderDocParseRequest request) throws IOException {
         StringBuilder userPath = getUserPath(userId);
         String folderPath = downloadFolder + "/" + userPath + "/" + request.getFilePath();
         File inputFile = new File(folderPath);
@@ -86,7 +86,7 @@ public class RiskExtractService {
      * @return parsed data
      * @throws IOException for file remove
      */
-    public Map<String, VisualizationDocParseResponse> parse(Long userId, MultipartFile file) throws IOException {
+    public Map<String, OrderDocParseResponse> parse(Long userId, MultipartFile file) throws IOException {
         // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", convertMultipartFileToResource(file));
@@ -116,7 +116,7 @@ public class RiskExtractService {
 
         // 5) 객체 반환
         if (response.getStatusCode().is2xxSuccessful())
-            return Map.of(Objects.requireNonNull(resizeResult.getOriginalFilename()), VisualizationDocParseResponse.from(resizeDocs));
+            return Map.of(Objects.requireNonNull(resizeResult.getOriginalFilename()), OrderDocParseResponse.from(resizeDocs));
         else
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Parser is failed");
     }
@@ -128,7 +128,7 @@ public class RiskExtractService {
      * @param request request file name
      * @return document
      */
-    public VisualizationDocRiskResponse analysis(Long userId, RiskAnalyzeRequest request) throws IOException {
+    public OrderDocRiskResponse analysis(Long userId, OrderDocRiskRequest request) throws IOException {
         File parsedFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
 
         // 모델 실행
@@ -154,7 +154,7 @@ public class RiskExtractService {
 
         // 5) 객체 반환
         if (response.getStatusCode().is2xxSuccessful()) {
-            return VisualizationDocRiskResponse.from(documents);
+            return OrderDocRiskResponse.from(documents);
         } else {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Analysis is failed");
         }

@@ -4,11 +4,11 @@ import com.edxp._core.common.response.CommonResponse;
 import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
-import com.edxp.dto.request.RiskAnalyzeRequest;
-import com.edxp.dto.request.VisualizationDocRequest;
-import com.edxp.dto.response.VisualizationDocParseResponse;
-import com.edxp.dto.response.VisualizationDocRiskResponse;
-import com.edxp.service.RiskExtractService;
+import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
+import com.edxp.order.doc.dto.request.OrderDocParseRequest;
+import com.edxp.order.doc.dto.response.OrderDocParseResponse;
+import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
+import com.edxp.order.doc.service.OrderDocService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -26,15 +26,15 @@ import java.util.Map;
 @RequestMapping("/api/v1/doc")
 @RestController
 public class OrderDocController {
-    private final RiskExtractService riskExtractService;
+    private final OrderDocService orderDocService;
 
     @CrossOrigin
     @PostMapping("/parser-pdf")
     public ResponseEntity<FileSystemResource> requestParsePdf(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestBody VisualizationDocRequest request
+            @RequestBody OrderDocParseRequest request
     ) {
-        Map<String, FileSystemResource> response = riskExtractService.parseDown(principal.getUser().getId(), request);
+        Map<String, FileSystemResource> response = orderDocService.parseDown(principal.getUser().getId(), request);
 
         String filePath = null;
         for (String key : response.keySet()) filePath = key;
@@ -47,11 +47,11 @@ public class OrderDocController {
 
     @CrossOrigin
     @PostMapping("/parser")
-    public ResponseEntity<VisualizationDocParseResponse> requestParse(
+    public ResponseEntity<OrderDocParseResponse> requestParse(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestBody VisualizationDocRequest request
+            @RequestBody OrderDocParseRequest request
     ) throws IOException {
-        Map<String, VisualizationDocParseResponse> response = riskExtractService.parseExecute(principal.getUser().getId(), request);
+        Map<String, OrderDocParseResponse> response = orderDocService.parseExecute(principal.getUser().getId(), request);
 
         String fileName = null;
         for (String key : response.keySet()) fileName = key;
@@ -64,12 +64,12 @@ public class OrderDocController {
 
     @CrossOrigin
     @PostMapping("/parser-loc")
-    public ResponseEntity<VisualizationDocParseResponse> requestParseLocal(
+    public ResponseEntity<OrderDocParseResponse> requestParseLocal(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestParam("file") MultipartFile file
     ) throws IOException {
         if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
-        Map<String, VisualizationDocParseResponse> response = riskExtractService.parse(principal.getUser().getId(), file);
+        Map<String, OrderDocParseResponse> response = orderDocService.parse(principal.getUser().getId(), file);
 
         String fileName = null;
         for (String key : response.keySet()) fileName = key;
@@ -82,11 +82,11 @@ public class OrderDocController {
 
     @CrossOrigin
     @PostMapping("/analysis")
-    public CommonResponse<VisualizationDocRiskResponse> requestAnalysis(
+    public CommonResponse<OrderDocRiskResponse> requestAnalysis(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestBody RiskAnalyzeRequest request
+            @RequestBody OrderDocRiskRequest request
     ) throws IOException {
-        return CommonResponse.success(riskExtractService.analysis(principal.getUser().getId(), request));
+        return CommonResponse.success(orderDocService.analysis(principal.getUser().getId(), request));
     }
 
     @CrossOrigin
@@ -94,7 +94,7 @@ public class OrderDocController {
     public CommonResponse<Void> deleteFile(
             @AuthenticationPrincipal PrincipalDetails principal
     ) throws IOException {
-        riskExtractService.deleteResult(principal.getUser().getId());
+        orderDocService.deleteResult(principal.getUser().getId());
 
         return CommonResponse.success();
     }
