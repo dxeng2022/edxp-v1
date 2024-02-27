@@ -32,9 +32,16 @@ public class OrderDocRiskResponse {
     }
 
     public static OrderDocRiskResponse from(List<ParsedDocument> documents) {
-        List<ParsedDocument> onlyRisks = documents.stream().filter(
+        final List<ParsedDocument> newDocuments = documents.stream().peek(it -> {
+            if (it.getSection().equals("")) {
+                it.setSection("-");
+            }
+        }).collect(Collectors.toList());
+
+        final List<ParsedDocument> onlyRisks = documents.stream().filter(
                 item -> item.getLabel().equals("Risk")).collect(Collectors.toList()
         );
-        return OrderDocRiskResponse.of(documents, onlyRisks, documents.size(), onlyRisks.size());
+
+        return OrderDocRiskResponse.of(newDocuments, onlyRisks, documents.size(), onlyRisks.size());
     }
 }

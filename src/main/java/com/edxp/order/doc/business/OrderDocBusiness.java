@@ -1,14 +1,20 @@
 package com.edxp.order.doc.business;
 
+import com.edxp._core.common.annotation.Business;
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
-import com.edxp.order.doc.model.ParsedDocument;
-import com.edxp.s3file.dto.requset.FileUploadRequest;
-import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
+import com.edxp.order.doc.converter.OrderDocConverter;
 import com.edxp.order.doc.dto.request.OrderDocParseRequest;
+import com.edxp.order.doc.dto.request.OrderDocParseUpdateRequest;
+import com.edxp.order.doc.dto.request.OrderDocRequest;
+import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
+import com.edxp.order.doc.entity.OrderDocEntity;
+import com.edxp.order.doc.model.ParsedDocument;
+import com.edxp.order.doc.service.OrderDocService;
+import com.edxp.s3file.dto.requset.FileUploadRequest;
 import com.edxp.s3file.service.FileService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +25,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,13 +45,14 @@ import static com.edxp._core.common.converter.FileConverter.convertMultipartFile
 
 @Slf4j
 @RequiredArgsConstructor
-@Service
+@Business
 public class OrderDocBusiness {
+    private final OrderDocConverter orderDocConverter;
+    private final OrderDocService orderDocService;
     private final FileService fileService;
 
     private final ObjectMapper objectMapper;
-    private final TypeReference<List<ParsedDocument>> typeReference = new TypeReference<>() {
-    };
+    private final TypeReference<List<ParsedDocument>> typeReference = new TypeReference<>() {};
 
     @Value("${module.parser}")
     private String parserUrl;
@@ -55,6 +61,13 @@ public class OrderDocBusiness {
     @Value("${file.path}")
     private String downloadFolder;
 
+    /**
+     * [ 미리보기용 pdf 다윤요청 ]
+     *
+     * @param userId  log in user id
+     * @param request file path
+     * @return response map(filepath, pdf file)
+     */
     public Map<String, FileSystemResource> parseDown(Long userId, OrderDocParseRequest request) {
         File file = fileService.downloadAnalysisFile(userId, request.getFilePath(), "doc");
         String filePath = request.getFilePath();
@@ -63,7 +76,7 @@ public class OrderDocBusiness {
     }
 
     /**
-     * [ 클라우드 파싱 실행 ]
+     * [ 클라우드 파싱 요청 ]
      *
      * @param userId  log in user id
      * @param request file path
@@ -85,40 +98,79 @@ public class OrderDocBusiness {
      * @param file   input file to request
      * @return parsed data
      * @throws IOException for file remove
+     * @apiNote ITB 문서 파싱을 진행하는 API
+     * @since 2024.02.27
      */
     public Map<String, OrderDocParseResponse> parse(Long userId, MultipartFile file) throws IOException {
         // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", convertMultipartFileToResource(file));
         requestMap.add("userId", userId);
+//        final ResponseEntity<String> response = executeModelClient(parserUrl, requestMap);
         final ResponseEntity<String> response = executeModelClient(parserUrl, requestMap);
 
         // 1) 오브젝트 맵퍼로 객체로 받음
         List<ParsedDocument> documents = objectMapper.readValue(response.getBody(), typeReference);
-        List<ParsedDocument> resizeDocs = copyDocumentsWithEmptyWordList(documents);
+//        List<ParsedDocument> resizeDocs = copyDocumentsWithEmptyWordList(documents);
 
         // 2) 오브젝트 맵퍼로 파일에 씀
-        String fileName = generateTempFileName() + "-parsed.json";
-        File targetFile = new File(fileName);
-        saveResultFile(objectMapper, documents, targetFile);
+        String generatedName = getFilenameFromHeader(response);
+//        String fileName = generatedName + "-parsed.json";
+//        File targetFile = new File(fileName);
+//        saveResultFile(objectMapper, documents, targetFile);
 
-        String resizeFileName = generateTempFileName() + "-resize.json";
+        String resizeFileName = generatedName + "-resize.json";
         File resizeTargetFile = new File(resizeFileName);
-        saveResultFile(objectMapper, resizeDocs, resizeTargetFile);
+        saveResultFile(objectMapper, documents, resizeTargetFile);
 
         // 3) 쓴 파일을 멀티파트 파일로 바꾸고 삭제
-        MultipartFile result = convertFileToMultipartFile(targetFile);
+//        MultipartFile result = convertFileToMultipartFile(targetFile);
         MultipartFile resizeResult = convertFileToMultipartFile(resizeTargetFile);
 
-        // 4) 업로드
-        fileService.uploadFile(userId, new FileUploadRequest("doc_risk/", List.of(result)));
-        fileService.uploadFile(userId, new FileUploadRequest("doc_risk/", List.of(resizeResult)));
+        // 4) S3 업로드
+//        fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(result)));
+        fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(resizeResult)));
 
-        // 5) 객체 반환
+        // 5) 주문 등록
+        final OrderDocEntity orderDocEntity = orderDocConverter.toEntity(OrderDocRequest.of(
+                file.getOriginalFilename(),
+                file.getSize(),
+                generatedName,
+                resizeResult.getSize())
+        );
+        orderDocService.order(userId, orderDocEntity);
+
+        // 6) 객체 반환
         if (response.getStatusCode().is2xxSuccessful())
-            return Map.of(Objects.requireNonNull(resizeResult.getOriginalFilename()), OrderDocParseResponse.from(resizeDocs));
+            return Map.of(Objects.requireNonNull(resizeResult.getOriginalFilename()), OrderDocParseResponse.from(documents));
         else
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Parser is failed");
+    }
+
+    /**
+     * [ 파싱문서 수정 ]
+     *
+     * @param userId user id log in
+     * @param request request file name and updated documents
+     * @return parsed data
+     * @throws IOException for file remove
+     */
+    public Map<String, OrderDocParseResponse> parseUpdate(Long userId, OrderDocParseUpdateRequest request) throws IOException {
+        File targetFile = new File(request.getFileName());
+
+        // 1) 오브젝트 맵퍼로 파일에 씀
+        saveResultFile(objectMapper, request.getDocuments(), targetFile);
+
+        // 2) 쓴 파일을 멀티파트 파일로 바꾸고 삭제
+        MultipartFile updatedResult = convertFileToMultipartFile(targetFile);
+
+        // 3) 기존 업로드된 파일 삭제
+        fileService.deleteAnalysisFile(userId, request.getFileName(), "doc_risk");
+
+        // 4) S3 업로드
+        fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(updatedResult)));
+
+        return Map.of(request.getFileName(), OrderDocParseResponse.from(request.getDocuments()));
     }
 
     /**
@@ -149,10 +201,16 @@ public class OrderDocBusiness {
         MultipartFile result = convertFileToMultipartFile(targetFile);
         FileUtil.remove(parsedFile);
 
-        // 4) 업로드
+        // 4) S3 업로드
         fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(result)));
 
-        // 5) 객체 반환
+        // 5) 독소조항 추출 등록
+        orderDocService.riskExtract(userId, filename.substring(0, filename.lastIndexOf("-")));
+
+        // 5) 파싱 파일 삭제
+        fileService.deleteAnalysisFile(userId, request.getFileName(), "doc_risk");
+
+        // 6) 객체 반환
         if (response.getStatusCode().is2xxSuccessful()) {
             return OrderDocRiskResponse.from(documents);
         } else {
@@ -175,6 +233,7 @@ public class OrderDocBusiness {
     private StringBuilder getUserPath(Long userId) {
         StringBuilder userPath = new StringBuilder();
         userPath.append("user_").append(String.format("%06d", userId)).append("/").append("doc");
+
         return userPath;
     }
 

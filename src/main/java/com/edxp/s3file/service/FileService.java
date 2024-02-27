@@ -461,6 +461,22 @@ public class FileService {
         return allPassed.get();
     }
 
+    // 분석용 파일 삭제
+    @Transactional
+    public void deleteAnalysisFile(Long userId, String fileName, String myPath) {
+        StringBuilder userPath = new StringBuilder();
+        userPath.append("user_").append(String.format("%06d", userId)).append("/").append(myPath);
+
+        StringBuilder s3Path = new StringBuilder();
+        s3Path.append("dxeng").append("/").append(location).append("/").append(userPath).append("/").append(fileName);
+
+        try {
+            amazonS3Client.deleteObject(bucket, String.valueOf(s3Path));
+        } catch (Exception e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "delete is failed");
+        }
+    }
+
     // 파일 경로 반환 내부 메소드
     private StringBuilder getPath(long userId, String currentPath) {
         StringBuilder path = new StringBuilder();

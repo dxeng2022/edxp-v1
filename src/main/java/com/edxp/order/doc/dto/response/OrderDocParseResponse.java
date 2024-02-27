@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -25,6 +26,12 @@ public class OrderDocParseResponse {
     }
 
     public static OrderDocParseResponse from(List<ParsedDocument> documents) {
-        return OrderDocParseResponse.of(documents, documents.size());
+        final List<ParsedDocument> newDocuments = documents.stream().peek(it -> {
+            if (it.getSection().equals("")) {
+                it.setSection("-");
+            }
+        }).collect(Collectors.toList());
+
+        return OrderDocParseResponse.of(newDocuments, documents.size());
     }
 }
