@@ -1,10 +1,10 @@
 package com.edxp._core.config.auth;
 
 import com.edxp._core.constant.ErrorCode;
-import com.edxp.domain.UserEntity;
-import com.edxp.dto.User;
+import com.edxp.user.entity.UserEntity;
+import com.edxp.user.dto.User;
 import com.edxp._core.handler.exception.EdxpApplicationException;
-import com.edxp.repository.UserRepository;
+import com.edxp.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
