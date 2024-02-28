@@ -5,6 +5,8 @@ import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.doc.entity.OrderDocEntity;
 import com.edxp.order.doc.repository.OrderDocRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,13 @@ import java.time.Instant;
 public class OrderDocService {
     private final OrderDocRepository orderDocRepository;
 
+    // 주문 내용 조회
+    @Transactional(readOnly = true)
+    public Page<OrderDocEntity> getOrderList(Long userId, Pageable pageable) {
+        return orderDocRepository.findAllByUserId(userId, pageable);
+    }
+
+    // 주문 저장
     @Transactional
     public OrderDocEntity order(Long userId, OrderDocEntity entity) {
         entity.setUserId(userId);
@@ -23,6 +32,7 @@ public class OrderDocService {
         return orderDocRepository.save(entity);
     }
 
+    //
     @Transactional
     public void riskExtract(Long userId, String orderFileName) {
         final OrderDocEntity entity = orderDocRepository.findFirstByUserIdAndOrderFileNameOrderByIdDesc(userId, orderFileName)
