@@ -9,6 +9,7 @@ import com.edxp.order.doc.dto.request.OrderDocParseRequest;
 import com.edxp.order.doc.dto.request.OrderDocParseUpdateRequest;
 import com.edxp.order.doc.dto.request.OrderDocRequest;
 import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
+import com.edxp.order.doc.dto.response.OrderDocListResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
 import com.edxp.order.doc.entity.OrderDocEntity;
@@ -22,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +38,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.edxp._core.common.client.ModelClient.executeModelClient;
@@ -62,11 +64,27 @@ public class OrderDocBusiness {
     private String downloadFolder;
 
     /**
+     * [ 주문 내용 조회 ]
+     *
+     * @param userId log in user id
+     * @param pageable page interface
+     * @return page paged response
+     * @apiNote 독소조항 주문 내용 조회 API
+     * @since 24.02.28
+     */
+    public Page<OrderDocListResponse> getOrderList(Long userId, Pageable pageable) {
+        final Page<OrderDocEntity> entities = orderDocService.getOrderList(userId, pageable);
+
+        return orderDocConverter.entityToResponseWitPage(entities);
+    }
+
+    /**
      * [ 미리보기용 pdf 다윤요청 ]
      *
      * @param userId  log in user id
      * @param request file path
      * @return response map(filepath, pdf file)
+     * @since 24.02.28
      */
     public Map<String, FileSystemResource> parseDown(Long userId, OrderDocParseRequest request) {
         File file = fileService.downloadAnalysisFile(userId, request.getFilePath(), "doc");
@@ -82,6 +100,7 @@ public class OrderDocBusiness {
      * @param request file path
      * @return response map(filepath, response dto)
      * @throws IOException remove fail
+     * @since 24.02.28
      */
     public Map<String, OrderDocParseResponse> parseExecute(Long userId, OrderDocParseRequest request) throws IOException {
         StringBuilder userPath = getUserPath(userId);
@@ -154,6 +173,7 @@ public class OrderDocBusiness {
      * @param request request file name and updated documents
      * @return parsed data
      * @throws IOException for file remove
+     * @since 24.02.28
      */
     public Map<String, OrderDocParseResponse> parseUpdate(Long userId, OrderDocParseUpdateRequest request) throws IOException {
         File targetFile = new File(request.getFileName());
@@ -179,6 +199,7 @@ public class OrderDocBusiness {
      * @param userId  user id log in
      * @param request request file name
      * @return document
+     * @since 24.02.28
      */
     public OrderDocRiskResponse analysis(Long userId, OrderDocRiskRequest request) throws IOException {
         File parsedFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
@@ -223,6 +244,7 @@ public class OrderDocBusiness {
      *
      * @param userId login user id
      * @throws IOException remove fail
+     * @since 24.02.28
      */
     public void deleteResult(Long userId) throws IOException {
         StringBuilder userPath = getUserPath(userId);
@@ -257,11 +279,6 @@ public class OrderDocBusiness {
             FileUtil.remove(targetFile);
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Mapping failed");
         }
-    }
-
-    private String generateTempFileName() {
-        // 임시 파일 이름 생성 (UUID 사용)
-        return UUID.randomUUID().toString();
     }
 
     private String getFilenameFromHeader(ResponseEntity<String> response) {

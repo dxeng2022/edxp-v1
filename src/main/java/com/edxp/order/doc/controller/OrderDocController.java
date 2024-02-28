@@ -4,15 +4,20 @@ import com.edxp._core.common.response.CommonResponse;
 import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
+import com.edxp.order.doc.business.OrderDocBusiness;
+import com.edxp.order.doc.dto.request.OrderDocParseRequest;
 import com.edxp.order.doc.dto.request.OrderDocParseUpdateRequest;
 import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
-import com.edxp.order.doc.dto.request.OrderDocParseRequest;
+import com.edxp.order.doc.dto.response.OrderDocListResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
-import com.edxp.order.doc.business.OrderDocBusiness;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,6 +34,19 @@ import java.util.Map;
 public class OrderDocController {
     private final OrderDocBusiness orderDocBusiness;
 
+    // 주문 내용 조회
+    @CrossOrigin
+    @GetMapping
+    public CommonResponse<?> getOrderDocList(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        final Page<OrderDocListResponse> response = orderDocBusiness.getOrderList(principal.getUser().getId(), pageable);
+
+        return CommonResponse.success(response);
+    }
+
+    // pdf 요청
     @CrossOrigin
     @PostMapping("/parser-pdf")
     public ResponseEntity<FileSystemResource> getParsePdf(
@@ -46,6 +64,7 @@ public class OrderDocController {
                 .body(response.get(filePath));
     }
 
+    // 클라우드 파싱 요청
     @CrossOrigin
     @PostMapping("/parser")
     public ResponseEntity<OrderDocParseResponse> parseCloud(
@@ -63,6 +82,7 @@ public class OrderDocController {
                 .body(response.get(filename));
     }
 
+    // 로컬 파싱 요청
     @CrossOrigin
     @PostMapping("/parser-loc")
     public ResponseEntity<OrderDocParseResponse> parseLocal(
@@ -81,6 +101,7 @@ public class OrderDocController {
                 .body(response.get(filename));
     }
 
+    // 파싱 업데이트
     @CrossOrigin
     @PutMapping("/parser")
     public ResponseEntity<OrderDocParseResponse> parseUpdate(
@@ -98,6 +119,7 @@ public class OrderDocController {
                 .body(response.get(filename));
     }
 
+    // 뷴석 요청
     @CrossOrigin
     @PostMapping("/analysis")
     public CommonResponse<OrderDocRiskResponse> requestAnalysis(
@@ -107,6 +129,7 @@ public class OrderDocController {
         return CommonResponse.success(orderDocBusiness.analysis(principal.getUser().getId(), request));
     }
 
+    // 임시 파일 삭제
     @CrossOrigin
     @DeleteMapping("/parser-delete")
     public CommonResponse<Void> deleteFile(
