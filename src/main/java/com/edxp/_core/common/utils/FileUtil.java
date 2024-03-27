@@ -25,7 +25,7 @@ public class FileUtil {
         }
     }
 
-    public static void removeDirectory(File directory) throws IOException {
+    private static void removeDirectory(File directory) throws IOException {
         File[] files = directory.listFiles();
         assert files != null;
         for (File file : files) {
@@ -34,7 +34,7 @@ public class FileUtil {
         removeFile(directory);
     }
 
-    public static void removeFile(File file) throws IOException {
+    private static void removeFile(File file) throws IOException {
         if (file.delete()) {
             log.info("File [" + file.getName() + "] delete success");
             return;
