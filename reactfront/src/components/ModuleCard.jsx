@@ -147,7 +147,7 @@ export default function ModuleCard() {
                         <Button size="small" onClick={onClickKist}> <CompareArrowsOutlinedIcon /> </Button>
                       </Tooltip>
                       <Tooltip title="독소조항 추출(준비중)">
-                        <Button size="small"> <SimCardAlertOutlinedIcon /> </Button>
+                        <Button size="small" onClick={()=>{ dispatch(setCurrentPath('doc/')); navigate('/module/risk'); }}> <SimCardAlertOutlinedIcon /> </Button>
                       </Tooltip>
                       <Tooltip title="데이터 관리">
                         <Button size="small" onClick={()=>{ dispatch(setCurrentPath('doc/')); navigate('/module/doccloud'); }}> <FilterDramaIcon /> </Button>
