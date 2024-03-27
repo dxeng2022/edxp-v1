@@ -97,8 +97,10 @@ logging:
   level:
     com:
       edxp:
-        controller: debug
-        service: debug
+        order: debug
+        s3file: debug
+        session: debug
+        user: debug
 
 ---
 
@@ -131,8 +133,14 @@ logging:
   level:
     com:
       edxp:
-        controller: debug
-        service: debug
+        order: debug
+        s3file: debug
+        session: debug
+        user: debug
+
+server:
+  ssl:
+    enabled: false
 
 ---
 

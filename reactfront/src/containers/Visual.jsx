@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import VisualLocalFile from '../components/VisualLocalFile';
 import VisualCloudFile from '../components/VisualCloudFile';
 import VisualDrawPreview from '../components/VisualDrawPreview';
-import VisualDrawGraph from '../components/VisualDrawGraph';
+import VisualDraw from '../components/VisualDraw';
 
 
 export default function Visual() {
@@ -26,7 +26,7 @@ export default function Visual() {
 
           <Grid item xs={12} sm={6} md={6} sx={{ height: 'calc(100vh - 160px)' }}>
             <Paper elevation={6} sx={{height: '100%'}}>
-              { visualDrawImg ? ( <VisualDrawGraph /> ) : ( < VisualCloudFile /> ) } 
+              { visualDrawImg ? ( <VisualDraw /> ) : ( < VisualCloudFile /> ) } 
             </Paper>
           </Grid>
 

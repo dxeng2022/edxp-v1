@@ -9,23 +9,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-import java.util.Arrays;
-
 @Slf4j
 @RestControllerAdvice
 public class GlobalControllerAdvice {
     @ExceptionHandler(EdxpApplicationException.class)
     public ResponseEntity<?> applicationHandler(EdxpApplicationException e) {
         log.error("Error occurs {}", e.toString());
-        log.debug("Caused by : {}", Arrays.toString(e.getStackTrace()));
+        log.debug("occurs at {}:{}", e.getStackTrace()[0].getClassName(), e.getStackTrace()[0].getLineNumber());
         return ResponseEntity.status(e.getErrorCode().getStatus())
                 .body(CommonResponse.error(e.getErrorCode().name()));
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> applicationHandler(RuntimeException e) {
-        log.error("Error occurs : {}", e.toString());
-        log.debug("Caused by : {}", Arrays.toString(e.getStackTrace()));
+        log.error("Error occurs {}", e.toString());
+        log.debug("occurs at {}:{}", e.getStackTrace()[0].getClassName(), e.getStackTrace()[0].getLineNumber());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(CommonResponse.error(ErrorCode.INTERNAL_SERVER_ERROR.name()));
     }
