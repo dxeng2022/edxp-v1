@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.edxp._core.common.client.ModelClient.executeModelClient;
 import static com.edxp._core.common.converter.FileConverter.convertFileToMultipartFile;
@@ -167,7 +166,7 @@ public class OrderDocBusiness {
     }
 
     /**
-     * [ 파싱문서 수정 ]
+     * [ 문서 수정 ]
      *
      * @param userId user id log in
      * @param request request file name and updated documents
@@ -175,7 +174,7 @@ public class OrderDocBusiness {
      * @throws IOException for file remove
      * @since 24.02.28
      */
-    public Map<String, OrderDocParseResponse> parseUpdate(Long userId, OrderDocParseUpdateRequest request) throws IOException {
+    public Map<String, OrderDocParseResponse> documentUpdate(Long userId, OrderDocParseUpdateRequest request) throws IOException {
         File targetFile = new File(request.getFileName());
 
         // 1) 오브젝트 맵퍼로 파일에 씀
@@ -240,6 +239,22 @@ public class OrderDocBusiness {
     }
 
     /**
+     * [ 시각화 요청 ]
+     *
+     * @param userId  user id log in
+     * @param request request file name
+     * @return document
+     * @since 24.03.26
+     */
+    public OrderDocRiskResponse visualization(Long userId, OrderDocRiskRequest request) throws IOException {
+        File parsedFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
+        List<ParsedDocument> documents = objectMapper.readValue(parsedFile, typeReference);
+        FileUtil.remove(parsedFile);
+
+        return OrderDocRiskResponse.from(documents);
+    }
+
+    /**
      * [ 파일 삭제 ]
      *
      * @param userId login user id
@@ -257,19 +272,6 @@ public class OrderDocBusiness {
         userPath.append("user_").append(String.format("%06d", userId)).append("/").append("doc");
 
         return userPath;
-    }
-
-    public List<ParsedDocument> copyDocumentsWithEmptyWordList(List<ParsedDocument> originalDocuments) {
-        return originalDocuments.stream()
-                .map(document -> ParsedDocument.builder()
-                        .index(document.getIndex())
-                        .label(document.getLabel())
-                        .page(document.getPage())
-                        .section(document.getSection())
-                        .sentence(document.getSentence())
-                        .wordList(List.of())
-                        .build())
-                .collect(Collectors.toList());
     }
 
     private void saveResultFile(ObjectMapper objectMapper, List<ParsedDocument> documents, File targetFile) throws IOException {

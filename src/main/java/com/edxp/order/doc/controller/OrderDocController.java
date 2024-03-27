@@ -101,14 +101,14 @@ public class OrderDocController {
                 .body(response.get(filename));
     }
 
-    // 파싱 업데이트
+    // 문서 업데이트
     @CrossOrigin
-    @PutMapping("/parser")
-    public ResponseEntity<OrderDocParseResponse> parseUpdate(
+    @PutMapping
+    public ResponseEntity<OrderDocParseResponse> documentUpdate(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseUpdateRequest request
     ) throws IOException {
-        final Map<String, OrderDocParseResponse> response = orderDocBusiness.parseUpdate(principal.getUser().getId(), request);
+        final Map<String, OrderDocParseResponse> response = orderDocBusiness.documentUpdate(principal.getUser().getId(), request);
 
         String filename = null;
         for (String key : response.keySet()) filename = key;
@@ -119,7 +119,7 @@ public class OrderDocController {
                 .body(response.get(filename));
     }
 
-    // 뷴석 요청
+    // 분석 요청
     @CrossOrigin
     @PostMapping("/analysis")
     public CommonResponse<OrderDocRiskResponse> requestAnalysis(
@@ -127,6 +127,16 @@ public class OrderDocController {
             @RequestBody OrderDocRiskRequest request
     ) throws IOException {
         return CommonResponse.success(orderDocBusiness.analysis(principal.getUser().getId(), request));
+    }
+
+    // 시각화 요청
+    @CrossOrigin
+    @PostMapping("/visual")
+    public CommonResponse<OrderDocRiskResponse> requestAnalysisVisualization(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @RequestBody OrderDocRiskRequest request
+    ) throws IOException {
+        return CommonResponse.success(orderDocBusiness.visualization(principal.getUser().getId(), request));
     }
 
     // 임시 파일 삭제
