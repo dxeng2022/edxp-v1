@@ -12,7 +12,8 @@ export default function VisualDrawComponentInfo({ handleInfoClose, componentPath
 
       <Box sx={{ pr:2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <img
-          src={process.env.PUBLIC_URL + componentPath + componentName + '.png'}
+          // src={process.env.PUBLIC_URL + componentPath + componentName + '.png'}
+          src={'https://dxeng.s3.ap-northeast-2.amazonaws.com/drawimg' + componentPath + componentName + '.png'}
           alt='미리보기 이미지 없음'
           loading="lazy"
           style={{ maxWidth: '90%', height: 'auto', border: '1px solid grey' }}

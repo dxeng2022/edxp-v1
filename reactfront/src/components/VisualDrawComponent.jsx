@@ -184,7 +184,8 @@ export default function VisualDrawComponent() {
                       </Box>
                     ) : (
                       <img
-                        src={process.env.PUBLIC_URL + '/symbols/' + data.id + '.png'}
+                        // src={process.env.PUBLIC_URL + '/symbols/' + data.id + '.png'}
+                        src={`https://dxeng.s3.ap-northeast-2.amazonaws.com/drawimg/symbols/${data.id}.png`}
                         alt={data.label}
                         loading="lazy"
                         style={{ maxWidth: '80%', height: 'auto', border: '1px solid grey', cursor: 'pointer' }}
@@ -212,7 +213,8 @@ export default function VisualDrawComponent() {
                       </Box>
                     ) : (
                       <img
-                        src={process.env.PUBLIC_URL + '/lines/' + data.id + '.png'}
+                        // src={process.env.PUBLIC_URL + '/lines/' + data.id + '.png'}
+                        src={`https://dxeng.s3.ap-northeast-2.amazonaws.com/drawimg/lines/${data.id}.png`}
                         alt={data.label}
                         loading="lazy"
                         style={{ maxWidth: '80%', height: 'auto', border: '1px solid grey', cursor: 'pointer' }}
