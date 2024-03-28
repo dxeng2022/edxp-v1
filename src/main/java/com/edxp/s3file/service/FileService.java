@@ -470,6 +470,10 @@ public class FileService {
         StringBuilder s3Path = new StringBuilder();
         s3Path.append("dxeng").append("/").append(location).append("/").append(userPath).append("/").append(fileName);
 
+        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(s3Path));
+
+        if (!isObjectExist) throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "file is not exist");
+
         try {
             amazonS3Client.deleteObject(bucket, String.valueOf(s3Path));
         } catch (Exception e) {
