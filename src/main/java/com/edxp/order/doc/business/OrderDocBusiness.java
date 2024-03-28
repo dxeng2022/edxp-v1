@@ -200,7 +200,7 @@ public class OrderDocBusiness {
      * @return document
      * @since 24.02.28
      */
-    public OrderDocRiskResponse analysis(Long userId, OrderDocRiskRequest request) throws IOException {
+    public Map<String, OrderDocRiskResponse> analysis(Long userId, OrderDocRiskRequest request) throws IOException {
         File parsedFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
 
         // 모델 실행
@@ -232,7 +232,7 @@ public class OrderDocBusiness {
 
         // 6) 객체 반환
         if (response.getStatusCode().is2xxSuccessful()) {
-            return OrderDocRiskResponse.from(documents);
+            return Map.of(filename, OrderDocRiskResponse.from(documents));
         } else {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Analysis is failed");
         }

@@ -122,11 +122,19 @@ public class OrderDocController {
     // 분석 요청
     @CrossOrigin
     @PostMapping("/analysis")
-    public CommonResponse<OrderDocRiskResponse> requestAnalysis(
+    public ResponseEntity<OrderDocRiskResponse> requestAnalysis(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocRiskRequest request
     ) throws IOException {
-        return CommonResponse.success(orderDocBusiness.analysis(principal.getUser().getId(), request));
+        final Map<String, OrderDocRiskResponse> response = orderDocBusiness.analysis(principal.getUser().getId(), request);
+
+        String filename = null;
+        for (String key : response.keySet()) filename = key;
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Content-Disposition", "attachment; filename=" + filename)
+                .body(response.get(filename));
     }
 
     // 시각화 요청
