@@ -174,7 +174,7 @@ public class OrderDocBusiness {
      * @throws IOException for file remove
      * @since 24.02.28
      */
-    public Map<String, OrderDocParseResponse> documentUpdate(Long userId, OrderDocParseUpdateRequest request) throws IOException {
+    public Map<String, Object> documentUpdate(Long userId, OrderDocParseUpdateRequest request) throws IOException {
         File targetFile = new File(request.getFileName());
 
         // 1) 오브젝트 맵퍼로 파일에 씀
@@ -189,7 +189,10 @@ public class OrderDocBusiness {
         // 4) S3 업로드
         fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(updatedResult)));
 
-        return Map.of(request.getFileName(), OrderDocParseResponse.from(request.getDocuments()));
+        if (request.getFileName().substring(request.getFileName().lastIndexOf("-") + 1).equals("resize.json"))
+            return Map.of(request.getFileName(), OrderDocParseResponse.from(request.getDocuments()));
+        else
+            return Map.of(request.getFileName(), OrderDocRiskResponse.from(request.getDocuments()));
     }
 
     /**

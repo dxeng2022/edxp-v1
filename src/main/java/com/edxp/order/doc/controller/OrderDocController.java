@@ -104,11 +104,11 @@ public class OrderDocController {
     // 문서 업데이트
     @CrossOrigin
     @PutMapping
-    public ResponseEntity<OrderDocParseResponse> documentUpdate(
+    public ResponseEntity<Object> documentUpdate(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseUpdateRequest request
     ) throws IOException {
-        final Map<String, OrderDocParseResponse> response = orderDocBusiness.documentUpdate(principal.getUser().getId(), request);
+        final Map<String, Object> response = orderDocBusiness.documentUpdate(principal.getUser().getId(), request);
 
         String filename = null;
         for (String key : response.keySet()) filename = key;
