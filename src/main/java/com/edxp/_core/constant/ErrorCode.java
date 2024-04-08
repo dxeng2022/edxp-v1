@@ -15,7 +15,7 @@ public enum ErrorCode {
     FILE_NOT_ATTACHED(HttpStatus.INTERNAL_SERVER_ERROR, "File is not attached"),
     DUPLICATED_FILE_NAME(HttpStatus.CONFLICT, "Filename is duplicated"),
     MAX_FILE_UPLOADED(HttpStatus.INTERNAL_SERVER_ERROR, "File is max uploaded"),
-
+    ALREADY_EXTRACTED(HttpStatus.BAD_REQUEST, "Already extracted"),
 
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error")
     ;
