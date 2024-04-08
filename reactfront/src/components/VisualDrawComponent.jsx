@@ -14,7 +14,6 @@ export default function VisualDrawComponent() {
   const visualDrawSymbolData = useSelector(state => state.visualDrawSymbolData);
 
   const [selected, setSelected] = useState(1);
-  const [imageError, setImageError] = useState({});
   const [componentName, setComponentName] = useState('');
   const [componentInfo, setComponentInfo] = useState(false);
   const [componentInfoSize, setComponentInfoSize] = useState(12);
@@ -45,11 +44,6 @@ export default function VisualDrawComponent() {
     }
   };
 
-  // 미리보기 이미지 없을 때
-  const handleImageError = (id) => {
-    setImageError(prevState => ({ ...prevState, [id]: true }));
-  };
-  
   // 이미지 선택 시
   const handleImageClick = (id) => {
     setComponentInfo(true);
@@ -167,32 +161,20 @@ export default function VisualDrawComponent() {
       <Divider variant="middle"/>
 
       <Grid container spacing={2} sx={{pr:0.5}}>
-        <Grid item xs={componentInfoSize} sm={componentInfoSize} md={componentInfoSize} sx={{ display: 'flex', height: 'calc(100vh - 294px)', overflow:'auto', pr:1 }}>
+        <Grid item xs={componentInfoSize} sm={componentInfoSize} md={componentInfoSize} sx={{display:'flex', flexDirection:'column', height: 'calc(100vh - 294px)', overflow:'auto', pr:1 }}>
           {selected === 1 ? 
             <ImageList variant="masonry" cols={componentCols} gap={6} sx={{mb:0, ml:2}} >
               {visualDrawSymbolData.map((data) => 
                 <ImageListItem key={data.id} cols={1} rows={1}>
-                  <Box sx={{ py:0.5, display:'flex', justifyContent: 'center', backgroundColor: componentName === data.id ? '#848484' : null, '&:hover': {backgroundColor: componentName === data.id ? '#848484' : '#EEEEEE'}}}>
-                    {imageError[data.id] ? (
-                      <Box sx={{ display:'flex', alignItems: 'center', border: '1px solid grey', '&:hover': {cursor: 'pointer'} }} onClick={() => handleImageClick(data.id)}>
-                        <img
-                          src={process.env.PUBLIC_URL + '/errorImage.png'}
-                          alt={data.label}
-                          style={{ maxWidth: '30px', height: '30px' }}
-                        />
-                        <Typography variant="body2">{data.id}</Typography>
-                      </Box>
-                    ) : (
-                      <img
-                        // src={process.env.PUBLIC_URL + '/symbols/' + data.id + '.png'}
-                        src={`https://dxeng.s3.ap-northeast-2.amazonaws.com/drawimg/symbols/${data.id}.png`}
-                        alt={data.label}
-                        loading="lazy"
-                        style={{ maxWidth: '80%', height: 'auto', border: '1px solid grey', cursor: 'pointer' }}
-                        onError={() => handleImageError(data.id)}
-                        onClick={() => handleImageClick(data.id)}
-                      />
-                    )}
+                  <Box sx={{ flexDirection: 'column', alignItems: 'center', py:0.5, display:'flex', justifyContent: 'center', backgroundColor: componentName === data.id ? '#848484' : null, '&:hover': {backgroundColor: componentName === data.id ? '#848484' : '#EEEEEE'}}}>
+                    <img
+                      src={`/proxy-image?imageKey=drawimg/symbols/${data.id}.png`}
+                      alt={data.label}
+                      loading="lazy"
+                      style={{ maxWidth: '80%', height: 'auto', border: '1px solid grey', cursor: 'pointer' }}
+                      onClick={() => handleImageClick(data.id)}
+                    />
+                    <Box sx={{ fontSize:'12px', maxWidth: '50%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>{data.label}</Box>
                   </Box>
                 </ImageListItem>
               )}
@@ -201,27 +183,15 @@ export default function VisualDrawComponent() {
             <ImageList variant="masonry" cols={componentCols} gap={6} sx={{mb:0, ml:2}}>
               {visualDrawLineData.map((data) => 
                 <ImageListItem key={data.id} cols={1} rows={1}>
-                  <Box sx={{ py:0.5, display:'flex', justifyContent: 'center', backgroundColor: componentName === data.id ? '#848484' : null, '&:hover': {backgroundColor: componentName === data.id ? '#848484' : '#EEEEEE'}}}>
-                    {imageError[data.id] ? (
-                      <Box sx={{ display:'flex', alignItems: 'center', border: '1px solid grey', '&:hover': {cursor: 'pointer'} }} onClick={() => handleImageClick(data.id)}>
-                        <img
-                          src={process.env.PUBLIC_URL + '/errorImage.png'}
-                          alt={data.label}
-                          style={{ maxWidth: '30px', height: '30px' }}
-                        />
-                        <Typography variant="body2">{data.id}</Typography>
-                      </Box>
-                    ) : (
-                      <img
-                        // src={process.env.PUBLIC_URL + '/lines/' + data.id + '.png'}
-                        src={`https://dxeng.s3.ap-northeast-2.amazonaws.com/drawimg/lines/${data.id}.png`}
-                        alt={data.label}
-                        loading="lazy"
-                        style={{ maxWidth: '80%', height: 'auto', border: '1px solid grey', cursor: 'pointer' }}
-                        onError={() => handleImageError(data.id)}
-                        onClick={() => handleImageClick(data.id)}
-                      />
-                    )}
+                  <Box sx={{ flexDirection: 'column', alignItems: 'center', py:0.5, display:'flex', justifyContent: 'center', backgroundColor: componentName === data.id ? '#848484' : null, '&:hover': {backgroundColor: componentName === data.id ? '#848484' : '#EEEEEE'}}}>
+                    <img
+                      src={`/proxy-image?imageKey=drawimg/lines/${data.id}.png`}
+                      alt={data.label}
+                      loading="lazy"
+                      style={{ maxWidth: '80%', height: 'auto', border: '1px solid grey', cursor: 'pointer' }}
+                      onClick={() => handleImageClick(data.id)}
+                    />
+                    <Box sx={{ fontSize:'12px', maxWidth: '50%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>{data.label}</Box>
                   </Box>
                 </ImageListItem>
               )}
