@@ -1,6 +1,6 @@
 import createAxiosConfig from './AxiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
-import { setVisualDrawJson, setVisualDrawLineData, setVisualDrawSymbolData, setVisualDrawImg, setVisualBackdrop, setVisualBackdropText, setVisualDrawCirclepackingData, setVisualDrawPostAlert, setVisualDrawFile } from '../actions';
+import { setVisualDrawJson, setVisualDrawLineData, setVisualDrawSymbolData, setVisualDrawImg, setVisualBackdrop, setVisualBackdropText, setVisualDrawCirclepackingData, setVisualDrawFile, setVisualDrawCloudAlert } from '../actions';
 import { useEffect } from 'react';
 
 
@@ -99,7 +99,7 @@ export default function VisualAPI() {
 
   const visualDrawCloudAPI = async () => {
     if (!visualDrawFile.includes('.')) {
-      dispatch(setVisualDrawPostAlert(true));
+      dispatch(setVisualDrawCloudAlert(true));
       return;
     }
   

@@ -61,10 +61,13 @@ file:
   path: ${FILE_PATH}
   location: ${SPRING_PROFILES_ACTIVE}
 
-# file path
+# module path
 module:
   parser: ${MODULE_PARSER_URL}
   analyze: ${MODULE_ANALYZE_URL}
+
+# s3 url
+aws.s3.url: ${AWS_S3_URL}
 
 ---
 

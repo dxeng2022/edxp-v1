@@ -15,3 +15,4 @@ export * from './userInfoAction';
 export * from './cloudAction';
 export * from './administratorAction';
 export * from './visualAction';
+export * from './riskAction';

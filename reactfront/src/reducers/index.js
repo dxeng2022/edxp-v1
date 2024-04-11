@@ -16,6 +16,7 @@ import userInfoReducer from './userInfoReducer';
 import cloudReducer from './cloudReducer';
 import administratorReducer from './administratorReducer';
 import visualReducer from './visualReducer';
+import riskReducer from './riskReducer';
 
 export default combineReducers({
   ...emailReducer,
@@ -35,4 +36,5 @@ export default combineReducers({
   ...cloudReducer,
   ...administratorReducer,
   ...visualReducer,
+  ...riskReducer,
 });
