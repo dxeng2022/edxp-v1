@@ -9,6 +9,7 @@ export const SET_VISUAL_DRAW_TAGX = 'SET_VISUAL_DRAW_TAGX';
 export const SET_VISUAL_DRAW_TAGY = 'SET_VISUAL_DRAW_TAGY';
 export const SET_VISUAL_BACKDROP = 'SET_VISUAL_BACKDROP';
 export const SET_VISUAL_BACKDROP_TEXT = 'SET_VISUAL_BACKDROP_TEXT';
+export const SET_VISUAL_DRAW_CLOUD_ALERT = 'SET_VISUAL_DRAW_CLOUD_ALERT'
 
 export function setVisualDrawFile(visualDrawFile = '') {
   return {
@@ -84,5 +85,12 @@ export function setVisualBackdropText(visualBackdropText) {
   return {
     type: SET_VISUAL_BACKDROP_TEXT,
     visualBackdropText,
+  }
+}
+
+export function setVisualDrawCloudAlert(visualDrawCloudAlert) {
+  return {
+    type: SET_VISUAL_DRAW_CLOUD_ALERT,
+    visualDrawCloudAlert,
   }
 }

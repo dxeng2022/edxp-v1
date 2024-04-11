@@ -1,134 +1,221 @@
-import CloseIcon from '@mui/icons-material/Close';
-import FmdGoodIcon from '@mui/icons-material/FmdGood';
-import { Box, Chip, Grid, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
+import { Box, Divider, FormControl, Grid, ImageList, ImageListItem, MenuItem, Select, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setVisualDrawTagX, setVisualDrawTagY } from '../actions';
+import VisualDrawComponentInfo from './VisualDrawComponentInfo';
 
-export default function VisualDrawComponentInfo({ handleInfoClose, componentPath, componentName, getCount, matchedData, ratio, xy, page, rowsPerPage, handleCellClick, setPage }) {
+
+export default function VisualDrawComponent() {
+
+  const dispatch = useDispatch();
+
+  const visualDrawJson = useSelector(state => state.visualDrawJson);
+  const visualDrawLineData = useSelector(state => state.visualDrawLineData);
+  const visualDrawSymbolData = useSelector(state => state.visualDrawSymbolData);
+
+  const [selected, setSelected] = useState(1);
+  const [componentName, setComponentName] = useState('');
+  const [componentInfo, setComponentInfo] = useState(false);
+  const [componentInfoSize, setComponentInfoSize] = useState(12);
+  const [componentCols, setComponentCols] = useState(3);
+  const [componentPath, setComponentPath] = useState('/symbols/');
+  const [extent, setExtent] = useState({});
+  const [position, setPosition] = useState({});
+  const [page, setPage] = useState(0);
+  const [xy, setXy] = useState(extent);
+  let rowsPerPage = 10;
+  let matchedData, ratio = 0;
+
+  // symbols,lines select 선택 시
+  const handleChange = (event) => {
+    let selectedValue = Number(event.target.value);
+    setSelected(selectedValue);
+    setComponentInfo(false);
+    setComponentCols(3);
+    setComponentInfoSize(12);
+    setExtent({});
+    setPosition({});
+    dispatch(setVisualDrawTagX(null));
+  
+    if (selectedValue === 1) {
+      setComponentPath('/symbols/');
+    } else if (selectedValue === 2) {
+      setComponentPath('/lines/');
+    }
+  };
+
+  // 이미지 선택 시
+  const handleImageClick = (id) => {
+    setComponentInfo(true);
+    setComponentCols(2);
+    setComponentName(id);
+    setComponentInfoSize(6);
+    dispatch(setVisualDrawTagX(null));
+  };
+
+  // VisualDrawComponentInfo 닫을 때
+  const handleInfoClose = () => {
+    setComponentInfo(false);
+    setComponentCols(3);
+    setComponentInfoSize(12);
+    setComponentName('');
+    setExtent({});
+    setPosition({});
+    dispatch(setVisualDrawTagX(null));
+  }
+
+  // symbols, lines 비율 계산
+  if (selected === 1) {
+    matchedData = visualDrawSymbolData.find(data => data.id === componentName);
+    if (matchedData && visualDrawJson.countSymbol) {
+      ratio = ((matchedData.value / visualDrawJson.countSymbol) * 100);
+    }
+  } else if (selected === 2) {
+    matchedData = visualDrawLineData.find(data => data.id === componentName);
+    if (matchedData && visualDrawJson.countLine) {
+      ratio = ((matchedData.value / visualDrawJson.countLine) * 100);
+    }
+  }
+  
+  // symbols, lines 전체 갯수
+  const getCount = () => {
+    if (selected === 1) {
+      return visualDrawJson.countSymbol;
+    } else if (selected === 2) {
+      return visualDrawJson.countLine;
+    }
+  };
+
+  // symbols, lines 좌표 redux 저장
+  const handleCellClick = (location) => {
+    if ('start' in location) {
+      dispatch(setVisualDrawTagX(location.start.x));
+      dispatch(setVisualDrawTagY(location.start.y));
+    } else {
+      dispatch(setVisualDrawTagX(location.x));
+      dispatch(setVisualDrawTagY(location.y));
+    }
+  };
+
+  // symbols, lines 모든 좌표 useState 저장
+  useEffect(() => {
+    let matchedChildren;
+  
+    if (componentName === 'tee') {
+      matchedChildren = visualDrawJson.plantModel.children.filter(child => child.componentClass === componentName);
+    } else {
+      matchedChildren = visualDrawJson.plantModel.children.filter(child => child.name === componentName);
+    }
+  
+    if (selected === 1) {
+      let newExtent = {};
+      matchedChildren.forEach(child => {
+        if (child.extent && child.extent.coordinateSystem) {
+          newExtent[child.id] = child.extent.coordinateSystem.location;
+        }
+      });
+      setExtent(newExtent);
+    } else if (selected === 2) {
+      let newPosition = {};
+      matchedChildren.forEach(child => {
+        if (child.end && child.end.position) {
+          newPosition[child.id] = {
+            start: child.start.position,
+            end: child.end.position
+          };
+        }
+      });
+      setPosition(newPosition);
+    }
+  }, [componentName, visualDrawJson, selected]);
+
+  // symbols, lines 좌표 찾기 위해 json 명칭 변경
+  useEffect(() => {
+    if (selected === 1) {
+      setXy(extent);
+    } else if (selected === 2) {
+      setXy(position);
+    }
+  }, [selected, extent, position]);
+  
+  // pagination 초기화
+  useEffect(() => {
+    setPage(0);
+  }, [componentName])
 
   return (
-    <Grid item component={Paper} elevation={12} xs={6} sm={6} md={6} sx={{ mt:'32px', pb:'10px', pt: 0, height: 'calc(100vh - 330px)', overflow:'auto',  borderRadius: '20px'  }} >
-      <Box sx={{ pr:2, display:'flex', justifyContent:'flex-End', position:'sticky', top:0 }}>
-        <CloseIcon sx={{'&:hover': {cursor: 'pointer'}}} onClick={() => handleInfoClose()} />
+    <>
+      <Box sx={{ pt:1, pb:0.5, pl:2, display:'flex', alignItems: 'center'}}>
+        <FormControl size="small" sx={{ width:'120px'}}>
+          <Select
+            value={selected}
+            onChange={handleChange}
+          >
+            <MenuItem value={1}>Symbols</MenuItem>
+            <MenuItem value={2}>Lines</MenuItem>
+          </Select>
+        </FormControl>
+        <Typography variant="subtitle2" sx={{ pl:1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>Component를 선택해주세요.</Typography>
       </Box>
+      
+      <Divider variant="middle"/>
 
-      <Box sx={{ pr:2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <img
-          // src={process.env.PUBLIC_URL + componentPath + componentName + '.png'}
-          src={'https://dxeng.s3.ap-northeast-2.amazonaws.com/drawimg' + componentPath + componentName + '.png'}
-          alt='미리보기 이미지 없음'
-          loading="lazy"
-          style={{ maxWidth: '90%', height: 'auto', border: '1px solid grey' }}
-          />
-        <Typography variant="h6" sx={{py:3, whiteSpace: 'normal', wordBreak: 'break-all', fontWeight: 'bold' }}> {componentName} </Typography>
-
-        <TableContainer>
-          <Table sx={{ maxWidth: 650 }} size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell align="center" sx={{ fontWeight: 'bold' }}>전체 Component</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold' }}>해당 Component</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold' }}>비율</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-                <TableRow>
-                  <TableCell align="center">{getCount()+'개'}</TableCell>
-                  <TableCell align="center">{matchedData ? matchedData.value+'개' : 'N/A'}</TableCell>
-                  <TableCell align="center">{ratio.toFixed(1)+'%'}</TableCell>
-                </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <TableContainer sx={{pt:3}}>
-          <Table sx={{ maxWidth: 650 }} size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell align="center" sx={{ fontWeight: 'bold' }}> No. </TableCell>
-                <TableCell align="center" sx={{ fontWeight: 'bold' }}> 고유 ID </TableCell>
-                <TableCell align="center" colSpan={2} sx={{ fontWeight: 'bold' }}> 위치 </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Object.entries(xy)
-                .slice(page * rowsPerPage, (page + 1) * rowsPerPage)
-                .map(([key, location], index) => (
-                <TableRow key={key}>
-                  <TableCell
-                    align="center"
-                    sx={{ 
-                      minWidth: '50px',
-                      maxWidth: '150px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {(page * rowsPerPage) + index + 1}
-                  </TableCell>
-                  <Tooltip title={key} placement="top" arrow slotProps={{ popper: { modifiers: [{name: 'offset', options: { offset: [0, -15]}}]}}}>
-                    <TableCell
-                      align="center"
-                      sx={{ 
-                        minWidth: '30px',
-                        maxWidth: '130px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {key}
-                    </TableCell>
-                  </Tooltip>
-                  <TableCell
-                    align="center"
-                    sx={{ 
-                      minWidth: '30px',
-                      maxWidth: '130px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {
-                      'start' in location
-                      ? `${Math.floor(location.start.x)}, ${Math.floor(location.start.y)}`
-                      : `${Math.floor(location.x)}, ${Math.floor(location.y)}`
-                    }
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ 
-                      minWidth: '100px',
-                      maxWidth: '200px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <Chip
-                      label="보기"
-                      variant="outlined"
-                      color="warning"
-                      size="small"
-                      icon={<FmdGoodIcon />}
-                      onClick={() => handleCellClick(location)}
+      <Grid container spacing={2} sx={{pr:0.5}}>
+        <Grid item xs={componentInfoSize} sm={componentInfoSize} md={componentInfoSize} sx={{display:'flex', flexDirection:'column', height: 'calc(100vh - 294px)', overflow:'auto', pr:1 }}>
+          {selected === 1 ? 
+            <ImageList variant="masonry" cols={componentCols} gap={6} sx={{mb:0, ml:2}} >
+              {visualDrawSymbolData.map((data) => 
+                <ImageListItem key={data.id} cols={1} rows={1}>
+                  <Box sx={{ flexDirection: 'column', alignItems: 'center', py:0.5, display:'flex', justifyContent: 'center', backgroundColor: componentName === data.id ? '#848484' : null, '&:hover': {backgroundColor: componentName === data.id ? '#848484' : '#EEEEEE'}}}>
+                    <img
+                      src={`/proxy-image?imageKey=drawimg/symbols/${data.id}.png`}
+                      alt={data.label}
+                      loading="lazy"
+                      style={{ maxWidth: '80%', height: 'auto', border: '1px solid grey', cursor: 'pointer' }}
+                      onClick={() => handleImageClick(data.id)}
                     />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <Pagination
-          size="small"
-          sx={{py:1}}
-          count={Math.ceil(Object.keys(xy).length / rowsPerPage)}
-          page={page + 1}
-          onChange={(event, newPage) => setPage(newPage - 1)}
-        />
+                    <Box sx={{ fontSize:'12px', maxWidth: '50%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>{data.label}</Box>
+                  </Box>
+                </ImageListItem>
+              )}
+            </ImageList>
+          :
+            <ImageList variant="masonry" cols={componentCols} gap={6} sx={{mb:0, ml:2}}>
+              {visualDrawLineData.map((data) => 
+                <ImageListItem key={data.id} cols={1} rows={1}>
+                  <Box sx={{ flexDirection: 'column', alignItems: 'center', py:0.5, display:'flex', justifyContent: 'center', backgroundColor: componentName === data.id ? '#848484' : null, '&:hover': {backgroundColor: componentName === data.id ? '#848484' : '#EEEEEE'}}}>
+                    <img
+                      src={`/proxy-image?imageKey=drawimg/lines/${data.id}.png`}
+                      alt={data.label}
+                      loading="lazy"
+                      style={{ maxWidth: '80%', height: 'auto', border: '1px solid grey', cursor: 'pointer' }}
+                      onClick={() => handleImageClick(data.id)}
+                    />
+                    <Box sx={{ fontSize:'12px', maxWidth: '50%', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>{data.label}</Box>
+                  </Box>
+                </ImageListItem>
+              )}
+            </ImageList>
+          }
+        </Grid>
 
-      </Box>
+        {componentInfo && 
+          <VisualDrawComponentInfo
+            handleInfoClose={handleInfoClose}
+            componentPath={componentPath}
+            componentName={componentName}
+            getCount={getCount}
+            matchedData={matchedData}
+            ratio={ratio}
+            xy={xy}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            handleCellClick={handleCellClick}
+            setPage={setPage}
+          />
+        }
 
-    </Grid>
-  );
+      </Grid>
+    </>
+  )
 }

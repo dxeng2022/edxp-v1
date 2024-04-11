@@ -1,6 +1,6 @@
 import { SET_VISUAL_DRAW_FILE, SET_VISUAL_DRAW_JSON, SET_VISUAL_DRAW_LINE_DATA, SET_VISUAL_DRAW_SYMBOL_DATA, SET_VISUAL_DRAW_CIRCLEPACKING_DATA,
   SET_VISUAL_DRAW_IMG, SET_VISUAL_DRAW_TAG, SET_VISUAL_DRAW_TAGX, SET_VISUAL_DRAW_TAGY,
-  SET_VISUAL_BACKDROP, SET_VISUAL_BACKDROP_TEXT } from '../actions';
+  SET_VISUAL_BACKDROP, SET_VISUAL_BACKDROP_TEXT, SET_VISUAL_DRAW_CLOUD_ALERT } from '../actions';
 
 function visualDrawFile(state = '', action) {
   switch (action.type) {
@@ -101,6 +101,15 @@ function visualBackdropText(state = '', action) {
   }
 }
 
+function visualDrawCloudAlert(state = false, action) {
+  switch (action.type) {
+    case SET_VISUAL_DRAW_CLOUD_ALERT:
+      return action.visualDrawCloudAlert;
+    default:
+      return state;
+  }
+}
+
 const visualReducers = {
   visualDrawFile,
   visualDrawJson,
@@ -113,6 +122,7 @@ const visualReducers = {
   visualDrawTagY,
   visualBackdrop,
   visualBackdropText,
+  visualDrawCloudAlert,
 };
 
 export default visualReducers;

@@ -5,23 +5,23 @@ import SendIcon from '@mui/icons-material/Send';
 import { Box, Breadcrumbs, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, ThemeProvider, Typography, createTheme } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useDispatch, useSelector } from 'react-redux';
-import { setCurrentPath, setVisualDrawCloudAlert, setVisualDrawFile, } from '../actions';
+import { setCurrentPath, setRiskCloudAlert, setRiskFile } from '../actions';
 import { useState } from 'react';
-import VisualAPI from '../services/VisualAPI';
+import RiskAPI from '../services/RiskAPI';
 import CloudListAPI from '../services/CloudListAPI';
 
 
-export default function VisualCloudFile() {
+export default function RiskCloudFile() {
 
   const dispatch = useDispatch();
 
-  const { visualDrawCloudAPI } = VisualAPI({});
+  const { riskCloudAPI } = RiskAPI({});
 
   const fileList = useSelector(state => state.fileList);
   const currentPath = useSelector(state => state.currentPath);
   const processedPath = currentPath.path.replace(/\/[^/]+\/?$/, '/');
   const pathSegments = currentPath.path.split('/').filter(segment => segment !== '');
-  const visualDrawCloudAlert = useSelector(state => state.visualDrawCloudAlert);
+  const riskCloudAlert = useSelector(state => state.riskCloudAlert);
 
   const theme = createTheme({
     components: {
@@ -44,7 +44,7 @@ export default function VisualCloudFile() {
   });
 
   const rows = fileList
-    .filter(file => ['ipid', '폴더' ].includes(file.extension.toLowerCase()))
+    .filter(file => ['pdf', '폴더' ].includes(file.extension.toLowerCase()))
     .map((file, index) => ({
       id: index,
       fileName: file.fileName,
@@ -100,7 +100,7 @@ export default function VisualCloudFile() {
     setSelectCheckbox(newSelectionModel);
 
     const filePath = newSelectionModel.map(id => rows[id].filePath);
-    dispatch(setVisualDrawFile(filePath[0]));
+    dispatch(setRiskFile(filePath[0]));
   };
 
 
@@ -126,8 +126,8 @@ export default function VisualCloudFile() {
             ))}
           </Breadcrumbs>
         </Box>
-        <Button size="small" variant="contained" endIcon={<SendIcon />} sx={{ px:2, mr: 2, whiteSpace: 'nowrap' }} onClick={visualDrawCloudAPI}>
-          시각화
+        <Button size="small" variant="contained" endIcon={<SendIcon />} sx={{ px:2, mr: 2, whiteSpace: 'nowrap' }} onClick={riskCloudAPI}>
+          PDF Parsing
         </Button>
       </Box>
 
@@ -149,21 +149,21 @@ export default function VisualCloudFile() {
       </ThemeProvider>
 
       <Dialog
-          open={visualDrawCloudAlert}
+          open={riskCloudAlert}
           onClose={(event, reason) => {
             if (reason !== 'backdropClick') {
-              dispatch(setVisualDrawCloudAlert(false));
+              dispatch(setRiskCloudAlert(false));
             }
           }}
         >
-          <DialogTitle>시각화 오류</DialogTitle>
+          <DialogTitle>독조소항 추출 오류</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              ipid 파일을 선택해주세요.
+              pdf 파일을 선택해주세요.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => dispatch(setVisualDrawCloudAlert(false))}>닫기</Button>
+            <Button onClick={() => dispatch(setRiskCloudAlert(false))}>닫기</Button>
           </DialogActions>
         </Dialog>
 

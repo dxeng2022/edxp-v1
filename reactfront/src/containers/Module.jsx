@@ -8,6 +8,8 @@ import MyPage from  '../components/MyPage.jsx';
 import Download from '../components/Download.jsx';
 import Cloud  from './Cloud.jsx';
 import Visual  from './Visual.jsx';
+import Risk  from './Risk.jsx';
+import RiskVisual from '../components/RiskVisual.jsx';
 import Administrator from './Administrator.jsx';
 import Footer from "../components/Footer.jsx";
 import { useDispatch, useSelector } from 'react-redux';
@@ -57,6 +59,8 @@ export default function Module() {
         <Route path="/sheetcloud" element={<Cloud />} />
         <Route path="/doccloud" element={<Cloud />} />
         <Route path="/drawvisual" element={<Visual />} />
+        <Route path="/risk" element={<Risk />} />
+        <Route path="/riskvisual" element={<RiskVisual />} />
         <Route path="/admin" element={
           <RedirectToHomeIfNotAdmin>
             <Administrator />
