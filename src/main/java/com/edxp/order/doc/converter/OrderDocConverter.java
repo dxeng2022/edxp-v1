@@ -31,7 +31,7 @@ public class OrderDocConverter {
         if (entity.getExtractedDate() == null) extractedDate = "-";
         else extractedDate = FileUtil.getDateFormat(new Date(entity.getExtractedDate().getTime()));
         String deletedAt;
-        if (entity.getExtractedDate() == null) deletedAt = "-";
+        if (entity.getDeletedAt() == null) deletedAt = "-";
         else deletedAt = FileUtil.getDateFormat(new Date(entity.getDeletedAt().getTime()));
 
         return OrderDocListResponse.of(
