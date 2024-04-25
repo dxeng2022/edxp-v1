@@ -12,10 +12,11 @@ import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
 import com.edxp.order.doc.dto.response.OrderDocListResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
-import com.edxp.order.doc.entity.OrderDocEntity;
+import com.edxp.order.doc.dto.response.OrderDocVisualListResponse;
 import com.edxp.order.doc.model.ParsedDocument;
 import com.edxp.order.doc.service.OrderDocService;
 import com.edxp.s3file.dto.requset.FileUploadRequest;
+import com.edxp.s3file.dto.response.FileListResponse;
 import com.edxp.s3file.service.FileService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,9 +36,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.edxp._core.common.client.ModelClient.executeModelClient;
 import static com.edxp._core.common.converter.FileConverter.convertFileToMultipartFile;
@@ -71,10 +74,8 @@ public class OrderDocBusiness {
      * @apiNote 독소조항 주문 내용 조회 API
      * @since 24.02.28
      */
-    public Page<OrderDocListResponse> getOrderList(Long userId, Pageable pageable) {
-        final Page<OrderDocEntity> entities = orderDocService.getOrderList(userId, pageable);
-
-        return orderDocConverter.entityToResponseWitPage(entities);
+    public Page<OrderDocListResponse> getOrderListWithPage(Long userId, Pageable pageable) {
+        return orderDocConverter.entityToResponseWitPage(orderDocService.getOrderListWithPage(userId, pageable));
     }
 
     /**
@@ -149,14 +150,14 @@ public class OrderDocBusiness {
 //        fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(result)));
         fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(resizeResult)));
 
-        // 5) 주문 등록
-        final OrderDocEntity orderDocEntity = orderDocConverter.toEntity(OrderDocRequest.of(
+        final OrderDocRequest orderDocRequest = OrderDocRequest.of(
                 file.getOriginalFilename(),
                 file.getSize(),
                 generatedName,
-                resizeResult.getSize())
-        );
-        orderDocService.order(userId, orderDocEntity);
+                resizeResult.getSize());
+
+        // 5) 주문 등록
+        orderDocService.order(userId, orderDocRequest);
 
         // 6) 객체 반환
         if (response.getStatusCode().is2xxSuccessful())
@@ -239,6 +240,47 @@ public class OrderDocBusiness {
         } else {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Analysis is failed");
         }
+    }
+
+    /**
+     * [ 시각화 파일리스트 ]
+     *
+     * @param userId user id log in
+     * @return file list to visualization
+     * @since 24.04.25
+     */
+    public List<OrderDocVisualListResponse> visualList(Long userId) {
+        final List<OrderDocListResponse> orders = orderDocService.getOrderList(userId).stream()
+                .map(orderDocConverter::toResponse)
+                .collect(Collectors.toList());
+        final List<FileListResponse> resultFiles = fileService.getFiles(userId, "doc_risk/").stream()
+                .filter(file -> file.getFileName().endsWith("-result.json"))
+                .collect(Collectors.toList());
+
+        List<OrderDocVisualListResponse> mergedList = new ArrayList<>();
+
+        for (FileListResponse resultFile : resultFiles) {
+            for (OrderDocListResponse order : orders) {
+                final String orderKey = resultFile.getFileName().replace("-result.json", "");
+
+                if (order.getOrderFileName().equals(orderKey)) {
+                    mergedList.add(OrderDocVisualListResponse.of(
+                            order.getOriginalFileName(),
+                            resultFile.getFileName(),
+                            resultFile.getFileSize(),
+                            resultFile.getFilePath(),
+                            resultFile.getExtension(),
+                            resultFile.getRegisteredAt(),
+                            order.getExtractedDate(),
+                            resultFile.getOriginalFileSize(),
+                            resultFile.getOriginalRegisteredAt()
+                    ));
+                    break;
+                }
+            }
+        }
+
+        return mergedList;
     }
 
     /**

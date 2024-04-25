@@ -11,6 +11,7 @@ import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
 import com.edxp.order.doc.dto.response.OrderDocListResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
+import com.edxp.order.doc.dto.response.OrderDocVisualListResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -41,7 +43,7 @@ public class OrderDocController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        final Page<OrderDocListResponse> response = orderDocBusiness.getOrderList(principal.getUser().getId(), pageable);
+        final Page<OrderDocListResponse> response = orderDocBusiness.getOrderListWithPage(principal.getUser().getId(), pageable);
 
         return CommonResponse.success(response);
     }
@@ -135,6 +137,17 @@ public class OrderDocController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Content-Disposition", "attachment; filename=" + filename)
                 .body(response.get(filename));
+    }
+
+    // 시각화 파일 리스트 요청
+    @CrossOrigin
+    @GetMapping("/visual-list")
+    public CommonResponse<List<OrderDocVisualListResponse>> getVisualList(
+            @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        final List<OrderDocVisualListResponse> response = orderDocBusiness.visualList(principal.getUser().getId());
+
+        return CommonResponse.success(response);
     }
 
     // 시각화 요청
