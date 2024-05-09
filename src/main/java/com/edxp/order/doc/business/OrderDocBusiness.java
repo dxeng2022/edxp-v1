@@ -304,6 +304,7 @@ public class OrderDocBusiness {
     // 임시파일 저장
     public void saveResult(Long userId, OrderDocSaveRequest request) {
         fileService.moveFile(userId, request.getSaveFileName(), request.getFileName());
+        orderDocService.deleteRiskExtract(userId, request.getFileName());
     }
 
     /**

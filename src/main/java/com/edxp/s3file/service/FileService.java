@@ -47,6 +47,8 @@ public class FileService {
     @Value("${file.location}")
     private String location;
 
+    private final static long MAX_UPLOAD_VOLUME = 251658240; // 30 MB
+
     /**
      * [ 파일 및 폴더 리스트 불러오기 ]
      *
@@ -389,7 +391,7 @@ public class FileService {
         String sourceKey = path + request.getCurrentName();
         String destinationKey = path + request.getUpdateName() + "." + request.getExtension();
 
-        updateS3Object(sourceKey, destinationKey);
+        updateS3Object(sourceKey, destinationKey, 0L);
     }
 
     /**
@@ -455,12 +457,19 @@ public class FileService {
      */
     @Transactional
     public void moveFile(Long userId, String saveFileName, String fileName) {
+        // 목적지 용량 확인
+        final long docVolume = getVolume(userId, "doc").getOriginalVolume();
+        if (docVolume > MAX_UPLOAD_VOLUME) throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
+
+        // 목적지 이름 확인
+        if(isFileNameDuplicated(userId, saveFileName)) throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+
         String sourceKey = String.valueOf(getPath(userId, "doc_risk").append("/").append(fileName).append("-result.json"));
         String destinationKey = String.valueOf(getPath(userId, "doc").append("/").append(saveFileName).append(":").append(fileName).append("-result.json"));
         log.debug("currentPath : {}", sourceKey);
         log.debug("targetPath : {}", destinationKey);
 
-        updateS3Object(sourceKey, destinationKey);
+        updateS3Object(sourceKey, destinationKey, docVolume);
     }
 
     // 분석용 파일 삭제
@@ -492,20 +501,21 @@ public class FileService {
     }
 
     // 파일 변경 내부 메소드
-    private void updateS3Object(String sourceKey, String destinationKey) {
+    private void updateS3Object(String sourceKey, String destinationKey, Long destinationVolume) {
+        // 파일 확인
         boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, sourceKey);
         boolean isNewObjectExist = amazonS3Client.doesObjectExist(bucket, destinationKey);
 
-        if (isNewObjectExist) {
-            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
-        }
+        if (isNewObjectExist) throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+        if (!isObjectExist) throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
 
-        if (isObjectExist) {
-            CopyObjectRequest copyObjectsRequest = new CopyObjectRequest(bucket, sourceKey, bucket, destinationKey);
-            amazonS3Client.copyObject(copyObjectsRequest);
-        } else {
-            throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
-        }
+        // 용량 확인
+        ObjectMetadata sourceMetadata = amazonS3Client.getObjectMetadata(new GetObjectMetadataRequest(bucket, sourceKey));
+        long sourceSize = sourceMetadata.getContentLength();
+        if(destinationVolume + sourceSize > MAX_UPLOAD_VOLUME) throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
+
+        CopyObjectRequest copyObjectsRequest = new CopyObjectRequest(bucket, sourceKey, bucket, destinationKey);
+        amazonS3Client.copyObject(copyObjectsRequest);
 
         try {
             amazonS3Client.deleteObject(bucket, sourceKey);
@@ -518,8 +528,29 @@ public class FileService {
     private ListObjectsRequest getListObjectsRequest(Long userId, String currentPath) {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
         listObjectsRequest.setBucketName(bucket);
-        listObjectsRequest.setPrefix("dxeng/" + location + "/" + "user_" + String.format("%06d", userId) + "/" + currentPath);
+        listObjectsRequest.setPrefix("dxeng" + "/" + location + "/" + "user_" + String.format("%06d", userId) + "/" + currentPath);
+        
         return listObjectsRequest;
+    }
+
+    // 파일 이름 중복 validation
+    private boolean isFileNameDuplicated(long userId, String saveFileName) {
+        boolean isDuplicated = false;
+
+        ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, "doc/");
+        listObjectsRequest.setDelimiter("/");
+        ObjectListing s3Objects;
+
+        s3Objects = amazonS3Client.listObjects(listObjectsRequest);
+        for (S3ObjectSummary objectSummary : s3Objects.getObjectSummaries()) {
+            String objectKey = objectSummary.getKey().substring(objectSummary.getKey().lastIndexOf("/") + 1);
+            if (objectKey.contains(saveFileName + ":")) {
+                isDuplicated = true;
+                break;
+            }
+        }
+
+        return isDuplicated;
     }
 
     // 파일 압축 내부 메소드

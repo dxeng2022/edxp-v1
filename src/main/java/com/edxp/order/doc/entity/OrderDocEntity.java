@@ -26,7 +26,7 @@ public class OrderDocEntity {
     @Setter @Column(nullable = false) private Long orderFileSize;
     @Column(nullable = false) private Timestamp parsedDate;
     @Setter private Timestamp extractedDate;
-    private Timestamp deletedAt;
+    @Setter private Timestamp deletedAt;
 
     protected OrderDocEntity() {}
 

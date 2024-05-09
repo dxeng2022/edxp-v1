@@ -43,7 +43,7 @@ public class OrderDocService {
         return orderDocRepository.save(entity);
     }
 
-    //
+    // 분석 실행
     @Transactional
     public void riskExtract(Long userId, String orderFileName) {
         final OrderDocEntity entity = orderDocRepository.findFirstByUserIdAndOrderFileNameOrderByIdDesc(userId, orderFileName)
@@ -51,6 +51,18 @@ public class OrderDocService {
 
         if (entity.getExtractedDate() != null) throw new EdxpApplicationException(ErrorCode.ALREADY_EXTRACTED);
         entity.setExtractedDate(Timestamp.from(Instant.now()));
+
+        orderDocRepository.save(entity);
+    }
+
+    // 분석 파일 삭제
+    @Transactional
+    public void deleteRiskExtract(Long userId, String orderFileName) {
+        final OrderDocEntity entity = orderDocRepository.findFirstByUserIdAndOrderFileNameOrderByIdDesc(userId, orderFileName)
+                .orElseThrow(() -> new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "order is not founded"));
+
+        if (entity.getDeletedAt() != null) throw new EdxpApplicationException(ErrorCode.ALREADY_DELETED);
+        entity.setDeletedAt(Timestamp.from(Instant.now()));
 
         orderDocRepository.save(entity);
     }
