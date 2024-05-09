@@ -389,24 +389,7 @@ public class FileService {
         String sourceKey = path + request.getCurrentName();
         String destinationKey = path + request.getUpdateName() + "." + request.getExtension();
 
-        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, sourceKey);
-        boolean isNewObjectExist = amazonS3Client.doesObjectExist(bucket, destinationKey);
-
-        if (isNewObjectExist) {
-            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
-        }
-        if (isObjectExist) {
-            CopyObjectRequest copyObjectsRequest = new CopyObjectRequest(bucket, sourceKey, bucket, destinationKey);
-            amazonS3Client.copyObject(copyObjectsRequest);
-        } else {
-            throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
-        }
-
-        try {
-            amazonS3Client.deleteObject(bucket, sourceKey);
-        } catch (Exception e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, " delete is failed in update.");
-        }
+        updateS3Object(sourceKey, destinationKey);
     }
 
     /**
@@ -463,6 +446,23 @@ public class FileService {
         return allPassed.get();
     }
 
+    /**
+     * [ 임시파일 저장 ]
+     *
+     * @param userId user id is signed in
+     * @param saveFileName filename to change
+     * @param fileName original file key
+     */
+    @Transactional
+    public void moveFile(Long userId, String saveFileName, String fileName) {
+        String sourceKey = String.valueOf(getPath(userId, "doc_risk").append("/").append(fileName).append("-result.json"));
+        String destinationKey = String.valueOf(getPath(userId, "doc").append("/").append(saveFileName).append(":").append(fileName).append("-result.json"));
+        log.debug("currentPath : {}", sourceKey);
+        log.debug("targetPath : {}", destinationKey);
+
+        updateS3Object(sourceKey, destinationKey);
+    }
+
     // 분석용 파일 삭제
     @Transactional
     public void deleteAnalysisFile(Long userId, String fileName, String myPath) {
@@ -486,9 +486,32 @@ public class FileService {
     // 파일 경로 반환 내부 메소드
     private StringBuilder getPath(long userId, String currentPath) {
         StringBuilder path = new StringBuilder();
-        path.append("dxeng/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(currentPath);
+        path.append("dxeng").append("/").append(location).append("/").append("user_").append(String.format("%06d", userId)).append("/").append(currentPath);
 
         return path;
+    }
+
+    // 파일 변경 내부 메소드
+    private void updateS3Object(String sourceKey, String destinationKey) {
+        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, sourceKey);
+        boolean isNewObjectExist = amazonS3Client.doesObjectExist(bucket, destinationKey);
+
+        if (isNewObjectExist) {
+            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+        }
+
+        if (isObjectExist) {
+            CopyObjectRequest copyObjectsRequest = new CopyObjectRequest(bucket, sourceKey, bucket, destinationKey);
+            amazonS3Client.copyObject(copyObjectsRequest);
+        } else {
+            throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
+        }
+
+        try {
+            amazonS3Client.deleteObject(bucket, sourceKey);
+        } catch (Exception e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "delete is failed in update.");
+        }
     }
 
     // ListObjectsRequest 반환 내부 메소드

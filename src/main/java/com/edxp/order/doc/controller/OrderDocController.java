@@ -8,6 +8,7 @@ import com.edxp.order.doc.business.OrderDocBusiness;
 import com.edxp.order.doc.dto.request.OrderDocParseRequest;
 import com.edxp.order.doc.dto.request.OrderDocParseUpdateRequest;
 import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
+import com.edxp.order.doc.dto.request.OrderDocSaveRequest;
 import com.edxp.order.doc.dto.response.OrderDocListResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
@@ -159,9 +160,17 @@ public class OrderDocController {
     ) throws IOException {
         return CommonResponse.success(orderDocBusiness.visualization(principal.getUser().getId(), request));
     }
-    // TODO: DB original filepath 주소까지 저장
 
-    // TODO: 임시문서 -> 클라우드 저장 (수정할 이름 + key 이동, 용량체크 필요)
+    // 임시문서 -> 클라우드 저장 (수정할 이름 + key 이동, 용량체크 필요)
+    @CrossOrigin
+    @PutMapping("/visual-save")
+    public CommonResponse<Void> saveTempResultFile(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @RequestBody OrderDocSaveRequest request
+    ) {
+        orderDocBusiness.saveResult(principal.getUser().getId(), request);
+        return CommonResponse.success();
+    }
 
     // TODO: 영구문서 시각화용 pdf 전달 api
 

@@ -5,10 +5,7 @@ import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.doc.converter.OrderDocConverter;
-import com.edxp.order.doc.dto.request.OrderDocParseRequest;
-import com.edxp.order.doc.dto.request.OrderDocParseUpdateRequest;
-import com.edxp.order.doc.dto.request.OrderDocRequest;
-import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
+import com.edxp.order.doc.dto.request.*;
 import com.edxp.order.doc.dto.response.OrderDocListResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
@@ -305,7 +302,9 @@ public class OrderDocBusiness {
     }
 
     // 임시파일 저장
-
+    public void saveResult(Long userId, OrderDocSaveRequest request) {
+        fileService.moveFile(userId, request.getSaveFileName(), request.getFileName());
+    }
 
     /**
      * [ 파일 삭제 ]
