@@ -11,6 +11,7 @@ public class OrderDocListResponse {
     private Long id;
     private Long userId;
     private String originalFileName;
+    private String originalFilePath;
     private Long originalFileSize;
     private String originalFileVolume;
     private String orderFileName;
@@ -24,6 +25,7 @@ public class OrderDocListResponse {
             Long id,
             Long userId,
             String originalFileName,
+            String originalFilePath,
             Long originalFileSize,
             String originalFileVolume,
             String orderFileName,
@@ -37,6 +39,7 @@ public class OrderDocListResponse {
                 id,
                 userId,
                 originalFileName,
+                originalFilePath,
                 originalFileSize,
                 originalFileVolume,
                 orderFileName,

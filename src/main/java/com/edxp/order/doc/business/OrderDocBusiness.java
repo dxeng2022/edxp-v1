@@ -105,9 +105,12 @@ public class OrderDocBusiness {
     public Map<String, OrderDocParseResponse> parseExecute(Long userId, OrderDocParseRequest request) throws IOException {
         StringBuilder userPath = getUserPath(userId);
         String folderPath = downloadFolder + "/" + userPath + "/" + request.getFilePath();
+        final int pathIndex = request.getFilePath().lastIndexOf("/");
+        String originalFilePath = "";
+        if (pathIndex > -1) originalFilePath = request.getFilePath().substring(0, pathIndex);
         File inputFile = new File(folderPath);
 
-        return parse(userId, convertFileToMultipartFile(inputFile));
+        return parse(userId, originalFilePath, convertFileToMultipartFile(inputFile));
     }
 
     /**
@@ -120,7 +123,7 @@ public class OrderDocBusiness {
      * @apiNote ITB 문서 파싱을 진행하는 API
      * @since 2024.02.27
      */
-    public Map<String, OrderDocParseResponse> parse(Long userId, MultipartFile file) throws IOException {
+    public Map<String, OrderDocParseResponse> parse(Long userId, String originalFilePath, MultipartFile file) throws IOException {
         // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", convertMultipartFileToResource(file));
@@ -152,6 +155,7 @@ public class OrderDocBusiness {
 
         final OrderDocRequest orderDocRequest = OrderDocRequest.of(
                 file.getOriginalFilename(),
+                originalFilePath,
                 file.getSize(),
                 generatedName,
                 resizeResult.getSize());
@@ -266,6 +270,7 @@ public class OrderDocBusiness {
                 if (order.getOrderFileName().equals(orderKey)) {
                     mergedList.add(OrderDocVisualListResponse.of(
                             order.getOriginalFileName(),
+                            order.getOriginalFilePath(),
                             resultFile.getFileName(),
                             resultFile.getFileSize(),
                             resultFile.getFilePath(),
@@ -298,6 +303,9 @@ public class OrderDocBusiness {
 
         return OrderDocRiskResponse.from(documents);
     }
+
+    // 임시파일 저장
+
 
     /**
      * [ 파일 삭제 ]

@@ -368,6 +368,8 @@ public class FileService {
             return file;
         } catch (InterruptedException e) {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
+        } catch (AmazonS3Exception e) {
+            throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
         }
     }
 

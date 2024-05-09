@@ -92,7 +92,7 @@ public class OrderDocController {
             @RequestParam("file") MultipartFile file
     ) throws IOException {
         if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
-        Map<String, OrderDocParseResponse> response = orderDocBusiness.parse(principal.getUser().getId(), file);
+        Map<String, OrderDocParseResponse> response = orderDocBusiness.parse(principal.getUser().getId(), "", file);
 
         String filename = null;
         for (String key : response.keySet()) filename = key;
@@ -159,6 +159,13 @@ public class OrderDocController {
     ) throws IOException {
         return CommonResponse.success(orderDocBusiness.visualization(principal.getUser().getId(), request));
     }
+    // TODO: DB original filepath 주소까지 저장
+
+    // TODO: 임시문서 -> 클라우드 저장 (수정할 이름 + key 이동, 용량체크 필요)
+
+    // TODO: 영구문서 시각화용 pdf 전달 api
+
+    // TODO: 로컬 시각화 요청 (.json)
 
     // 임시 파일 삭제
     @CrossOrigin

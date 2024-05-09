@@ -17,6 +17,7 @@ public class OrderDocConverter {
     public OrderDocEntity toEntity(OrderDocRequest request) {
         return OrderDocEntity.of(
                     request.getOriginalFileName(),
+                    request.getOriginalFilePath(),
                     request.getOriginalFileSize(),
                     request.getOrderFileName(),
                     request.getOrderFileSize()
@@ -38,6 +39,7 @@ public class OrderDocConverter {
                 entity.getId(),
                 entity.getUserId(),
                 entity.getOriginalFileName(),
+                entity.getOriginalFilePath(),
                 entity.getOriginalFileSize(),
                 originalFileVolume,
                 entity.getOrderFileName(),
