@@ -296,7 +296,10 @@ public class OrderDocBusiness {
     public Map<String, FileSystemResource> visualDown(Long userId, OrderDocVisualRequest request) {
         String orderKey = request.getFileName().substring(0, request.getFileName().lastIndexOf("-"));
         final OrderDocResponse order = orderDocService.getOrder(userId, orderKey);
-        String pdfPath = order.getOriginalFilePath().concat("/").concat(order.getOriginalFileName());
+
+        String pdfPath = "";
+        if (!order.getOriginalFilePath().equals("")) pdfPath = order.getOriginalFilePath().concat("/");
+        pdfPath = pdfPath.concat(order.getOriginalFileName());
         File file = fileService.downloadAnalysisFile(userId, pdfPath, "doc");
 
         return Map.of(pdfPath, new FileSystemResource(file));
@@ -341,8 +344,6 @@ public class OrderDocBusiness {
      */
     public void saveResult(Long userId, OrderDocVisualSaveRequest request) {
         fileService.moveFile(userId, request.getSaveFileName(), request.getFileName());
-        String orderKey = request.getFileName().substring(0, request.getFileName().lastIndexOf("-"));
-        orderDocService.deleteRiskExtract(userId, orderKey);
     }
 
     /**
