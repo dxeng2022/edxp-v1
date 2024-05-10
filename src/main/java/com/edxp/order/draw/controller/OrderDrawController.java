@@ -19,7 +19,7 @@ import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/visual")
+@RequestMapping("/api/v1/draw")
 @RestController
 public class OrderDrawController {
     private final OrderDrawService orderDrawService;
