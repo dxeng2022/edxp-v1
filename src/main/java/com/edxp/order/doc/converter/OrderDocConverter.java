@@ -3,7 +3,7 @@ package com.edxp.order.doc.converter;
 import com.edxp._core.common.annotation.Converter;
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp.order.doc.dto.request.OrderDocRequest;
-import com.edxp.order.doc.dto.response.OrderDocListResponse;
+import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.entity.OrderDocEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -24,7 +24,7 @@ public class OrderDocConverter {
                 );
     }
 
-    public OrderDocListResponse toResponse(OrderDocEntity entity) {
+    public OrderDocResponse toResponse(OrderDocEntity entity) {
         String originalFileVolume = FileUtil.getSizeFormat(entity.getOriginalFileSize());
         String orderFileVolume = FileUtil.getSizeFormat(entity.getOrderFileSize());
         String parsedDate = FileUtil.getDateFormat(new Date(entity.getParsedDate().getTime()));
@@ -35,7 +35,7 @@ public class OrderDocConverter {
         if (entity.getDeletedAt() == null) deletedAt = "-";
         else deletedAt = FileUtil.getDateFormat(new Date(entity.getDeletedAt().getTime()));
 
-        return OrderDocListResponse.of(
+        return OrderDocResponse.of(
                 entity.getId(),
                 entity.getUserId(),
                 entity.getOriginalFileName(),
@@ -51,8 +51,8 @@ public class OrderDocConverter {
         );
     }
 
-    public Page<OrderDocListResponse> entityToResponseWitPage(Page<OrderDocEntity> entities) {
-        List<OrderDocListResponse> responseList = entities.getContent()
+    public Page<OrderDocResponse> entityToResponseWitPage(Page<OrderDocEntity> entities) {
+        List<OrderDocResponse> responseList = entities.getContent()
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

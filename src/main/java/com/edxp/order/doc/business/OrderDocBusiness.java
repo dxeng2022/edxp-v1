@@ -6,7 +6,7 @@ import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.doc.converter.OrderDocConverter;
 import com.edxp.order.doc.dto.request.*;
-import com.edxp.order.doc.dto.response.OrderDocListResponse;
+import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
 import com.edxp.order.doc.dto.response.OrderDocVisualListResponse;
@@ -71,7 +71,7 @@ public class OrderDocBusiness {
      * @apiNote 독소조항 주문 내용 조회 API
      * @since 24.02.28
      */
-    public Page<OrderDocListResponse> getOrderListWithPage(Long userId, Pageable pageable) {
+    public Page<OrderDocResponse> getOrderListWithPage(Long userId, Pageable pageable) {
         return orderDocConverter.entityToResponseWitPage(orderDocService.getOrderListWithPage(userId, pageable));
     }
 
@@ -251,7 +251,7 @@ public class OrderDocBusiness {
      * @since 24.04.25
      */
     public List<OrderDocVisualListResponse> visualList(Long userId) {
-        final List<OrderDocListResponse> orders = orderDocService.getOrderList(userId).stream()
+        final List<OrderDocResponse> orders = orderDocService.getOrderList(userId).stream()
                 .map(orderDocConverter::toResponse)
                 .collect(Collectors.toList());
         final List<FileListResponse> resultFiles = fileService.getFiles(userId, "doc_risk/").stream()
@@ -261,7 +261,7 @@ public class OrderDocBusiness {
         List<OrderDocVisualListResponse> mergedList = new ArrayList<>();
 
         for (FileListResponse resultFile : resultFiles) {
-            for (OrderDocListResponse order : orders) {
+            for (OrderDocResponse order : orders) {
                 final String orderKey = resultFile.getFileName().replace("-result.json", "");
 
                 if (order.getOrderFileName().equals(orderKey)) {
@@ -286,6 +286,23 @@ public class OrderDocBusiness {
     }
 
     /**
+     * [ 시각화용 pdf 요청 ]
+     *
+     * @param userId user id signed in
+     * @param request visual file name
+     * @return pdf file
+     * @since 24.05.09
+     */
+    public Map<String, FileSystemResource> visualDown(Long userId, OrderDocVisualRequest request) {
+        String orderKey = request.getFileName().substring(0, request.getFileName().lastIndexOf("-"));
+        final OrderDocResponse order = orderDocService.getOrder(userId, orderKey);
+        String pdfPath = order.getOriginalFilePath().concat("/").concat(order.getOriginalFileName());
+        File file = fileService.downloadAnalysisFile(userId, pdfPath, "doc");
+
+        return Map.of(pdfPath, new FileSystemResource(file));
+    }
+
+    /**
      * [ 시각화 요청 ]
      *
      * @param userId  user id log in
@@ -301,10 +318,31 @@ public class OrderDocBusiness {
         return OrderDocRiskResponse.from(documents);
     }
 
-    // 임시파일 저장
-    public void saveResult(Long userId, OrderDocSaveRequest request) {
+    /**
+     * [ 로컬 시각화 요청 ]
+     *
+     * @param file visual json file
+     * @return local visual response
+     * @throws IOException mapper error
+     * @since 24-05-09
+     */
+    public OrderDocRiskResponse visualizationLocal(MultipartFile file) throws IOException {
+        List<ParsedDocument> documents = objectMapper.readValue(file.getInputStream(), typeReference);
+
+        return OrderDocRiskResponse.from(documents);
+    }
+
+    /**
+     * [ 임시파일 저장 ]
+     *
+     * @param userId user id signed in
+     * @param request saveFileName, fileName
+     * @since 24-05-10
+     */
+    public void saveResult(Long userId, OrderDocVisualSaveRequest request) {
         fileService.moveFile(userId, request.getSaveFileName(), request.getFileName());
-        orderDocService.deleteRiskExtract(userId, request.getFileName());
+        String orderKey = request.getFileName().substring(0, request.getFileName().lastIndexOf("-"));
+        orderDocService.deleteRiskExtract(userId, orderKey);
     }
 
     /**

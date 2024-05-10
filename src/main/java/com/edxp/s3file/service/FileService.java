@@ -464,10 +464,8 @@ public class FileService {
         // 목적지 이름 확인
         if(isFileNameDuplicated(userId, saveFileName)) throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
 
-        String sourceKey = String.valueOf(getPath(userId, "doc_risk").append("/").append(fileName).append("-result.json"));
-        String destinationKey = String.valueOf(getPath(userId, "doc").append("/").append(saveFileName).append(":").append(fileName).append("-result.json"));
-        log.debug("currentPath : {}", sourceKey);
-        log.debug("targetPath : {}", destinationKey);
+        String sourceKey = String.valueOf(getPath(userId, "doc_risk").append("/").append(fileName));
+        String destinationKey = String.valueOf(getPath(userId, "doc").append("/").append(saveFileName).append(":").append(fileName));
 
         updateS3Object(sourceKey, destinationKey, docVolume);
     }

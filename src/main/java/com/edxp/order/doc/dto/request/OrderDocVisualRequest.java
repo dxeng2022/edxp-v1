@@ -1,13 +1,12 @@
 package com.edxp.order.doc.dto.request;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDocSaveRequest {
-    private String saveFileName;
+public class OrderDocVisualRequest {
     private String fileName;
 }
