@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class OrderDocVisualListResponse {
     private String originalFilename;
+    private String originalFilePath;
     private String fileName;
     private String fileSize;
     private String filePath;
@@ -20,6 +21,7 @@ public class OrderDocVisualListResponse {
 
     public static OrderDocVisualListResponse of(
             String originalFilename,
+            String originalFilePath,
             String fileName,
             String fileSize,
             String filePath,
@@ -31,6 +33,7 @@ public class OrderDocVisualListResponse {
     ) {
         return new OrderDocVisualListResponse(
                 originalFilename,
+                originalFilePath,
                 fileName,
                 fileSize,
                 filePath,

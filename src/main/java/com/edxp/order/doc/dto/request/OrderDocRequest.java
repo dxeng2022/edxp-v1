@@ -9,18 +9,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderDocRequest {
     private String originalFileName;
+    private String originalFilePath;
     private Long originalFileSize;
     private String orderFileName;
     private Long orderFileSize;
 
     public static OrderDocRequest of(
             String originalFileName,
+            String originalFilePath,
             Long originalFileSize,
             String orderFileName,
             Long orderFileSize
     ) {
         return new OrderDocRequest(
                 originalFileName,
+                originalFilePath,
                 originalFileSize,
                 orderFileName,
                 orderFileSize

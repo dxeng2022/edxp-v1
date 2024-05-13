@@ -5,11 +5,8 @@ import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.doc.converter.OrderDocConverter;
-import com.edxp.order.doc.dto.request.OrderDocParseRequest;
-import com.edxp.order.doc.dto.request.OrderDocParseUpdateRequest;
-import com.edxp.order.doc.dto.request.OrderDocRequest;
-import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
-import com.edxp.order.doc.dto.response.OrderDocListResponse;
+import com.edxp.order.doc.dto.request.*;
+import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
 import com.edxp.order.doc.dto.response.OrderDocVisualListResponse;
@@ -74,7 +71,7 @@ public class OrderDocBusiness {
      * @apiNote 독소조항 주문 내용 조회 API
      * @since 24.02.28
      */
-    public Page<OrderDocListResponse> getOrderListWithPage(Long userId, Pageable pageable) {
+    public Page<OrderDocResponse> getOrderListWithPage(Long userId, Pageable pageable) {
         return orderDocConverter.entityToResponseWitPage(orderDocService.getOrderListWithPage(userId, pageable));
     }
 
@@ -105,9 +102,12 @@ public class OrderDocBusiness {
     public Map<String, OrderDocParseResponse> parseExecute(Long userId, OrderDocParseRequest request) throws IOException {
         StringBuilder userPath = getUserPath(userId);
         String folderPath = downloadFolder + "/" + userPath + "/" + request.getFilePath();
+        final int pathIndex = request.getFilePath().lastIndexOf("/");
+        String originalFilePath = "";
+        if (pathIndex > -1) originalFilePath = request.getFilePath().substring(0, pathIndex);
         File inputFile = new File(folderPath);
 
-        return parse(userId, convertFileToMultipartFile(inputFile));
+        return parse(userId, originalFilePath, convertFileToMultipartFile(inputFile));
     }
 
     /**
@@ -120,7 +120,7 @@ public class OrderDocBusiness {
      * @apiNote ITB 문서 파싱을 진행하는 API
      * @since 2024.02.27
      */
-    public Map<String, OrderDocParseResponse> parse(Long userId, MultipartFile file) throws IOException {
+    public Map<String, OrderDocParseResponse> parse(Long userId, String originalFilePath, MultipartFile file) throws IOException {
         // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", convertMultipartFileToResource(file));
@@ -152,6 +152,7 @@ public class OrderDocBusiness {
 
         final OrderDocRequest orderDocRequest = OrderDocRequest.of(
                 file.getOriginalFilename(),
+                originalFilePath,
                 file.getSize(),
                 generatedName,
                 resizeResult.getSize());
@@ -250,7 +251,7 @@ public class OrderDocBusiness {
      * @since 24.04.25
      */
     public List<OrderDocVisualListResponse> visualList(Long userId) {
-        final List<OrderDocListResponse> orders = orderDocService.getOrderList(userId).stream()
+        final List<OrderDocResponse> orders = orderDocService.getOrderList(userId).stream()
                 .map(orderDocConverter::toResponse)
                 .collect(Collectors.toList());
         final List<FileListResponse> resultFiles = fileService.getFiles(userId, "doc_risk/").stream()
@@ -260,12 +261,13 @@ public class OrderDocBusiness {
         List<OrderDocVisualListResponse> mergedList = new ArrayList<>();
 
         for (FileListResponse resultFile : resultFiles) {
-            for (OrderDocListResponse order : orders) {
+            for (OrderDocResponse order : orders) {
                 final String orderKey = resultFile.getFileName().replace("-result.json", "");
 
                 if (order.getOrderFileName().equals(orderKey)) {
                     mergedList.add(OrderDocVisualListResponse.of(
                             order.getOriginalFileName(),
+                            order.getOriginalFilePath(),
                             resultFile.getFileName(),
                             resultFile.getFileSize(),
                             resultFile.getFilePath(),
@@ -284,6 +286,26 @@ public class OrderDocBusiness {
     }
 
     /**
+     * [ 시각화용 pdf 요청 ]
+     *
+     * @param userId user id signed in
+     * @param request visual file name
+     * @return pdf file
+     * @since 24.05.09
+     */
+    public Map<String, FileSystemResource> visualDown(Long userId, OrderDocVisualRequest request) {
+        String orderKey = request.getFileName().substring(0, request.getFileName().lastIndexOf("-"));
+        final OrderDocResponse order = orderDocService.getOrder(userId, orderKey);
+
+        String pdfPath = "";
+        if (!order.getOriginalFilePath().equals("")) pdfPath = order.getOriginalFilePath().concat("/");
+        pdfPath = pdfPath.concat(order.getOriginalFileName());
+        File file = fileService.downloadAnalysisFile(userId, pdfPath, "doc");
+
+        return Map.of(pdfPath, new FileSystemResource(file));
+    }
+
+    /**
      * [ 시각화 요청 ]
      *
      * @param userId  user id log in
@@ -297,6 +319,31 @@ public class OrderDocBusiness {
         FileUtil.remove(parsedFile);
 
         return OrderDocRiskResponse.from(documents);
+    }
+
+    /**
+     * [ 로컬 시각화 요청 ]
+     *
+     * @param file visual json file
+     * @return local visual response
+     * @throws IOException mapper error
+     * @since 24-05-09
+     */
+    public OrderDocRiskResponse visualizationLocal(MultipartFile file) throws IOException {
+        List<ParsedDocument> documents = objectMapper.readValue(file.getInputStream(), typeReference);
+
+        return OrderDocRiskResponse.from(documents);
+    }
+
+    /**
+     * [ 임시파일 저장 ]
+     *
+     * @param userId user id signed in
+     * @param request saveFileName, fileName
+     * @since 24-05-10
+     */
+    public void saveResult(Long userId, OrderDocVisualSaveRequest request) {
+        fileService.moveFile(userId, request.getSaveFileName(), request.getFileName());
     }
 
     /**

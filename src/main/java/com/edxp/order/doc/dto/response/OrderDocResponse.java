@@ -7,10 +7,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDocListResponse {
+public class OrderDocResponse {
     private Long id;
     private Long userId;
     private String originalFileName;
+    private String originalFilePath;
     private Long originalFileSize;
     private String originalFileVolume;
     private String orderFileName;
@@ -20,10 +21,11 @@ public class OrderDocListResponse {
     private String extractedDate;
     private String deletedAt;
 
-    public static OrderDocListResponse of(
+    public static OrderDocResponse of(
             Long id,
             Long userId,
             String originalFileName,
+            String originalFilePath,
             Long originalFileSize,
             String originalFileVolume,
             String orderFileName,
@@ -33,10 +35,11 @@ public class OrderDocListResponse {
             String extractedDate,
             String deletedAt
     ) {
-        return new OrderDocListResponse(
+        return new OrderDocResponse(
                 id,
                 userId,
                 originalFileName,
+                originalFilePath,
                 originalFileSize,
                 originalFileVolume,
                 orderFileName,
