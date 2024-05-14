@@ -12,19 +12,7 @@ public class CreateKeyUtil {
         Random rnd = new Random();
 
         for (int i = 0; i < 8; i++) {
-            int index = rnd.nextInt(3);
-
-            switch (index) {
-                case 0:
-                    key.append((char) ((rnd.nextInt(26)) + 97));
-                    break;
-                case 1:
-                    key.append((char) ((rnd.nextInt(26)) + 65));
-                    break;
-                case 2:
-                    key.append(rnd.nextInt(10));
-                    break;
-            }
+            keySwitch(key, rnd);
         }
         return key.toString();
     }
@@ -35,20 +23,8 @@ public class CreateKeyUtil {
         Random rnd = new Random();
 
         for (int i = 0; i < 8; i++) {
-            int index = rnd.nextInt(3);
-
             if (i < 4) {
-                switch (index) {
-                    case 0:
-                        key.append((char) ((rnd.nextInt(26)) + 97));
-                        break;
-                    case 1:
-                        key.append((char) ((rnd.nextInt(26)) + 65));
-                        break;
-                    case 2:
-                        key.append(rnd.nextInt(10));
-                        break;
-                }
+                keySwitch(key, rnd);
             } else if (i < 6) {
                 key.append(rnd.nextInt(10));
             } else {
@@ -58,6 +34,22 @@ public class CreateKeyUtil {
         }
 
         return shuffleString(key.toString());
+    }
+
+    private static void keySwitch(StringBuilder key, Random rnd) {
+        int index = rnd.nextInt(3);
+
+        switch (index) {
+            case 0:
+                key.append((char) ((rnd.nextInt(26)) + 97));
+                break;
+            case 1:
+                key.append((char) ((rnd.nextInt(26)) + 65));
+                break;
+            case 2:
+                key.append(rnd.nextInt(10));
+                break;
+        }
     }
 
     private static String shuffleString(String input) {
