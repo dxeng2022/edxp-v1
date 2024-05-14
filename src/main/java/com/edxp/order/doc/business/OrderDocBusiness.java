@@ -186,10 +186,10 @@ public class OrderDocBusiness {
         MultipartFile updatedResult = convertFileToMultipartFile(targetFile);
 
         // 3) 기존 업로드된 파일 삭제
-        fileService.deleteAnalysisFile(userId, request.getFileName(), "doc_risk");
+        fileService.deleteAnalysisFile(userId, request.getFileName(), request.getFileLocation());
 
         // 4) S3 업로드
-        fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(updatedResult)));
+        fileService.uploadFile(userId, FileUploadRequest.of(request.getFileLocation() + "/", List.of(updatedResult)));
 
         if (request.getFileName().substring(request.getFileName().lastIndexOf("-") + 1).equals("resize.json"))
             return Map.of(request.getFileName(), OrderDocParseResponse.from(request.getDocuments()));
@@ -314,7 +314,7 @@ public class OrderDocBusiness {
      * @since 24.03.26
      */
     public OrderDocRiskResponse visualization(Long userId, OrderDocRiskRequest request) throws IOException {
-        File parsedFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
+        File parsedFile = fileService.downloadAnalysisFile(userId, request.getFileName(), request.getFileLocation());
         List<ParsedDocument> documents = objectMapper.readValue(parsedFile, typeReference);
         FileUtil.remove(parsedFile);
 
