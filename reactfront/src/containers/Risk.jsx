@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 
 export default function Risk() {
 
-  const riskPDFPreview = useSelector(state => state.riskPDFPreview);
+  const riskPage = useSelector(state => state.riskPage);
   const riskPDFBackdrop = useSelector(state => state.riskPDFBackdrop);
   const riskBackdrop = useSelector(state => state.riskBackdrop);
   const riskBackdropText = useSelector(state => state.riskBackdropText);
@@ -21,7 +21,7 @@ export default function Risk() {
 
           <Grid item xs={12} sm={5} md={5} sx={{ height: 'calc(100vh - 160px)' }}>
             <Paper elevation={6} sx={{height: '100%', position: 'relative'}}>
-              { riskPDFPreview ? ( <RiskPreview/> ) : ( <RiskLocalFile /> ) }
+              { riskPage ? ( <RiskPreview/> ) : ( <RiskLocalFile /> ) }
               <Backdrop
                 open={riskPDFBackdrop}
                 sx={{ 
@@ -42,7 +42,7 @@ export default function Risk() {
 
           <Grid item xs={12} sm={7} md={7} sx={{ height: 'calc(100vh - 160px)' }}>
             <Paper elevation={6} sx={{height: '100%', position: 'relative'}}>
-              { riskPDFPreview ? ( <RiskParserDoc/> ) : ( < RiskCloudFile /> ) } 
+              { riskPage ? ( <RiskParserDoc/> ) : ( < RiskCloudFile /> ) } 
               <Backdrop
                 open={riskBackdrop}
                 sx={{ 

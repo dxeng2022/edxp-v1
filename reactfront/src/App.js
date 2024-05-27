@@ -2,6 +2,13 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Main from "./containers/Main.jsx";
 import Module from "./containers/Module.jsx"
 import { useSelector } from 'react-redux';
+import {createTheme, ThemeProvider} from '@mui/material';
+
+const theme = createTheme({
+  typography: {
+    fontFamily: "'Noto Sans KR', sans-serif"
+  },
+})
 
 function App() {
 
@@ -9,9 +16,9 @@ function App() {
   const RedirectToHomeIfNoUserInfo = ({ children }) => {
     return userLoginAuth.auth === true ? children : <Navigate to="/" />;
   };
-  
+
   return (
-    <div>
+    <ThemeProvider theme={theme}>
       <Routes>
         <Route path='/*' element={<Main />} />
         <Route path='/module/*' element={
@@ -20,7 +27,7 @@ function App() {
           </RedirectToHomeIfNoUserInfo>
         } />
       </Routes>
-    </div>
+    </ThemeProvider>
   );
 }
 

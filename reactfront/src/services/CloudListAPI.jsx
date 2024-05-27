@@ -30,9 +30,20 @@ export default function CloudListAPI() {
         const response = await axiosConfig.get(`/api/v1/file?currentPath=${encodeURIComponent(currentPath.path)}`);
 
         if  (response.status === 200) {
-          dispatch(setFileList(response.data.result));
+          const modifiedResult = response.data.result.map(file => {
+            if (file.fileName.includes('$')) {
+              const [name] = file.fileName.split('$');
+              const extensionIndex = file.fileName.indexOf('-result.json');
+              const extension = extensionIndex !== -1 ? file.fileName.slice(extensionIndex) : '';
+              file.fileName = `${name}${extension}`;
+            }
+            return file;
+          });
+
+          dispatch(setFileList(modifiedResult));
           dispatch(setSelectCheckbox([]));
           dispatch(setSelectFilePath([]));
+          console.log(response);
         }
       } catch (error) {
         setFilesListErrorCount(count => count + 1);

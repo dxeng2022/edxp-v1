@@ -6,7 +6,7 @@ import { Box, Breadcrumbs, Button, Dialog, DialogActions, DialogContent, DialogC
 import { DataGrid } from '@mui/x-data-grid';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCurrentPath, setRiskCloudAlert, setRiskFile } from '../actions';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import RiskAPI from '../services/RiskAPI';
 import CloudListAPI from '../services/CloudListAPI';
 
@@ -90,6 +90,7 @@ export default function RiskCloudFile() {
   };
 
   const [selectCheckbox, setSelectCheckbox] = useState([]);
+  const [filePath, setFilePath] = useState([]);
 
   const handleSelectCheckbox = (newSelectionModel, rows) => {
     if (newSelectionModel.length > 1) {
@@ -99,9 +100,15 @@ export default function RiskCloudFile() {
     }
     setSelectCheckbox(newSelectionModel);
 
-    const filePath = newSelectionModel.map(id => rows[id].filePath);
-    dispatch(setRiskFile(filePath[0]));
+    setFilePath(newSelectionModel.map(id => rows[id].filePath));
   };
+
+  useEffect(() => {
+    if (filePath[0]) {
+      dispatch(setRiskFile(filePath[0]));
+    }
+  //eslint-disable-next-line
+  }, [filePath]);
 
 
   return (
@@ -126,7 +133,7 @@ export default function RiskCloudFile() {
             ))}
           </Breadcrumbs>
         </Box>
-        <Button size="small" variant="contained" endIcon={<SendIcon />} sx={{ px:2, mr: 2, whiteSpace: 'nowrap' }} onClick={riskCloudAPI}>
+        <Button size="small" variant="contained" endIcon={<SendIcon />} sx={{ px:2, mr: 2, whiteSpace: 'nowrap' }} onClick={()=>{riskCloudAPI(); setFilePath([]);}}>
           PDF Parsing
         </Button>
       </Box>
