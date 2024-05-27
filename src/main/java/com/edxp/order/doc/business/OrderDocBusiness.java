@@ -223,7 +223,7 @@ public class OrderDocBusiness {
             }
         };
 
-        scheduler.scheduleAtFixedRate(waitTask, 0, 1, TimeUnit.MINUTES);
+        scheduler.scheduleAtFixedRate(waitTask, 0, 30, TimeUnit.SECONDS);
 
         new Thread(() -> {
             try {
