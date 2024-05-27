@@ -60,7 +60,7 @@ const AppBarContent = ({ toggleDrawer }) => {
   return (
     <AppBar position="sticky">
       <Toolbar>
-        <Tooltip title={tooltipTitle} open={tooltipOpen} onMouseOver={handleMouseOver} onMouseLeave={handleMouseLeave} TransitionProps={{ timeout: 400 }} arrow slotProps={{ popper: { modifiers: [{name: 'offset', options: { offset: [0, -15]}}]}}}>
+        <Tooltip title={tooltipTitle} open={tooltipOpen} onMouseOver={handleMouseOver} onMouseLeave={handleMouseLeave} TransitionProps={{ timeout: 400 }} arrow slotProps={{ popper: { modifiers: [{name: 'offset', }]}}}>
           <IconButton
               size="large"
               edge="start"

@@ -10,10 +10,13 @@ import Cloud  from './Cloud.jsx';
 import Visual  from './Visual.jsx';
 import Risk  from './Risk.jsx';
 import RiskVisual from '../components/RiskVisual.jsx';
+import DocVisual from './DocVisual.jsx'
+import DocVisualRisk from '../components/DocVisualRisk.jsx';
+import DocVisualRiskVisual from '../components/DocVisualRiskVisual.jsx';
 import Administrator from './Administrator.jsx';
 import Footer from "../components/Footer.jsx";
-import { useDispatch, useSelector } from 'react-redux';
 import UserAuthCheckAPI from '../services/UserAuthCheckAPI.jsx'
+import { useDispatch, useSelector } from 'react-redux';
 import { setUserDialog, setUserLoginAuth } from '../actions';
 
 
@@ -61,6 +64,9 @@ export default function Module() {
         <Route path="/drawvisual" element={<Visual />} />
         <Route path="/risk" element={<Risk />} />
         <Route path="/riskvisual" element={<RiskVisual />} />
+        <Route path="/docvisual" element={<DocVisual />} />
+        <Route path="/docvisual/risk" element={<DocVisualRisk />} />
+        <Route path="/docvisual/riskvisual" element={<DocVisualRiskVisual />} />
         <Route path="/admin" element={
           <RedirectToHomeIfNotAdmin>
             <Administrator />

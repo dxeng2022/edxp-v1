@@ -8,7 +8,6 @@ import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import SendIcon from '@mui/icons-material/Send';
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, TextField, ThemeProvider, Typography, createTheme } from "@mui/material";
@@ -64,14 +63,14 @@ export default function RiskParserDoc() {
   const handleDeleteSentence = (INDEX) => {
     let newParserDoc = [...parserDoc];
     newParserDoc = newParserDoc.filter((parser) => parser.INDEX!== INDEX);
-    dispatch(setParserDoc(newParserDoc));
+    const sortedParserDoc = newParserDoc.map((sentence, idx) => ({ ...sentence, INDEX: idx + 1 }));
+    dispatch(setParserDoc(sortedParserDoc));
     dispatch(setParserChangeButton(true));
   };
 
   useEffect(() => {
     setRowPerIndex(lastIndex - firstIndex + 1)
   }, [firstIndex, lastIndex]);
-
 
   const columns = [
     { field: 'PAGE', headerName: '페이지', width: 65, headerAlign: 'center', align: 'center', sortable: false },
@@ -91,7 +90,7 @@ export default function RiskParserDoc() {
               width: '100%',
               position: 'relative',
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
             }}
             onMouseEnter={(event) => {
               // 아이콘 버튼들을 보여줍니다.
@@ -149,6 +148,26 @@ export default function RiskParserDoc() {
     },
   ];
 
+  const rowMouseEnter = document.querySelectorAll('.MuiDataGrid-row');
+  rowMouseEnter.forEach((row) => {
+    row.addEventListener('mouseover', () => {
+      const iconButtons = row.querySelectorAll('.cell-action-icon');
+      iconButtons.forEach(button => {
+        button.style.visibility = 'visible';
+      });
+    });
+  });
+
+  const rowMouseLeave = document.querySelectorAll('.MuiDataGrid-row');
+  rowMouseLeave.forEach((row) => {
+    row.addEventListener('mouseout', () => {
+      const iconButtons = row.querySelectorAll('.cell-action-icon');
+      iconButtons.forEach(button => {
+        button.style.visibility = 'hidden';
+      });
+    });
+  });
+
   useEffect(() => {
     if (currentData.length > 0) {
       setFirstIndex(currentData[0].INDEX);
@@ -199,8 +218,8 @@ export default function RiskParserDoc() {
           <IconButton sx={{ px: 0 }} onClick={() => setCurrentPage(lastPage)}> <KeyboardDoubleArrowRightIcon /> </IconButton>
         </Box>
         <Box>
-          {parserChangeButton ? <Button variant="contained" sx={{display:'flex', alignItems:'center', px:1, whiteSpace: 'nowrap' }} size="small" onClick={parserUpdateAPI}> 변경 내용 저장 </Button>
-          : <Button color="success" endIcon={<SendIcon />} sx={{display:'flex', alignItems:'center', px:1, whiteSpace: 'nowrap' }} size="small" onClick={riskAnalysisAPI}> 독소조항 분석 </Button>}
+          {parserChangeButton ? <Button variant="contained" sx={{display:'flex', alignItems:'center', px:1, whiteSpace: 'nowrap' }} size="small" onClick={parserUpdateAPI}> 변경내용 저장 </Button>
+          : <Button variant="contained" color="success" sx={{display:'flex', alignItems:'center', px:1, whiteSpace: 'nowrap' }} size="small" onClick={riskAnalysisAPI}> 독소조항 분석 </Button>}
         </Box>
       </GridToolbarContainer>
     );
@@ -298,8 +317,7 @@ export default function RiskParserDoc() {
     const newParserDoc = [...parserDoc];
     newParserDoc.splice(addIndex, 0, newSentenceObj);
   
-    const sortedParserDoc = newParserDoc
-      .map((sentence, idx) => ({ ...sentence, INDEX: idx + 1 }));
+    const sortedParserDoc = newParserDoc.map((sentence, idx) => ({ ...sentence, INDEX: idx + 1 }));
   
     dispatch(setParserDoc(sortedParserDoc));
     handleAddSentenceClose();
@@ -334,7 +352,7 @@ export default function RiskParserDoc() {
         <Box sx={{ display:'flex', alignItems:'end', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
           <Typography variant='h5' sx={{ pr:1 }}> {riskFile.split('/').pop()} </Typography>
           <Typography variant='caption'> (총 {lastPage} 페이지 / </Typography>
-          <Typography variant='caption' sx={{pl:'4px'}}> 총 {totalIndex} 문장 ) </Typography>
+          <Typography variant='caption' sx={{pl:'4px'}}> 총 {totalIndex} 문장) </Typography>
         </Box>
         <Box sx={{ display:'flex' }}>
           <Button sx={{display:'flex', alignItems:'center', px:1, whiteSpace: 'nowrap' }} size="small" onClick={handleButtonClick}> <RestorePageOutlinedIcon fontSize='small' /> 되돌아가기 </Button>

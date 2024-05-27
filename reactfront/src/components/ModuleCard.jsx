@@ -9,7 +9,7 @@ import { Box, Container, Grid, Tooltip } from '@mui/material';
 import { BrowserUpdatedOutlined as BrowserUpdatedOutlinedIcon, FilterDrama as FilterDramaIcon, InsertChartOutlinedRounded as InsertChartOutlinedRoundedIcon, CompareArrowsOutlined as CompareArrowsOutlinedIcon, SimCardAlertOutlined as SimCardAlertOutlinedIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setCurrentPath, setVisualDrawImg } from '../actions';
+import { setCurrentPath, setParserChangeButton, setRiskPage, setRiskVisualPage, setVisualDrawImg } from '../actions';
 import UserAPI from '../services/UserAPI';
 import MouduleCardBanner from './ModuleCardBanner';
 
@@ -146,14 +146,14 @@ export default function ModuleCard() {
                       <Tooltip title="타공종 검증">
                         <Button size="small" onClick={onClickKist}> <CompareArrowsOutlinedIcon /> </Button>
                       </Tooltip>
-                      <Tooltip title="독소조항 추출(준비중)">
-                        <Button size="small"> <SimCardAlertOutlinedIcon /> </Button>
+                      <Tooltip title="독소조항 추출">
+                        <Button size="small" onClick={()=>{ dispatch(setRiskPage(false)); dispatch(setRiskVisualPage(false)); dispatch(setCurrentPath('doc/')); dispatch(setParserChangeButton(false)); navigate('/module/risk'); }}> <SimCardAlertOutlinedIcon /> </Button>
                       </Tooltip>
                       <Tooltip title="데이터 관리">
                         <Button size="small" onClick={()=>{ dispatch(setCurrentPath('doc/')); navigate('/module/doccloud'); }}> <FilterDramaIcon /> </Button>
                       </Tooltip>
-                      <Tooltip title="시각화(준비중)">
-                        <Button size="small"> <InsertChartOutlinedRoundedIcon /> </Button>
+                      <Tooltip title="시각화">
+                        <Button size="small" onClick={()=>{ navigate('/module/docvisual'); }}> <InsertChartOutlinedRoundedIcon /> </Button>
                       </Tooltip>
                     </CardActions>
                   </Card>
