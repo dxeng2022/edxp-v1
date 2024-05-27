@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -137,6 +138,16 @@ public class OrderDocController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Content-Disposition", "attachment; filename=" + filename)
                 .body(response.get(filename));
+    }
+
+    // 분석 요청
+    @CrossOrigin
+    @GetMapping("/analysis-event")
+    public SseEmitter requestAnalysis2(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @RequestParam String filename
+    ) {
+        return orderDocBusiness.analysisEmitter(principal.getUser().getId(), filename);
     }
 
     // 시각화 파일 리스트 요청
