@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -211,15 +213,28 @@ public class OrderDocBusiness {
         Duration waitTime = Duration.ofHours(1);
         SseEmitter emitter = new SseEmitter(waitTime.toMillis());
 
-        new Thread(() -> {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        Runnable waitTask = () -> {
             try {
                 emitter.send(SseEmitter.event().name("event-wait").data("please wait"));
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            }
+        };
+
+        scheduler.scheduleAtFixedRate(waitTask, 0, 1, TimeUnit.MINUTES);
+
+        new Thread(() -> {
+            try {
                 OrderDocRiskRequest request = new OrderDocRiskRequest();
                 request.setFileName(filename);
                 emitter.send(SseEmitter.event().name("event-result").data(analysis(userId, request)));
                 emitter.complete();
             } catch (Exception e) {
                 emitter.completeWithError(e);
+            } finally {
+                scheduler.shutdown();
             }
         }).start();
 
