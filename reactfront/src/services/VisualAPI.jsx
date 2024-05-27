@@ -28,7 +28,7 @@ export default function VisualAPI() {
     dispatch(setVisualBackdrop(true));
 
     try {
-      const jsonResponse = await axiosConfig.post("/api/v1/visual/result-loc", formData);
+      const jsonResponse = await axiosConfig.post("/api/v1/draw/result-loc", formData);
       dispatch(setVisualBackdropText('데이터를 분석 중입니다.'));
       if (jsonResponse.status === 200) {
         dispatch(setVisualDrawJson(jsonResponse.data.result));
@@ -63,7 +63,7 @@ export default function VisualAPI() {
         dispatch(setVisualDrawSymbolData(symbolData));
 
         try {
-          const imgResponse = await axiosConfig.post("/api/v1/visual/result-img", visualDrawCloudInfo, {
+          const imgResponse = await axiosConfig.post("/api/v1/draw/result-img", visualDrawCloudInfo, {
             responseType: 'blob' 
           });
           dispatch(setVisualBackdropText('데이터 이미지를 요청 중입니다.'));
@@ -73,7 +73,7 @@ export default function VisualAPI() {
             const url = window.URL.createObjectURL(blob);
             dispatch(setVisualDrawImg(url));
   
-            const deleteResponse = await axiosConfig.delete("/api/v1/visual/result-delete");
+            const deleteResponse = await axiosConfig.delete("/api/v1/draw/result-delete");
   
             if (deleteResponse.status === 200) {
               dispatch(setVisualBackdrop(false));
@@ -82,7 +82,7 @@ export default function VisualAPI() {
         } catch (error) {
           console.error('Error during imgResponse API call:', error);
           // eslint-disable-next-line
-          const deleteResponse = await axiosConfig.delete("/api/v1/visual/result-delete");
+          const deleteResponse = await axiosConfig.delete("/api/v1/draw/result-delete");
           alert('ipid 내 img 파일 확인 요망');
           window.location.reload();
         }
@@ -90,7 +90,7 @@ export default function VisualAPI() {
     } catch (error) {
       console.error('Error during jsonResponse API call:', error);
       // eslint-disable-next-line
-      const deleteResponse = await axiosConfig.delete("/api/v1/visual/result-delete");
+      const deleteResponse = await axiosConfig.delete("/api/v1/draw/result-delete");
       alert('ipid 내 xml 파일 확인 요망');
       window.location.reload();
     }
@@ -111,7 +111,7 @@ export default function VisualAPI() {
     dispatch(setVisualBackdrop(true));
   
     try {
-      const jsonResponse = await axiosConfig.post("/api/v1/visual/result-draw", visualDrawCloudInfo );
+      const jsonResponse = await axiosConfig.post("/api/v1/draw/result-draw", visualDrawCloudInfo );
       dispatch(setVisualBackdropText('데이터를 분석 중입니다.'));
       if (jsonResponse.status === 200) {
         dispatch(setVisualDrawJson(jsonResponse.data.result));
@@ -146,7 +146,7 @@ export default function VisualAPI() {
         dispatch(setVisualDrawSymbolData(symbolData));
   
         try {
-          const imgResponse = await axiosConfig.post("/api/v1/visual/result-img", visualDrawCloudInfo, {
+          const imgResponse = await axiosConfig.post("/api/v1/draw/result-img", visualDrawCloudInfo, {
             responseType: 'blob' 
           });
           dispatch(setVisualBackdropText('데이터 이미지를 요청 중입니다.'));
@@ -156,7 +156,7 @@ export default function VisualAPI() {
             const url = window.URL.createObjectURL(blob);
             dispatch(setVisualDrawImg(url));
   
-            const deleteResponse = await axiosConfig.delete("/api/v1/visual/result-delete");
+            const deleteResponse = await axiosConfig.delete("/api/v1/draw/result-delete");
   
             if (deleteResponse.status === 200) {
               dispatch(setVisualBackdrop(false));
@@ -165,7 +165,7 @@ export default function VisualAPI() {
         } catch (error) {
           console.error('Error during imgResponse API call:', error);
           // eslint-disable-next-line
-          const deleteResponse = await axiosConfig.delete("/api/v1/visual/result-delete");
+          const deleteResponse = await axiosConfig.delete("/api/v1/draw/result-delete");
           alert('ipid 내 img 파일 확인 요망');
           window.location.reload();
         }
@@ -173,7 +173,7 @@ export default function VisualAPI() {
     } catch (error) {
       console.error('Error during jsonResponse API call:', error);
       // eslint-disable-next-line
-      const deleteResponse = await axiosConfig.delete("/api/v1/visual/result-delete");
+      const deleteResponse = await axiosConfig.delete("/api/v1/draw/result-delete");
       alert('ipid 내 xml 파일 확인 요망');
       window.location.reload();
     }

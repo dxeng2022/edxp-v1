@@ -3,7 +3,7 @@ import { Box, List, Divider, ListItem, ListItemButton, ListItemIcon, ListItemTex
 import { ChevronLeft as ChevronLeftIcon, Home as HomeIcon, ShapeLineOutlined as ShapeLineOutlinedIcon, BrowserUpdatedOutlined as BrowserUpdatedOutlinedIcon, FilterDrama as FilterDramaIcon, InsertChartOutlinedRounded as InsertChartOutlinedRoundedIcon, GridOn as GridOnIcon, DescriptionOutlined as DescriptionOutlinedIcon, CompareArrowsOutlined as CompareArrowsOutlinedIcon, SimCardAlertOutlined as SimCardAlertOutlinedIcon, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setCurrentPath, setVisualDrawImg } from '../actions';
+import { setCurrentPath, setParserChangeButton, setRiskPage, setRiskVisualPage, setVisualDrawImg } from '../actions';
 import UserAPI from '../services/UserAPI';
 
 export default function DrawerContent({ anchor, toggleDrawer }) {
@@ -94,7 +94,7 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
               <ListItemIcon>
                 <InsertChartOutlinedRoundedIcon />
               </ListItemIcon>
-              <ListItemText primary="시각화" />
+              <ListItemText primary="결과데이터 시각화" />
             </ListItemButton>
           </List>
         </Collapse>
@@ -148,11 +148,11 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
               </ListItemIcon>
               <ListItemText primary="타공종 검증" />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 5 }}>
+            <ListItemButton sx={{ pl: 5 }} onClick={()=>{ dispatch(setRiskPage(false)); dispatch(setRiskVisualPage(false)); dispatch(setCurrentPath('doc/')); dispatch(setParserChangeButton(false)); navigate('/module/risk'); }}>
               <ListItemIcon>
                 <SimCardAlertOutlinedIcon />
               </ListItemIcon>
-              <ListItemText primary="독소조항(준비중)" />
+              <ListItemText primary="독소조항 추출" />
             </ListItemButton>
             <ListItemButton sx={{ pl: 5 }} onClick={()=>{ dispatch(setCurrentPath('doc/')); navigate('/module/doccloud'); }}>
               <ListItemIcon>
@@ -160,11 +160,11 @@ export default function DrawerContent({ anchor, toggleDrawer }) {
               </ListItemIcon>
               <ListItemText primary="데이터 관리" />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 5 }}>
+            <ListItemButton sx={{ pl: 5 }} onClick={()=>{ navigate('/module/docvisual'); }}>
               <ListItemIcon>
                 <InsertChartOutlinedRoundedIcon />
               </ListItemIcon>
-              <ListItemText primary="시각화(준비중)" />
+              <ListItemText primary="시각화" />
             </ListItemButton>
           </List>
         </Collapse>

@@ -12,5 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 public class OrderDocParseUpdateRequest {
     private String fileName;
+    private String fileLocation;
     private List<ParsedDocument> documents;
 }

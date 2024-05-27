@@ -9,4 +9,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class OrderDocRiskRequest {
     private String fileName;
+    private String fileLocation;
 }
