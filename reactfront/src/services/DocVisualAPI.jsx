@@ -147,7 +147,9 @@ export default function DocVisualAPI() {
       if(error.response && error.response.status === 404) {
         try {
           const analysisResponse = await axiosConfig.post("/api/v1/doc/visual",
-            { 'fileName': riskFile },
+            { 'fileName': riskFile,
+              'fileLocation': 'doc',
+            },
           );
     
           if (analysisResponse.status === 200) {
@@ -301,7 +303,9 @@ export default function DocVisualAPI() {
       if(error.response && error.response.status === 404) {
         try {
           const analysisResponse = await axiosConfig.post("/api/v1/doc/visual",
-            { 'fileName': riskFile },
+            { 'fileName': riskFile,
+              'fileLocation': 'doc_risk'
+            },
           );
     
           if (analysisResponse.status === 200) {
