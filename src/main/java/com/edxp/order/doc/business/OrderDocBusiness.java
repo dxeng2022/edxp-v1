@@ -29,14 +29,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.edxp._core.common.client.ModelClient.executeModelClient;
@@ -198,6 +201,32 @@ public class OrderDocBusiness {
     }
 
     /**
+     * [ 분석 이벤트 처리 ]
+     *
+     * @param userId user id sign in
+     * @param filename filename to analysis
+     * @return SseEmitter
+     */
+    public SseEmitter analysisEmitter(Long userId, String filename) {
+        Duration waitTime = Duration.ofHours(1);
+        SseEmitter emitter = new SseEmitter(waitTime.toMillis());
+
+        new Thread(() -> {
+            try {
+                emitter.send(SseEmitter.event().name("event-wait").data("please wait"));
+                OrderDocRiskRequest request = new OrderDocRiskRequest();
+                request.setFileName(filename);
+                emitter.send(SseEmitter.event().name("event-result").data(analysis(userId, request)));
+                emitter.complete();
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            }
+        }).start();
+
+        return emitter;
+    }
+
+    /**
      * [ 독소조항 추출 ]
      *
      * @param userId  user id log in
@@ -212,7 +241,7 @@ public class OrderDocBusiness {
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", new FileSystemResource(parsedFile));
         requestMap.add("userId", userId);
-        ResponseEntity<String> response = executeModelClient(modelUrl, requestMap);
+        ResponseEntity<String> response = executeModelClient(modelUrl, requestMap, (int) TimeUnit.HOURS.toMillis(1));
 
         // 1) 오브젝트 맵퍼로 객체로 받음
         List<ParsedDocument> documents = objectMapper.readValue(response.getBody(), typeReference);
