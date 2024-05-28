@@ -12,8 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 
 @Slf4j
 public class FileUtil {
@@ -31,6 +32,7 @@ public class FileUtil {
         for (File file : files) {
             remove(file);
         }
+
         removeFile(directory);
     }
 
@@ -39,6 +41,7 @@ public class FileUtil {
             log.info("File [" + file.getName() + "] delete success");
             return;
         }
+
         throw new FileNotFoundException("File [" + file.getName() + "] delete fail");
     }
 
@@ -75,6 +78,7 @@ public class FileUtil {
 
             if (agent.contains("Postman")) {
                 String test = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+                
                 return test;
             }
         }
@@ -90,6 +94,7 @@ public class FileUtil {
                 return false;
             }
         }
+
         return list.size() > 0;
     }
 
@@ -98,20 +103,14 @@ public class FileUtil {
         for(Transfer download : list) {
             sum += download.getProgress().getPercentTransferred();
         }
-        return sum / list.size();
-    }
 
-    public static String getDateFormat(Date date) {
-        Calendar s3Date = Calendar.getInstance();
-        s3Date.setTime(date);
-        s3Date.add(Calendar.HOUR, 9);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy. MM. dd. a hh:mm:ss");
-        return dateFormat.format(date);
+        return sum / list.size();
     }
 
     public static String getSizeFormat(Long size) {
         StringBuilder fileSize = new StringBuilder();
         long oneByte = 1024;
+
         if (size == 0) {
             fileSize.append("-");
         } else if (0 < size && size < Math.pow(oneByte, 2)) {
@@ -125,6 +124,7 @@ public class FileUtil {
         } else {
             fileSize.append(size).append(" byte");
         }
+
         return fileSize.toString();
     }
 }

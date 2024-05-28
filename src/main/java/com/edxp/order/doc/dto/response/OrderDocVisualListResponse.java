@@ -1,8 +1,11 @@
 package com.edxp.order.doc.dto.response;
 
+import com.edxp.s3file.dto.response.FileListResponse;
 import lombok.*;
 
 import java.time.LocalDateTime;
+
+import static com.edxp._core.common.utils.DateUtil.parseStringToLocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -18,8 +21,9 @@ public class OrderDocVisualListResponse {
     private String extractedDate;
     private long originalFileSize;
     private LocalDateTime originalRegisteredAt;
+    private LocalDateTime originalExtractedDate;
 
-    public static OrderDocVisualListResponse of(
+    private static OrderDocVisualListResponse of(
             String originalFilename,
             String originalFilePath,
             String fileName,
@@ -29,7 +33,8 @@ public class OrderDocVisualListResponse {
             String registeredAt,
             String extractedDate,
             long originalFileSize,
-            LocalDateTime originalRegisteredAt
+            LocalDateTime originalRegisteredAt,
+            LocalDateTime originalExtractedDate
     ) {
         return new OrderDocVisualListResponse(
                 originalFilename,
@@ -41,7 +46,26 @@ public class OrderDocVisualListResponse {
                 registeredAt,
                 extractedDate,
                 originalFileSize,
-                originalRegisteredAt
+                originalRegisteredAt,
+                originalExtractedDate
+        );
+    }
+
+    public static OrderDocVisualListResponse from(FileListResponse resultFile, OrderDocResponse order) {
+        LocalDateTime originalExtractedDate = parseStringToLocalDateTime(order.getExtractedDate());
+
+        return OrderDocVisualListResponse.of(
+                order.getOriginalFileName(),
+                order.getOriginalFilePath(),
+                resultFile.getFileName(),
+                resultFile.getFileSize(),
+                resultFile.getFilePath(),
+                resultFile.getExtension(),
+                resultFile.getRegisteredAt(),
+                order.getExtractedDate(),
+                resultFile.getOriginalFileSize(),
+                resultFile.getOriginalRegisteredAt(),
+                originalExtractedDate
         );
     }
 }
