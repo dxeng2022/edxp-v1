@@ -12,26 +12,29 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderDocParseResponse {
+    private String filename;
     private List<ParsedDocument> documents;
     private int allCounts;
 
     public static OrderDocParseResponse of(
+            String filename,
             List<ParsedDocument> documents,
             int allCounts
     ) {
         return new OrderDocParseResponse(
+                filename,
                 documents,
                 allCounts
         );
     }
 
-    public static OrderDocParseResponse from(List<ParsedDocument> documents) {
+    public static OrderDocParseResponse from(String filename, List<ParsedDocument> documents) {
         final List<ParsedDocument> newDocuments = documents.stream().peek(it -> {
             if (it.getSection().equals("")) {
                 it.setSection("-");
             }
         }).collect(Collectors.toList());
 
-        return OrderDocParseResponse.of(newDocuments, documents.size());
+        return OrderDocParseResponse.of(filename, newDocuments, documents.size());
     }
 }
