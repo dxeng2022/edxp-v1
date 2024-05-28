@@ -2,12 +2,13 @@ package com.edxp.order.doc.business;
 
 import com.edxp._core.common.annotation.Business;
 import com.edxp._core.common.utils.FileUtil;
+import com.edxp._core.common.utils.SortUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.doc.converter.OrderDocConverter;
 import com.edxp.order.doc.dto.request.*;
-import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
+import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
 import com.edxp.order.doc.dto.response.OrderDocVisualListResponse;
 import com.edxp.order.doc.model.ParsedDocument;
@@ -309,24 +310,15 @@ public class OrderDocBusiness {
                 final String orderKey = resultFile.getFileName().replace("-result.json", "");
 
                 if (order.getOrderFileName().equals(orderKey)) {
-                    mergedList.add(OrderDocVisualListResponse.of(
-                            order.getOriginalFileName(),
-                            order.getOriginalFilePath(),
-                            resultFile.getFileName(),
-                            resultFile.getFileSize(),
-                            resultFile.getFilePath(),
-                            resultFile.getExtension(),
-                            resultFile.getRegisteredAt(),
-                            order.getExtractedDate(),
-                            resultFile.getOriginalFileSize(),
-                            resultFile.getOriginalRegisteredAt()
-                    ));
+                    mergedList.add(OrderDocVisualListResponse.from(resultFile, order));
                     break;
                 }
             }
         }
 
-        return mergedList;
+        SortUtil.sortByExtractedDate(mergedList);
+
+        return mergedList ;
     }
 
     /**

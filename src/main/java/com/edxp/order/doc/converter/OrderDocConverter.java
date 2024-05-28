@@ -1,6 +1,7 @@
 package com.edxp.order.doc.converter;
 
 import com.edxp._core.common.annotation.Converter;
+import com.edxp._core.common.utils.DateUtil;
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp.order.doc.dto.request.OrderDocRequest;
 import com.edxp.order.doc.dto.response.OrderDocResponse;
@@ -27,13 +28,13 @@ public class OrderDocConverter {
     public OrderDocResponse toResponse(OrderDocEntity entity) {
         String originalFileVolume = FileUtil.getSizeFormat(entity.getOriginalFileSize());
         String orderFileVolume = FileUtil.getSizeFormat(entity.getOrderFileSize());
-        String parsedDate = FileUtil.getDateFormat(new Date(entity.getParsedDate().getTime()));
+        String parsedDate = DateUtil.getDateFormat(new Date(entity.getParsedDate().getTime()));
         String extractedDate;
         if (entity.getExtractedDate() == null) extractedDate = "-";
-        else extractedDate = FileUtil.getDateFormat(new Date(entity.getExtractedDate().getTime()));
+        else extractedDate = DateUtil.getDateFormat(new Date(entity.getExtractedDate().getTime()));
         String deletedAt;
         if (entity.getDeletedAt() == null) deletedAt = "-";
-        else deletedAt = FileUtil.getDateFormat(new Date(entity.getDeletedAt().getTime()));
+        else deletedAt = DateUtil.getDateFormat(new Date(entity.getDeletedAt().getTime()));
 
         return OrderDocResponse.of(
                 entity.getId(),
