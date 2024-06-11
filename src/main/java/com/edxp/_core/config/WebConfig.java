@@ -1,5 +1,6 @@
 package com.edxp._core.config;
 
+import com.edxp._core.constant.AddressType;
 import com.edxp._core.interceptor.SecurityInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,19 +15,12 @@ public class WebConfig implements WebMvcConfigurer {
         return new SecurityInterceptor();
     }
 
-    private final String[] OPEN_ADDRESS = {
-            "/", "/log", "/login",
-            "/isLogin", "/public-key", "/log",
-            "/api/v1/user/signup", "/api/v1/user/check-dupl", "/api/v1/user/signup-auth", "/api/v1/user/signup-authcheck",
-            "/api/v1/user/find-mail",  "/api/v1/user/find-pw"
-    };
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 모든 경로에 대해 Interceptor 를 적용
         registry.addInterceptor(securityInterceptor())
                 .addPathPatterns("/api/**")
-                .excludePathPatterns(OPEN_ADDRESS);
+                .excludePathPatterns(AddressType.OPEN_ADDRESS);
     }
 
     @Override

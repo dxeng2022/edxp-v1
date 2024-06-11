@@ -1,6 +1,7 @@
 package com.edxp._core.config;
 
 import com.edxp._core.config.auth.PrincipalDetailsService;
+import com.edxp._core.constant.AddressType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -26,13 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 public class SecurityConfig {
     private final PrincipalDetailsService principalDetailsService;
 
-    private final String[] OPEN_ADDRESS = {
-            "/", "/log", "/login",
-            "/isLogin", "/public-key", "/log",
-            "/api/v1/user/signup", "/api/v1/user/check-dupl", "/api/v1/user/signup-auth", "/api/v1/user/signup-authcheck",
-            "/api/v1/user/find-mail",  "/api/v1/user/find-pw"
-    };
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -49,7 +43,7 @@ public class SecurityConfig {
                 .authorizeRequests()
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                     .antMatchers(
-                            OPEN_ADDRESS
+                            AddressType.OPEN_ADDRESS
                     ).permitAll()
                     .antMatchers("/admin/**").hasRole("ADMIN")
 //                    .anyRequest().permitAll()
