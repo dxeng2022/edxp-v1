@@ -19,19 +19,18 @@ public class OrderDocCrossController {
     private final OrderDocCrossBusiness orderDocCrossBusiness;
 
     @CrossOrigin
-    @GetMapping("/valid")
+    @PostMapping("/valid")
     public CommonResponse<OrderDocCrossResponse> getData(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @RequestParam String filename,
-            @RequestParam String filePath
+            @RequestBody OrderDocCrossRequest request
     ) {
-        final OrderDocCrossResponse crossValidationData = orderDocCrossBusiness.getCrossValidationCloud(principal.getUser().getId(), OrderDocCrossRequest.of(filename, filePath));
+        final OrderDocCrossResponse crossValidationData = orderDocCrossBusiness.getCrossValidationCloud(principal.getUser().getId(), request);
 
         return CommonResponse.success(crossValidationData);
     }
 
     @CrossOrigin
-    @GetMapping("/valid-loc")
+    @PostMapping("/valid-loc")
     public CommonResponse<OrderDocCrossResponse> getDataLocal(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestParam("file") MultipartFile file
