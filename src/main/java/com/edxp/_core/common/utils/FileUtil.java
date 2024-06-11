@@ -1,11 +1,13 @@
 package com.edxp._core.common.utils;
 
 import com.amazonaws.services.s3.transfer.Transfer;
+import com.edxp._core.constant.ErrorCode;
+import com.edxp._core.handler.exception.EdxpApplicationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +20,7 @@ import java.util.HashMap;
 
 @Slf4j
 public class FileUtil {
-    public static void remove(File file) throws IOException {
+    public static void remove(File file) {
         if (file.isDirectory()) {
             removeDirectory(file);
         } else {
@@ -26,7 +28,7 @@ public class FileUtil {
         }
     }
 
-    private static void removeDirectory(File directory) throws IOException {
+    private static void removeDirectory(File directory) {
         File[] files = directory.listFiles();
         assert files != null;
         for (File file : files) {
@@ -36,23 +38,52 @@ public class FileUtil {
         removeFile(directory);
     }
 
-    private static void removeFile(File file) throws IOException {
+    private static void removeFile(File file) {
         if (file.delete()) {
             log.info("File [" + file.getName() + "] delete success");
             return;
         }
 
-        throw new FileNotFoundException("File [" + file.getName() + "] delete fail");
+        throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND, "File [" + file.getName() + "] delete fail");
     }
 
-    public static void createFolder(String folderPath) throws IOException {
+    public static void createFolder(String folderPath) {
         // 폴더 경로를 나타내는 Path 객체 생성
         Path path = Paths.get(folderPath);
 
         // 폴더가 존재하지 않으면 생성
         if (!Files.exists(path)) {
-            Files.createDirectories(path);
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "create folder is failed.");
+            }
         }
+    }
+
+    public static File createFile(String uploadPath, MultipartFile file) {
+        // 폴더 경로를 나타내는 Path 객체 생성
+        FileUtil.createFolder(uploadPath);
+
+        File createFile = new File(uploadPath + "/" + file.getOriginalFilename());
+        try {
+            file.transferTo(createFile);
+        } catch (IOException e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "create file is failed.");
+        }
+
+        return createFile;
+    }
+
+    // 파일 확장자 변경
+    public static String changeFileExtension(String fileName, String newExtension) {
+        int lastDotIndex = fileName.lastIndexOf(".");
+
+        if (lastDotIndex != -1) {
+            return fileName.substring(0, lastDotIndex + 1) + newExtension;
+        }
+
+        return fileName + "." + newExtension;
     }
 
     public static String getEncodedFileName(HttpServletRequest httpRequest, String fileName) {

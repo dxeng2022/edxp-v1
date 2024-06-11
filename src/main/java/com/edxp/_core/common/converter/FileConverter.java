@@ -15,7 +15,7 @@ import java.io.*;
 import java.nio.file.Files;
 
 public class FileConverter {
-    public static MultipartFile convertFileToMultipartFile(File file) throws IOException {
+    public static MultipartFile convertFileToMultipartFile(File file) {
         FileItem fileItem;
 
         try {
