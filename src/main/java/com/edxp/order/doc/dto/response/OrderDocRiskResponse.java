@@ -12,18 +12,21 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderDocRiskResponse {
+    private String filename;
     private List<ParsedDocument> documents;
     private List<ParsedDocument> onlyRisks;
     private int allCounts;
     private int riskCounts;
 
     public static OrderDocRiskResponse of(
+            String filename,
             List<ParsedDocument> documents,
             List<ParsedDocument> onlyRisks,
             int allCounts,
             int riskCounts
     ) {
         return new OrderDocRiskResponse(
+                filename,
                 documents,
                 onlyRisks,
                 allCounts,
@@ -31,7 +34,7 @@ public class OrderDocRiskResponse {
         );
     }
 
-    public static OrderDocRiskResponse from(List<ParsedDocument> documents) {
+    public static OrderDocRiskResponse from(String filename, List<ParsedDocument> documents) {
         final List<ParsedDocument> newDocuments = documents.stream().peek(it -> {
             if (it.getSection().equals("")) {
                 it.setSection("-");
@@ -42,6 +45,6 @@ public class OrderDocRiskResponse {
                 item -> item.getLabel().equals("Risk")).collect(Collectors.toList()
         );
 
-        return OrderDocRiskResponse.of(newDocuments, onlyRisks, documents.size(), onlyRisks.size());
+        return OrderDocRiskResponse.of(filename, newDocuments, onlyRisks, documents.size(), onlyRisks.size());
     }
 }

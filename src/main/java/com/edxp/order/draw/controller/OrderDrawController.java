@@ -15,8 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/draw")
@@ -29,7 +27,7 @@ public class OrderDrawController {
     public CommonResponse<OrderDrawResponse> downloadJson(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDrawRequest request
-    ) throws IOException {
+    ) {
         final OrderDrawResponse response = orderDrawService.getResultDraw(principal.getUser().getId(), request);
 
         return CommonResponse.success(response);
@@ -40,7 +38,7 @@ public class OrderDrawController {
     public CommonResponse<OrderDrawResponse> downloadLocal(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestPart("file") MultipartFile multipartFile
-    ) throws IOException {
+    ) {
         final OrderDrawResponse response = orderDrawService.getResultLocal(principal.getUser().getId(), multipartFile);
 
         return CommonResponse.success(response);
@@ -65,7 +63,7 @@ public class OrderDrawController {
     @DeleteMapping("/result-delete")
     public CommonResponse<Void> deleteResult(
             @AuthenticationPrincipal PrincipalDetails principal
-    ) throws IOException {
+    ) {
         orderDrawService.deleteResult(principal.getUser().getId());
 
         return CommonResponse.success();

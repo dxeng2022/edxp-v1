@@ -6,8 +6,8 @@ import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.doc.business.OrderDocBusiness;
 import com.edxp.order.doc.dto.request.*;
-import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
+import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
 import com.edxp.order.doc.dto.response.OrderDocVisualListResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -70,74 +68,51 @@ public class OrderDocController {
     // 클라우드 파싱 요청
     @CrossOrigin
     @PostMapping("/parser")
-    public ResponseEntity<OrderDocParseResponse> parseCloud(
+    public CommonResponse<OrderDocParseResponse> parseCloud(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseRequest request
     ) throws IOException {
-        Map<String, OrderDocParseResponse> response = orderDocBusiness.parseExecute(principal.getUser().getId(), request);
+        OrderDocParseResponse response = orderDocBusiness.parseExecute(principal.getUser().getId(), request);
 
-        String filename = null;
-        for (String key : response.keySet()) filename = key;
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Content-Disposition", "attachment; filename=" + filename)
-                .body(response.get(filename));
+        return CommonResponse.success(response);
     }
 
     // 로컬 파싱 요청
     @CrossOrigin
     @PostMapping("/parser-loc")
-    public ResponseEntity<OrderDocParseResponse> parseLocal(
+    public CommonResponse<OrderDocParseResponse> parseLocal(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestParam("file") MultipartFile file
     ) throws IOException {
         if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
-        Map<String, OrderDocParseResponse> response = orderDocBusiness.parse(principal.getUser().getId(), "", file);
 
-        String filename = null;
-        for (String key : response.keySet()) filename = key;
+        OrderDocParseResponse response = orderDocBusiness.parse(principal.getUser().getId(), "", file);
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Content-Disposition", "attachment; filename=" + filename)
-                .body(response.get(filename));
+        return CommonResponse.success(response);
     }
 
     // 문서 업데이트
     @CrossOrigin
     @PutMapping
-    public ResponseEntity<Object> documentUpdate(
+    public CommonResponse<Object> documentUpdate(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseUpdateRequest request
     ) throws IOException {
-        final Map<String, Object> response = orderDocBusiness.documentUpdate(principal.getUser().getId(), request);
+        final Object response = orderDocBusiness.documentUpdate(principal.getUser().getId(), request);
 
-        String filename = null;
-        for (String key : response.keySet()) filename = key;
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Content-Disposition", "attachment; filename=" + filename)
-                .body(response.get(filename));
+        return CommonResponse.success(response);
     }
 
     // 분석 요청
     @CrossOrigin
     @PostMapping("/analysis")
-    public ResponseEntity<OrderDocRiskResponse> requestAnalysis(
+    public CommonResponse<OrderDocRiskResponse> requestAnalysis(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocRiskRequest request
     ) throws IOException {
-        final Map<String, OrderDocRiskResponse> response = orderDocBusiness.analysis(principal.getUser().getId(), request);
+        final OrderDocRiskResponse response = orderDocBusiness.analysis(principal.getUser().getId(), request);
 
-        String filename = null;
-        for (String key : response.keySet()) filename = key;
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Content-Disposition", "attachment; filename=" + filename)
-                .body(response.get(filename));
+        return CommonResponse.success(response);
     }
 
     // 분석 요청
@@ -193,13 +168,11 @@ public class OrderDocController {
     @CrossOrigin
     @PostMapping("/visual-loc")
     public CommonResponse<OrderDocRiskResponse> visualLocal(
-            @RequestParam("file") MultipartFile file,
-            HttpServletResponse httpServletResponse
+            @RequestParam("file") MultipartFile file
     ) throws IOException {
         if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
-        OrderDocRiskResponse response = orderDocBusiness.visualizationLocal(file);
 
-        httpServletResponse.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getOriginalFilename());
+        OrderDocRiskResponse response = orderDocBusiness.visualizationLocal(file);
 
         return CommonResponse.success(response);
     }
@@ -212,6 +185,7 @@ public class OrderDocController {
             @RequestBody OrderDocVisualSaveRequest request
     ) {
         orderDocBusiness.saveResult(principal.getUser().getId(), request);
+
         return CommonResponse.success();
     }
 
