@@ -35,7 +35,6 @@ export default function RiskAPI() {
       const parserResponse = await axiosConfig.post("/api/v1/doc/parser-loc", formData);
 
       if (parserResponse.status === 200) {
-        console.log(parserResponse);
         dispatch(setRiskPage(true));
         const extractedData = parserResponse.data.result.documents.map(doc => ({
           INDEX: doc.INDEX,
@@ -132,10 +131,6 @@ export default function RiskAPI() {
 
   const documents = Object.keys(parserDoc).length === 0 ? riskDoc : parserDoc;
 
-  useEffect(() => {
-    console.log(riskFileName);
-  }, [parserDoc, riskDoc, riskFileName]);
-
   const docVisualRiskVisual = {
     'fileName': riskFileName,
     'documents': documents,
@@ -155,23 +150,9 @@ export default function RiskAPI() {
     }
     //eslint-disable-next-line
   }, [parserDoc, riskFileName]);
-  
-
-
-
-
-  // function getFileNameFromContentDisposition(contentDisposition) {
-  //   const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-  //   const matches = filenameRegex.exec(contentDisposition);
-  //   if (matches != null && matches[1]) {
-  //     return matches[1].replace(/['"]/g, ''); // 인용 부호 제거
-  //   }
-  //   return null;
-  // }
-  
+    
   const parserUpdateAPI = async () => {
     try {
-      console.log(updateDocument);
       const parserUpdateResponse = await axiosConfig.put("/api/v1/doc", updateDocument,);
       if (parserUpdateResponse.status === 200) {
 
