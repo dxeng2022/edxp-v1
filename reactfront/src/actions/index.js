@@ -17,3 +17,4 @@ export * from './administratorAction';
 export * from './visualAction';
 export * from './riskAction';
 export * from './docVisualAction';
+export * from './crossAction';

@@ -41,13 +41,13 @@ export default function DocVisual() {
             </Typography>
           </CardContent>
           <CardActions sx={{ position: 'absolute', right: 5, bottom: 5 }}>
-            <Fab color="primary">
+            <Fab color="primary" onClick={()=>{ dispatch(setCurrentPath('doc/')); navigate("/module/docvisual/cross");}}>
               <ArrowForwardIcon />
             </Fab>
           </CardActions>
         </Card>
       </Box>
-
+      
 
       <Box sx={{ width: '55%' }}>
         <Card elevation={12} sx={{ display: 'flex', height: '30vh', position: 'relative' }}>
