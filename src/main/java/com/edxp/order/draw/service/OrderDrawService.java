@@ -33,7 +33,7 @@ public class OrderDrawService {
     @Value("${file.path}")
     private String downloadFolder;
 
-    public OrderDrawResponse getResultDraw(Long userId, OrderDrawRequest request) throws IOException {
+    public OrderDrawResponse getResultDraw(Long userId, OrderDrawRequest request) {
         File file = fileService.downloadAnalysisFile(userId, request.getFilePath(), "draw");
 
         unzipFile(changeFileName(file));
@@ -43,16 +43,8 @@ public class OrderDrawService {
         return OrderDrawResponse.from(plantModel);
     }
 
-    public OrderDrawResponse getResultLocal(Long userId, MultipartFile multipartFile) throws IOException {
-        StringBuilder userPath = getUserPath(userId);
-        FileUtil.createFolder(downloadFolder + "/" + userPath);
-        File file = new File(downloadFolder + "/" + userPath + "/" + multipartFile.getOriginalFilename());
-
-        try {
-            multipartFile.transferTo(file);
-        } catch (IOException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "file create is failed");
-        }
+    public OrderDrawResponse getResultLocal(Long userId, MultipartFile multipartFile) {
+        File file = FileUtil.createFile(createPath(userId), multipartFile);
 
         unzipFile(changeFileName(file));
 
@@ -71,10 +63,8 @@ public class OrderDrawService {
         }
     }
 
-    public void deleteResult(Long userId) throws IOException {
-        StringBuilder userPath = getUserPath(userId);
-        String folderPath = downloadFolder + "/" + userPath;
-        FileUtil.remove(new File(folderPath));
+    public void deleteResult(Long userId) {
+        FileUtil.remove(new File(createPath(userId)));
     }
 
     // xml 데이터 파싱
@@ -106,13 +96,18 @@ public class OrderDrawService {
         return userPath;
     }
 
+    private String createPath(Long userId) {
+        return downloadFolder + "/" + "user_" + String.format("%06d", userId) + "/" + "draw";
+    }
+
     // 파일 이름 변경
-    private Path changeFileName(File file) throws IOException {
+    private Path changeFileName(File file) {
         Path ipidPath = Path.of(file.getPath());
         Path zipPath = null;
+
         try {
             // 파일 이름 변경
-            String zipFileName = changeFileExtension(file.getName(), "zip");
+            String zipFileName = FileUtil.changeFileExtension(file.getName(), "zip");
 
             zipPath = Path.of(file.getParent() + "/" + zipFileName);
             // 원본 파일을 새로운 이름으로 복사
@@ -128,17 +123,8 @@ public class OrderDrawService {
         return zipPath;
     }
 
-    // 파일 확장자 변경
-    private String changeFileExtension(String fileName, String newExtension) {
-        int lastDotIndex = fileName.lastIndexOf(".");
-        if (lastDotIndex != -1) {
-            return fileName.substring(0, lastDotIndex + 1) + newExtension;
-        }
-        return fileName + "." + newExtension;
-    }
-
     // 압축 해제
-    public void unzipFile(Path sourceFilePath) throws IOException {
+    public void unzipFile(Path sourceFilePath) {
         Path targetDir = extractAndCreateFolder(sourceFilePath);
 
         try (ZipInputStream zis = new ZipInputStream(new FileInputStream(sourceFilePath.toFile()))) {
@@ -175,7 +161,7 @@ public class OrderDrawService {
     }
 
     // 파일 추출 및 폴더 생성
-    private static Path extractAndCreateFolder(Path sourceZipPath) throws IOException {
+    private static Path extractAndCreateFolder(Path sourceZipPath) {
         // Extract folder name from the zip file name
         String zipFileName = sourceZipPath.getFileName().toString();
         String folderName = zipFileName.substring(0, zipFileName.lastIndexOf("."));
@@ -188,6 +174,8 @@ public class OrderDrawService {
             Files.createDirectory(destFolderPath);
         } catch (FileAlreadyExistsException e) {
             // If the folder already exists, do nothing
+        } catch (IOException e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "create folder is failed");
         }
 
         return destFolderPath;

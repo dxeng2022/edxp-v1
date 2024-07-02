@@ -2,12 +2,13 @@ package com.edxp.order.doc.business;
 
 import com.edxp._core.common.annotation.Business;
 import com.edxp._core.common.utils.FileUtil;
+import com.edxp._core.common.utils.SortUtil;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.doc.converter.OrderDocConverter;
 import com.edxp.order.doc.dto.request.*;
-import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
+import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
 import com.edxp.order.doc.dto.response.OrderDocVisualListResponse;
 import com.edxp.order.doc.model.ParsedDocument;
@@ -29,14 +30,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.edxp._core.common.client.ModelClient.executeModelClient;
@@ -99,7 +105,7 @@ public class OrderDocBusiness {
      * @throws IOException remove fail
      * @since 24.02.28
      */
-    public Map<String, OrderDocParseResponse> parseExecute(Long userId, OrderDocParseRequest request) throws IOException {
+    public OrderDocParseResponse parseExecute(Long userId, OrderDocParseRequest request) throws IOException {
         StringBuilder userPath = getUserPath(userId);
         String folderPath = downloadFolder + "/" + userPath + "/" + request.getFilePath();
         final int pathIndex = request.getFilePath().lastIndexOf("/");
@@ -120,7 +126,7 @@ public class OrderDocBusiness {
      * @apiNote ITB 문서 파싱을 진행하는 API
      * @since 2024.02.27
      */
-    public Map<String, OrderDocParseResponse> parse(Long userId, String originalFilePath, MultipartFile file) throws IOException {
+    public OrderDocParseResponse parse(Long userId, String originalFilePath, MultipartFile file) throws IOException {
         // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", convertMultipartFileToResource(file));
@@ -162,7 +168,7 @@ public class OrderDocBusiness {
 
         // 6) 객체 반환
         if (response.getStatusCode().is2xxSuccessful())
-            return Map.of(Objects.requireNonNull(resizeResult.getOriginalFilename()), OrderDocParseResponse.from(documents));
+            return OrderDocParseResponse.from(resizeResult.getOriginalFilename(), documents);
         else
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Parser is failed");
     }
@@ -176,7 +182,7 @@ public class OrderDocBusiness {
      * @throws IOException for file remove
      * @since 24.02.28
      */
-    public Map<String, Object> documentUpdate(Long userId, OrderDocParseUpdateRequest request) throws IOException {
+    public Object documentUpdate(Long userId, OrderDocParseUpdateRequest request) throws IOException {
         File targetFile = new File(request.getFileName());
 
         // 1) 오브젝트 맵퍼로 파일에 씀
@@ -192,9 +198,48 @@ public class OrderDocBusiness {
         fileService.uploadFile(userId, FileUploadRequest.of(request.getFileLocation() + "/", List.of(updatedResult)));
 
         if (request.getFileName().substring(request.getFileName().lastIndexOf("-") + 1).equals("resize.json"))
-            return Map.of(request.getFileName(), OrderDocParseResponse.from(request.getDocuments()));
+            return OrderDocParseResponse.from(request.getFileName(), request.getDocuments());
         else
-            return Map.of(request.getFileName(), OrderDocRiskResponse.from(request.getDocuments()));
+            return OrderDocRiskResponse.from(request.getFileName(), request.getDocuments());
+    }
+
+    /**
+     * [ 분석 이벤트 처리 ]
+     *
+     * @param userId user id sign in
+     * @param filename filename to analysis
+     * @return SseEmitter
+     */
+    public SseEmitter analysisEmitter(Long userId, String filename) {
+        Duration waitTime = Duration.ofHours(1);
+        SseEmitter emitter = new SseEmitter(waitTime.toMillis());
+
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        Runnable waitTask = () -> {
+            try {
+                emitter.send(SseEmitter.event().name("event-wait").data("please wait"));
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            }
+        };
+
+        scheduler.scheduleAtFixedRate(waitTask, 0, 50, TimeUnit.SECONDS);
+
+        new Thread(() -> {
+            try {
+                OrderDocRiskRequest request = new OrderDocRiskRequest();
+                request.setFileName(filename);
+                emitter.send(SseEmitter.event().name("event-result").data(analysis(userId, request)));
+                emitter.complete();
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            } finally {
+                scheduler.shutdown();
+            }
+        }).start();
+
+        return emitter;
     }
 
     /**
@@ -205,14 +250,14 @@ public class OrderDocBusiness {
      * @return document
      * @since 24.02.28
      */
-    public Map<String, OrderDocRiskResponse> analysis(Long userId, OrderDocRiskRequest request) throws IOException {
+    public OrderDocRiskResponse analysis(Long userId, OrderDocRiskRequest request) throws IOException {
         File parsedFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
 
         // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", new FileSystemResource(parsedFile));
         requestMap.add("userId", userId);
-        ResponseEntity<String> response = executeModelClient(modelUrl, requestMap);
+        ResponseEntity<String> response = executeModelClient(modelUrl, requestMap, (int) TimeUnit.HOURS.toMillis(1));
 
         // 1) 오브젝트 맵퍼로 객체로 받음
         List<ParsedDocument> documents = objectMapper.readValue(response.getBody(), typeReference);
@@ -237,7 +282,7 @@ public class OrderDocBusiness {
 
         // 6) 객체 반환
         if (response.getStatusCode().is2xxSuccessful()) {
-            return Map.of(filename, OrderDocRiskResponse.from(documents));
+            return OrderDocRiskResponse.from(filename, documents);
         } else {
             throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Analysis is failed");
         }
@@ -265,24 +310,15 @@ public class OrderDocBusiness {
                 final String orderKey = resultFile.getFileName().replace("-result.json", "");
 
                 if (order.getOrderFileName().equals(orderKey)) {
-                    mergedList.add(OrderDocVisualListResponse.of(
-                            order.getOriginalFileName(),
-                            order.getOriginalFilePath(),
-                            resultFile.getFileName(),
-                            resultFile.getFileSize(),
-                            resultFile.getFilePath(),
-                            resultFile.getExtension(),
-                            resultFile.getRegisteredAt(),
-                            order.getExtractedDate(),
-                            resultFile.getOriginalFileSize(),
-                            resultFile.getOriginalRegisteredAt()
-                    ));
+                    mergedList.add(OrderDocVisualListResponse.from(resultFile, order));
                     break;
                 }
             }
         }
 
-        return mergedList;
+        SortUtil.sortByExtractedDate(mergedList);
+
+        return mergedList ;
     }
 
     /**
@@ -318,7 +354,7 @@ public class OrderDocBusiness {
         List<ParsedDocument> documents = objectMapper.readValue(parsedFile, typeReference);
         FileUtil.remove(parsedFile);
 
-        return OrderDocRiskResponse.from(documents);
+        return OrderDocRiskResponse.from(request.getFileName(), documents);
     }
 
     /**
@@ -332,7 +368,7 @@ public class OrderDocBusiness {
     public OrderDocRiskResponse visualizationLocal(MultipartFile file) throws IOException {
         List<ParsedDocument> documents = objectMapper.readValue(file.getInputStream(), typeReference);
 
-        return OrderDocRiskResponse.from(documents);
+        return OrderDocRiskResponse.from(file.getOriginalFilename(), documents);
     }
 
     /**
