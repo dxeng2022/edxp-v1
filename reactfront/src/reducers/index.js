@@ -18,6 +18,7 @@ import administratorReducer from './administratorReducer';
 import visualReducer from './visualReducer';
 import riskReducer from './riskReducer';
 import docVisualReducer from './docVisualReducer';
+import crossReducer from './crossReducer';
 
 export default combineReducers({
   ...emailReducer,
@@ -39,4 +40,5 @@ export default combineReducers({
   ...visualReducer,
   ...riskReducer,
   ...docVisualReducer,
+  ...crossReducer,
 });

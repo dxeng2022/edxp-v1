@@ -18,6 +18,8 @@ import Footer from "../components/Footer.jsx";
 import UserAuthCheckAPI from '../services/UserAuthCheckAPI.jsx'
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserDialog, setUserLoginAuth } from '../actions';
+import DocVisualCross from '../components/DocVisualCross.jsx';
+import DocVisualCrossVisual from '../components/DocVisualCrossVisual.jsx';
 
 
 export default function Module() {
@@ -67,6 +69,8 @@ export default function Module() {
         <Route path="/docvisual" element={<DocVisual />} />
         <Route path="/docvisual/risk" element={<DocVisualRisk />} />
         <Route path="/docvisual/riskvisual" element={<DocVisualRiskVisual />} />
+        <Route path="/docvisual/cross" element={<DocVisualCross />} />
+        <Route path="/docvisual/crossvisual" element={<DocVisualCrossVisual />} />
         <Route path="/admin" element={
           <RedirectToHomeIfNotAdmin>
             <Administrator />
