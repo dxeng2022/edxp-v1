@@ -1,6 +1,6 @@
 // import { useEffect } from 'react';
 import { useEffect, useState } from 'react';
-import { setParserChangeButton, setParserDoc, setRiskBackdrop, setRiskBackdropText, setRiskCloudAlert, setRiskData, setRiskDoc, setRiskFile, setRiskFileName, setRiskPDFBackdrop, setRiskPDFPreview, setRiskPage } from '../actions';
+import { setParserChangeButton, setParserDoc, setRiskBackdrop, setRiskBackdropText, setRiskCloudAlert, setRiskData, setRiskDoc, setRiskFile, setRiskFileName, setRiskPDFBackdrop, setRiskPDFPreview, setRiskPage, setRiskVisualPage } from '../actions';
 import createAxiosConfig from './AxiosConfig';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -35,19 +35,19 @@ export default function RiskAPI() {
       const parserResponse = await axiosConfig.post("/api/v1/doc/parser-loc", formData);
 
       if (parserResponse.status === 200) {
+        console.log(parserResponse);
         dispatch(setRiskPage(true));
-        const extractedData = parserResponse.data.documents.map(doc => ({
+        const extractedData = parserResponse.data.result.documents.map(doc => ({
           INDEX: doc.INDEX,
           LABEL: doc.LABEL,
-          PAGE:doc.PAGE,
-          SECTION:doc.SECTION,
+          PAGE: doc.PAGE,
+          SECTION: doc.SECTION,
           SENTENCE: doc.SENTENCE,
           WORDLIST: doc.WORDLIST,
         }));
         dispatch(setParserDoc(extractedData));
 
-        let content = (parserResponse.headers['content-disposition']);
-        let fileName = content.split("filename=")[1];
+        let fileName = (parserResponse.data.result.filename);
         dispatch(setRiskFileName(fileName));
 
         dispatch(setRiskBackdrop(false));
@@ -93,18 +93,17 @@ export default function RiskAPI() {
           const parserResponse = await axiosConfig.post("/api/v1/doc/parser", riskCloudInfo );
 
           if (parserResponse.status === 200) {
-            const extractedData = parserResponse.data.documents.map(doc => ({
+            const extractedData = parserResponse.data.result.documents.map(doc => ({
               INDEX: doc.INDEX,
               LABEL: doc.LABEL,
-              PAGE:doc.PAGE,
-              SECTION:doc.SECTION,
+              PAGE: doc.PAGE,
+              SECTION: doc.SECTION,
               SENTENCE: doc.SENTENCE,
               WORDLIST: doc.WORDLIST,
             }));
             dispatch(setParserDoc(extractedData));
 
-            let content = (parserResponse.headers['content-disposition']);
-            let fileName = content.split("filename=")[1];
+            let fileName = (parserResponse.data.result.filename);
             dispatch(setRiskFileName(fileName));
 
             dispatch(setRiskBackdrop(false));
@@ -133,6 +132,10 @@ export default function RiskAPI() {
 
   const documents = Object.keys(parserDoc).length === 0 ? riskDoc : parserDoc;
 
+  useEffect(() => {
+    console.log(riskFileName);
+  }, [parserDoc, riskDoc, riskFileName]);
+
   const docVisualRiskVisual = {
     'fileName': riskFileName,
     'documents': documents,
@@ -143,42 +146,43 @@ export default function RiskAPI() {
     'documents': documents,
     'fileLocation': 'doc_risk',
   }
-
+  
   useEffect(() => {
     if (location.pathname === '/module/docvisual/riskvisual') {
       setUpdateDocument(docVisualRiskVisual);
-    } else if (location.pathname === '/module/riskvisual') {
+    } else if (location.pathname === '/module/riskvisual' || '/module/risk') {
       setUpdateDocument(moduleRiskVisual);
     }
     //eslint-disable-next-line
-  }, [location]);
+  }, [parserDoc, riskFileName]);
+  
 
-  function getFileNameFromContentDisposition(contentDisposition) {
-    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-    const matches = filenameRegex.exec(contentDisposition);
-    if (matches != null && matches[1]) {
-      return matches[1].replace(/['"]/g, ''); // 인용 부호 제거
-    }
-    return null;
-  }
+
+
+
+  // function getFileNameFromContentDisposition(contentDisposition) {
+  //   const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+  //   const matches = filenameRegex.exec(contentDisposition);
+  //   if (matches != null && matches[1]) {
+  //     return matches[1].replace(/['"]/g, ''); // 인용 부호 제거
+  //   }
+  //   return null;
+  // }
   
   const parserUpdateAPI = async () => {
     try {
+      console.log(updateDocument);
       const parserUpdateResponse = await axiosConfig.put("/api/v1/doc", updateDocument,);
       if (parserUpdateResponse.status === 200) {
-        console.log('parserUpdateResponse',parserUpdateResponse);
-        let content = (parserUpdateResponse.headers['content-disposition']);
-        let fileName = content.split("filename=")[1];
+
+        let fileName = (parserUpdateResponse.data.result.filename);
         dispatch(setRiskFileName(fileName));
         dispatch(setParserChangeButton(false));
         
-        console.log('content',content);
-        console.log('fileName',fileName);
-
         const riskData = {
-          allCounts: parserUpdateResponse.data.allCounts,
-          riskCounts: parserUpdateResponse.data.riskCounts,
-          onlyRisks: parserUpdateResponse.data.onlyRisks
+          allCounts: parserUpdateResponse.data.result.allCounts,
+          riskCounts: parserUpdateResponse.data.result.riskCounts,
+          onlyRisks: parserUpdateResponse.data.result.onlyRisks
         };
         dispatch(setRiskData(riskData));
         
@@ -200,7 +204,9 @@ export default function RiskAPI() {
       );
       
       if (analysisResponse.status === 200) {
-        const extractedData = analysisResponse.data.documents.map(doc => ({
+        dispatch(setRiskVisualPage(false));
+        dispatch(setRiskPage(true));
+        const extractedData = analysisResponse.data.result.documents.map(doc => ({
           INDEX: doc.INDEX,
           LABEL: doc.LABEL,
           PAGE: doc.PAGE,
@@ -209,14 +215,14 @@ export default function RiskAPI() {
           WORDLIST: doc.WORDLIST,
         }));
         dispatch(setRiskDoc(extractedData));
-        let content = (analysisResponse.headers['content-disposition']);
-        let fileName = content.split("filename=")[1];
-        dispatch(setRiskFileName(fileName));
 
+        let fileName = (analysisResponse.data.result.filename);
+        dispatch(setRiskFileName(fileName));
+        
         const riskData = {
-          allCounts: analysisResponse.data.allCounts,
-          riskCounts: analysisResponse.data.riskCounts,
-          onlyRisks: analysisResponse.data.onlyRisks
+          allCounts: analysisResponse.data.result.allCounts,
+          riskCounts: analysisResponse.data.result.riskCounts,
+          onlyRisks: analysisResponse.data.result.onlyRisks
         };
         dispatch(setRiskData(riskData));
 
