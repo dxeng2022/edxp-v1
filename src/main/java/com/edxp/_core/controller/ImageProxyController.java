@@ -1,6 +1,13 @@
 package com.edxp._core.controller;
 
+import com.edxp._core.constant.ErrorCode;
+import com.edxp._core.handler.exception.EdxpApplicationException;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 @RequestMapping("/proxy-image")
 @Controller
@@ -36,6 +44,27 @@ public class ImageProxyController {
         }
     }
 
+    @GetMapping("/v2")
+    public ResponseEntity<String> proxyData(@RequestParam(name = "jsonKey") String jsonKey) {
+        String jsonUrl = AWS_S3_URL.concat(jsonKey);
+
+        try {
+            // S3 URL 에서 JSON 데이터를 문자열로 읽어들임
+            String jsonData = IOUtils.toString(new URL(jsonUrl), StandardCharsets.UTF_8);
+
+            // 응답 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+//            headers.setCacheControl("max-age=60");
+//            headers.setETag("dxeng-unique-tag");
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // JSON 데이터를 응답으로 반환
+            return new ResponseEntity<>(jsonData, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private void handleImageFetchError(HttpServletResponse response) {
         try (InputStream errorImageStream = getClass().getResourceAsStream("/img/errorImage.png")) {
             if (errorImageStream != null) {
@@ -43,6 +72,7 @@ public class ImageProxyController {
             } else {
                 response.getOutputStream().write(new byte[0]);
             }
-        } catch (IOException ignored) { }
+        } catch (IOException ignored) {
+        }
     }
 }
