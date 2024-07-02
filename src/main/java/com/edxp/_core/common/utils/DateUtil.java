@@ -18,7 +18,8 @@ public class DateUtil {
     }
 
     public static LocalDateTime parseStringToLocalDateTime(String dateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy. MM. dd. a hh:mm:ss", Locale.KOREAN);
+        dateString = dateString.replace("오전", "AM").replace("오후", "PM");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy. MM. dd. a hh:mm:ss", Locale.ENGLISH);
 
         return LocalDateTime.parse(dateString, formatter);
     }
