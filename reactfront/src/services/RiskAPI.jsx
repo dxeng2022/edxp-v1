@@ -14,11 +14,10 @@ export default function RiskAPI() {
   const riskFile = useSelector(state => state.riskFile);
   const parserDoc = useSelector(state => state.parserDoc);
   const riskDoc = useSelector(state => state.riskDoc);
-  // const riskPDFPreview = useSelector(state => state.riskPDFPreview);
   const riskFileName = useSelector(state => state.riskFileName);
 
   
-  
+  // 로컬 PDF Parser
   const riskLocalAPI = async (file) => {
 
     const formData = new FormData();
@@ -60,7 +59,7 @@ export default function RiskAPI() {
     }
   }
 
-
+  // 클라우드 PDF Parser
   const riskCloudAPI = async () => {
     if (!riskFile.includes('.')) {
       dispatch(setRiskCloudAlert(true));
@@ -175,7 +174,7 @@ export default function RiskAPI() {
 
 
   const navigate = useNavigate();
-
+  // 독소조항 추출
   const riskAnalysisAPI = async () => {
     dispatch(setRiskBackdropText('독소조항 분석 중입니다.'));
     dispatch(setRiskBackdrop(true));
@@ -221,18 +220,6 @@ export default function RiskAPI() {
       window.location.reload();
     }
   }
-
-  // 주소 변경 시 PDF 파일 없애기
-  // useEffect(() => {
-  //   return () => {
-  //     if (riskPDFPreview) {
-  //       window.URL.revokeObjectURL(riskPDFPreview);
-  //     }
-  //   };
-  // }, [riskPDFPreview]);
-
-
-
 
   return { riskLocalAPI, riskCloudAPI, parserUpdateAPI, riskAnalysisAPI };
 };
