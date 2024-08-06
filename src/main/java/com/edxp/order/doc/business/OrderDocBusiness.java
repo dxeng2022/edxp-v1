@@ -16,6 +16,7 @@ import com.edxp.order.doc.service.OrderDocService;
 import com.edxp.s3file.dto.requset.FileUploadRequest;
 import com.edxp.s3file.dto.response.FileListResponse;
 import com.edxp.s3file.service.FileService;
+import com.edxp.user.dto.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -99,38 +100,38 @@ public class OrderDocBusiness {
     /**
      * [ 클라우드 파싱 요청 ]
      *
-     * @param userId  log in user id
+     * @param user log in user
      * @param request file path
      * @return response map(filepath, response dto)
      * @throws IOException remove fail
      * @since 24.02.28
      */
-    public OrderDocParseResponse parseExecute(Long userId, OrderDocParseRequest request) throws IOException {
-        StringBuilder userPath = getUserPath(userId);
+    public OrderDocParseResponse parseExecute(User user, OrderDocParseRequest request) throws IOException {
+        StringBuilder userPath = getUserPath(user.getId());
         String folderPath = downloadFolder + "/" + userPath + "/" + request.getFilePath();
         final int pathIndex = request.getFilePath().lastIndexOf("/");
         String originalFilePath = "";
         if (pathIndex > -1) originalFilePath = request.getFilePath().substring(0, pathIndex);
         File inputFile = new File(folderPath);
 
-        return parse(userId, originalFilePath, convertFileToMultipartFile(inputFile));
+        return parse(user, originalFilePath, convertFileToMultipartFile(inputFile));
     }
 
     /**
      * [ ITB 파싱 ]
      *
-     * @param userId user id log in
+     * @param user user log in
      * @param file   input file to request
      * @return parsed data
      * @throws IOException for file remove
      * @apiNote ITB 문서 파싱을 진행하는 API
      * @since 2024.02.27
      */
-    public OrderDocParseResponse parse(Long userId, String originalFilePath, MultipartFile file) throws IOException {
+    public OrderDocParseResponse parse(User user, String originalFilePath, MultipartFile file) throws IOException {
         // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", convertMultipartFileToResource(file));
-        requestMap.add("userId", userId);
+        requestMap.add("userId", user.getId());
 //        final ResponseEntity<String> response = executeModelClient(parserUrl, requestMap);
         final ResponseEntity<String> response = executeModelClient(parserUrl, requestMap);
 
@@ -154,7 +155,7 @@ public class OrderDocBusiness {
 
         // 4) S3 업로드
 //        fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(result)));
-        fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(resizeResult)));
+        fileService.uploadFile(user, FileUploadRequest.of("doc_risk/", List.of(resizeResult)));
 
         final OrderDocRequest orderDocRequest = OrderDocRequest.of(
                 file.getOriginalFilename(),
@@ -164,7 +165,7 @@ public class OrderDocBusiness {
                 resizeResult.getSize());
 
         // 5) 주문 등록
-        orderDocService.order(userId, orderDocRequest);
+        orderDocService.order(user.getId(), orderDocRequest);
 
         // 6) 객체 반환
         if (response.getStatusCode().is2xxSuccessful())
@@ -176,13 +177,12 @@ public class OrderDocBusiness {
     /**
      * [ 문서 수정 ]
      *
-     * @param userId user id log in
+     * @param user user id log in
      * @param request request file name and updated documents
      * @return parsed data
-     * @throws IOException for file remove
      * @since 24.02.28
      */
-    public Object documentUpdate(Long userId, OrderDocParseUpdateRequest request) throws IOException {
+    public Object documentUpdate(User user, OrderDocParseUpdateRequest request) {
         File targetFile = new File(request.getFileName());
 
         // 1) 오브젝트 맵퍼로 파일에 씀
@@ -192,10 +192,10 @@ public class OrderDocBusiness {
         MultipartFile updatedResult = convertFileToMultipartFile(targetFile);
 
         // 3) 기존 업로드된 파일 삭제
-        fileService.deleteAnalysisFile(userId, request.getFileName(), request.getFileLocation());
+        fileService.deleteAnalysisFile(user.getId(), request.getFileName(), request.getFileLocation());
 
         // 4) S3 업로드
-        fileService.uploadFile(userId, FileUploadRequest.of(request.getFileLocation() + "/", List.of(updatedResult)));
+        fileService.uploadFile(user, FileUploadRequest.of(request.getFileLocation() + "/", List.of(updatedResult)));
 
         if (request.getFileName().substring(request.getFileName().lastIndexOf("-") + 1).equals("resize.json"))
             return OrderDocParseResponse.from(request.getFileName(), request.getDocuments());
@@ -206,11 +206,11 @@ public class OrderDocBusiness {
     /**
      * [ 분석 이벤트 처리 ]
      *
-     * @param userId user id sign in
+     * @param user user sign in
      * @param filename filename to analysis
      * @return SseEmitter
      */
-    public SseEmitter analysisEmitter(Long userId, String filename) {
+    public SseEmitter analysisEmitter(User user, String filename) {
         Duration waitTime = Duration.ofHours(1);
         SseEmitter emitter = new SseEmitter(waitTime.toMillis());
 
@@ -230,7 +230,7 @@ public class OrderDocBusiness {
             try {
                 OrderDocRiskRequest request = new OrderDocRiskRequest();
                 request.setFileName(filename);
-                emitter.send(SseEmitter.event().name("event-result").data(analysis(userId, request)));
+                emitter.send(SseEmitter.event().name("event-result").data(analysis(user, request)));
                 emitter.complete();
             } catch (Exception e) {
                 emitter.completeWithError(e);
@@ -245,18 +245,18 @@ public class OrderDocBusiness {
     /**
      * [ 독소조항 추출 ]
      *
-     * @param userId  user id log in
+     * @param user  user log in
      * @param request request file name
      * @return document
      * @since 24.02.28
      */
-    public OrderDocRiskResponse analysis(Long userId, OrderDocRiskRequest request) throws IOException {
-        File parsedFile = fileService.downloadAnalysisFile(userId, request.getFileName(), "doc_risk");
+    public OrderDocRiskResponse analysis(User user, OrderDocRiskRequest request) throws IOException {
+        File parsedFile = fileService.downloadAnalysisFile(user.getId(), request.getFileName(), "doc_risk");
 
         // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", new FileSystemResource(parsedFile));
-        requestMap.add("userId", userId);
+        requestMap.add("userId", user.getId());
         ResponseEntity<String> response = executeModelClient(modelUrl, requestMap, (int) TimeUnit.HOURS.toMillis(1));
 
         // 1) 오브젝트 맵퍼로 객체로 받음
@@ -272,13 +272,13 @@ public class OrderDocBusiness {
         FileUtil.remove(parsedFile);
 
         // 4) S3 업로드
-        fileService.uploadFile(userId, FileUploadRequest.of("doc_risk/", List.of(result)));
+        fileService.uploadFile(user, FileUploadRequest.of("doc_risk/", List.of(result)));
 
         // 5) 독소조항 추출 등록
-        orderDocService.riskExtract(userId, filename.substring(0, filename.lastIndexOf("-")));
+        orderDocService.riskExtract(user.getId(), filename.substring(0, filename.lastIndexOf("-")));
 
         // 5) 파싱 파일 삭제
-        fileService.deleteAnalysisFile(userId, request.getFileName(), "doc_risk");
+        fileService.deleteAnalysisFile(user.getId(), request.getFileName(), "doc_risk");
 
         // 6) 객체 반환
         if (response.getStatusCode().is2xxSuccessful()) {
@@ -386,10 +386,9 @@ public class OrderDocBusiness {
      * [ 파일 삭제 ]
      *
      * @param userId login user id
-     * @throws IOException remove fail
      * @since 24.02.28
      */
-    public void deleteResult(Long userId) throws IOException {
+    public void deleteResult(Long userId) {
         StringBuilder userPath = getUserPath(userId);
         String folderPath = downloadFolder + "/" + userPath;
         FileUtil.remove(new File(folderPath));
@@ -402,7 +401,7 @@ public class OrderDocBusiness {
         return userPath;
     }
 
-    private void saveResultFile(ObjectMapper objectMapper, List<ParsedDocument> documents, File targetFile) throws IOException {
+    private void saveResultFile(ObjectMapper objectMapper, List<ParsedDocument> documents, File targetFile) {
         try (FileOutputStream fos1 = new FileOutputStream(targetFile)) {
             objectMapper.writeValue(fos1, documents);
         } catch (IOException e) {

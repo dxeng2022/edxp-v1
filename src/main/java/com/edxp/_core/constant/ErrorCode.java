@@ -14,7 +14,8 @@ public enum ErrorCode {
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File is not founded"),
     FILE_NOT_ATTACHED(HttpStatus.INTERNAL_SERVER_ERROR, "File is not attached"),
     DUPLICATED_FILE_NAME(HttpStatus.CONFLICT, "Filename is duplicated"),
-    MAX_FILE_UPLOADED(HttpStatus.INTERNAL_SERVER_ERROR, "File is max uploaded"),
+    MAX_FILE_UPLOADED(HttpStatus.INTERNAL_SERVER_ERROR, "Files are max uploaded"),
+    OVER_VOLUME_UPLOADED(HttpStatus.INTERNAL_SERVER_ERROR, "File is over storage volume"),
     ALREADY_EXTRACTED(HttpStatus.BAD_REQUEST, "Already extracted"),
     ALREADY_DELETED(HttpStatus.BAD_REQUEST, "Already deleted"),
 

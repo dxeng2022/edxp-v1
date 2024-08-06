@@ -72,7 +72,7 @@ public class OrderDocController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseRequest request
     ) throws IOException {
-        OrderDocParseResponse response = orderDocBusiness.parseExecute(principal.getUser().getId(), request);
+        OrderDocParseResponse response = orderDocBusiness.parseExecute(principal.getUser(), request);
 
         return CommonResponse.success(response);
     }
@@ -86,7 +86,7 @@ public class OrderDocController {
     ) throws IOException {
         if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
 
-        OrderDocParseResponse response = orderDocBusiness.parse(principal.getUser().getId(), "", file);
+        OrderDocParseResponse response = orderDocBusiness.parse(principal.getUser(), "", file);
 
         return CommonResponse.success(response);
     }
@@ -97,8 +97,8 @@ public class OrderDocController {
     public CommonResponse<Object> documentUpdate(
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseUpdateRequest request
-    ) throws IOException {
-        final Object response = orderDocBusiness.documentUpdate(principal.getUser().getId(), request);
+    ) {
+        final Object response = orderDocBusiness.documentUpdate(principal.getUser(), request);
 
         return CommonResponse.success(response);
     }
@@ -110,7 +110,7 @@ public class OrderDocController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocRiskRequest request
     ) throws IOException {
-        final OrderDocRiskResponse response = orderDocBusiness.analysis(principal.getUser().getId(), request);
+        final OrderDocRiskResponse response = orderDocBusiness.analysis(principal.getUser(), request);
 
         return CommonResponse.success(response);
     }
@@ -122,7 +122,7 @@ public class OrderDocController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestParam String filename
     ) {
-        return orderDocBusiness.analysisEmitter(principal.getUser().getId(), filename);
+        return orderDocBusiness.analysisEmitter(principal.getUser(), filename);
     }
 
     // 시각화 파일 리스트 요청
@@ -194,7 +194,7 @@ public class OrderDocController {
     @DeleteMapping("/parser-delete")
     public CommonResponse<Void> deleteFile(
             @AuthenticationPrincipal PrincipalDetails principal
-    ) throws IOException {
+    ) {
         orderDocBusiness.deleteResult(principal.getUser().getId());
 
         return CommonResponse.success();

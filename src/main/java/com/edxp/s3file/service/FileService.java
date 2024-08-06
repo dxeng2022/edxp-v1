@@ -1,35 +1,64 @@
 package com.edxp.s3file.service;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.MultipleFileDownload;
 import com.amazonaws.services.s3.transfer.Transfer;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.constant.ErrorCode;
+import com.edxp._core.handler.exception.EdxpApplicationException;
+import com.edxp.s3file.dto.requset.FileDeleteRequest;
+import com.edxp.s3file.dto.requset.FileDownloadsRequest;
+import com.edxp.s3file.dto.requset.FileFolderAddRequest;
+import com.edxp.s3file.dto.requset.FileUpdateRequest;
+import com.edxp.s3file.dto.requset.FileUploadRequest;
+import com.edxp.s3file.dto.response.FileFolderListResponse;
 import com.edxp.s3file.dto.response.FileListResponse;
 import com.edxp.s3file.dto.response.FileVolumeResponse;
-import com.edxp.s3file.dto.response.FileFolderListResponse;
-import com.edxp._core.handler.exception.EdxpApplicationException;
-import com.edxp.s3file.dto.requset.*;
+import com.edxp.user.dto.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.nio.file.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import static com.edxp._core.constant.Numbers.MB;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -189,38 +218,68 @@ public class FileService {
     /**
      * [ 파일 업로드 ]
      *
-     * @param userId  user id signed in
+     * @param user  user signed in
      * @param request current path, files
      * @apiNote AWS S3에 새로운 객체 생성을 요청하는 API
      * @since 2023.06.10
      */
     @Transactional
-    public void uploadFile(Long userId, FileUploadRequest request) {
-        if (request.getFiles().size() > 5) throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
+    public void uploadFile(User user, FileUploadRequest request) {
+        uploadFileNumberValidation(request);
+        uploadVolumeValidation(user, request);
+
         request.getFiles().forEach(file -> {
             try {
                 String fileName = file.getOriginalFilename();
+                log.debug("path : {}", getPath(user.getId(), request.getCurrentPath()));
 
-                log.debug("path : {}", getPath(userId, request.getCurrentPath()));
-
-                StringBuilder filePath = getPath(userId, request.getCurrentPath()).append(fileName);
+                StringBuilder filePath = getPath(user.getId(), request.getCurrentPath()).append(fileName);
+                duplicateFilenameValidation(String.valueOf(filePath));
 
                 ObjectMetadata metadata = new ObjectMetadata();
                 metadata.setContentType(file.getContentType());
                 metadata.setContentLength(file.getSize());
 
-                boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
-                if (!isObjectExist) {
-                    amazonS3Client.putObject(bucket, String.valueOf(filePath), file.getInputStream(), metadata);
-                } else {
-                    throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
-                }
+                amazonS3Client.putObject(bucket, String.valueOf(filePath), file.getInputStream(), metadata);
             } catch (IOException e) {
-                throw new EdxpApplicationException(
-                        ErrorCode.INTERNAL_SERVER_ERROR, file.getOriginalFilename() + " upload is failed."
-                );
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, file.getOriginalFilename() + " upload is failed.");
             }
         });
+    }
+
+    private void duplicateFilenameValidation(String filePath) {
+        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
+        if (isObjectExist) {
+            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+        }
+    }
+
+    private void uploadFileNumberValidation(FileUploadRequest request) {
+        if (request.getFiles().size() > 5) {
+            throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
+        }
+    }
+
+    private void uploadVolumeValidation(User user, FileUploadRequest request) {
+        final long storageVolume = getVolume(user.getId(), request.getCurrentPath()).getOriginalVolume();
+        final List<MultipartFile> files = request.getFiles();
+
+        long uploadVolume = 0;
+        for (MultipartFile file : files) {
+            uploadVolume += file.getSize();
+        }
+
+        log.debug("storage: {}, upload: {}", storageVolume, uploadVolume);
+
+        if (!user.isUserCharged()) {
+            if (storageVolume + uploadVolume > 30 * MB) {
+                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
+            }
+        } else {
+            if (storageVolume + uploadVolume > 100 * MB) {
+                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
+            }
+        }
     }
 
     /**
@@ -230,7 +289,6 @@ public class FileService {
      * @param httpResponse java servlet response
      * @param request      currentPath, filePaths
      * @param userId       user id signed in
-     * @throws IOException file io exception
      * @apiNote 단일 파일 다운로드 - HttpResponse 객체에 파일 정보를 담아서 반환
      * <p>
      * 다중 파일 다운로드 - 파일을 로컬에 다운 받아 압축 하면서 HttpResponse 객체에 반환
@@ -242,7 +300,7 @@ public class FileService {
             HttpServletResponse httpResponse,
             FileDownloadsRequest request,
             Long userId
-    ) throws IOException {
+    ) {
         StringBuilder userPath = new StringBuilder();
         userPath.append("dxeng/").append(location).append("/")
                 .append("user_").append(String.format("%06d", userId)).append("/");
@@ -473,15 +531,12 @@ public class FileService {
     // 분석용 파일 삭제
     @Transactional
     public void deleteAnalysisFile(Long userId, String fileName, String myPath) {
-        StringBuilder userPath = new StringBuilder();
-        userPath.append("user_").append(String.format("%06d", userId)).append("/").append(myPath);
-
-        StringBuilder s3Path = new StringBuilder();
-        s3Path.append("dxeng").append("/").append(location).append("/").append(userPath).append("/").append(fileName);
-
+        final StringBuilder s3Path = getPath(userId, myPath).append("/").append(fileName);
         boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(s3Path));
 
-        if (!isObjectExist) throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "file is not exist");
+        if (!isObjectExist) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "file is not exist");
+        }
 
         try {
             amazonS3Client.deleteObject(bucket, String.valueOf(s3Path));
