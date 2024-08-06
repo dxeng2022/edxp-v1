@@ -1,10 +1,12 @@
 package com.edxp.user.dto.response;
 
+import com.edxp._core.constant.RoleType;
 import com.edxp.user.dto.User;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Builder
 @Getter
@@ -17,7 +19,7 @@ public class UserInfoResponse {
     private String birth;
     private String organization;
     private String job;
-    private String role;
+    private List<RoleType> roles;
     private Timestamp registeredAt;
     private Timestamp updatedAt;
     private Timestamp deletedAt;
@@ -32,7 +34,7 @@ public class UserInfoResponse {
                 .birth(user.getBirth())
                 .organization(user.getOrganization())
                 .job(user.getJob())
-                .role(user.getRole())
+                .roles(user.getRoles())
                 .registeredAt(user.getRegisteredAt())
                 .updatedAt(user.getUpdatedAt())
                 .deletedAt(user.getDeletedAt())

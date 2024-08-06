@@ -1,5 +1,6 @@
 package com.edxp.user.dto.response;
 
+import com.edxp._core.constant.RoleType;
 import com.edxp.user.dto.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Getter
@@ -20,7 +22,7 @@ public class AdminUserResponse {
     private String name;
     private String organization;
     private String job;
-    private String role;
+    private List<RoleType> roles;
     private String registeredAtFormed;
     private String updatedAtFormed;
     private String deletedAtFormed;
@@ -34,7 +36,7 @@ public class AdminUserResponse {
             String name,
             String organization,
             String job,
-            String role,
+            List<RoleType> roles,
             String registeredAtFormed,
             String updatedAtFormed,
             String deletedAtFormed,
@@ -48,7 +50,7 @@ public class AdminUserResponse {
                 name,
                 organization,
                 job,
-                role,
+                roles,
                 registeredAtFormed,
                 updatedAtFormed,
                 deletedAtFormed,
@@ -66,7 +68,7 @@ public class AdminUserResponse {
                 user.getName(),
                 user.getOrganization(),
                 user.getJob(),
-                user.getRole(),
+                user.getRoles(),
                 formatDate(user.getRegisteredAt()),
                 formatDate(user.getUpdatedAt()),
                 formatDate(user.getDeletedAt()),

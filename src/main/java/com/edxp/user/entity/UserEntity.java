@@ -1,6 +1,7 @@
 package com.edxp.user.entity;
 
 import com.edxp._core.constant.RoleType;
+import com.edxp.user.converter.RoleTypeListConverter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -9,6 +10,8 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @ToString
 @Getter
@@ -31,7 +34,9 @@ public class UserEntity {
     @Setter @Column private String organization;
     @Setter @Column private String job;
 
-    @Column(nullable = false) private String role;
+    @Convert(converter = RoleTypeListConverter.class)
+    @Column(nullable = false)
+    private List<RoleType> roles  = new ArrayList<>();
 
     private Timestamp registeredAt;
     private Timestamp updatedAt;
@@ -61,7 +66,11 @@ public class UserEntity {
     }
 
     public void setRoleUser() {
-        this.role = RoleType.USER.getRoleName();
+        this.roles.add(RoleType.USER);
+    }
+
+    public void updateRoles(List<RoleType> roles) {
+        this.roles = roles;
     }
 
     @PrePersist

@@ -49,6 +49,12 @@ dependencies {
     // Jackson dependencies
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.3'
+
+    // for Swagger
+    // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.2'
+    implementation 'org.springdoc:springdoc-openapi-ui:1.6.14'
 }
 
 tasks.named('test') {

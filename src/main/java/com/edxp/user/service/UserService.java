@@ -1,19 +1,20 @@
 package com.edxp.user.service;
 
+import com.edxp._core.common.providor.EmailSenderProvidor;
 import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp._core.constant.ErrorCode;
+import com.edxp._core.constant.RoleType;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.session.dto.SessionInfo;
-import com.edxp.user.entity.UserEntity;
+import com.edxp.session.dto.response.SessionInfoResponse;
 import com.edxp.user.dto.User;
 import com.edxp.user.dto.request.UserChangeRequest;
 import com.edxp.user.dto.request.UserCheckRequest;
 import com.edxp.user.dto.request.UserFindRequest;
 import com.edxp.user.dto.request.UserSignUpRequest;
-import com.edxp.session.dto.response.SessionInfoResponse;
 import com.edxp.user.dto.response.UserFindResponse;
+import com.edxp.user.entity.UserEntity;
 import com.edxp.user.repository.UserRepository;
-import com.edxp._core.common.providor.EmailSenderProvidor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.edxp._core.common.utils.CreateKeyUtil.createPwKey;
@@ -106,8 +108,8 @@ public class UserService {
     @Transactional
     public User updateUser(Long userId, UserChangeRequest request, PrincipalDetails principal) {
         UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
-                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
-        );
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND));
+
         if (request.getNewPassword() != null) {
             entity.setPassword(encoder.encode(request.getNewPassword()));
         }
@@ -121,6 +123,42 @@ public class UserService {
         SecurityContextHolder.getContext().setAuthentication(updatedAuthentication);
 
         return principal.getUser();
+    }
+
+    // 유저 권한 추가
+    @Transactional
+    public User addRolesToUser(Long userId, List<RoleType> roleTypes) {
+        UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND));
+
+        List<RoleType> roles = entity.getRoles();
+
+        for (RoleType roleType : roleTypes) {
+            if (!roles.contains(roleType)) {
+                roles.add(roleType);
+            }
+        }
+
+        entity.updateRoles(roles);
+
+        return User.fromEntity(userRepository.save(entity));
+    }
+
+    // 유저 권한 삭제
+    @Transactional
+    public User removeRolesFromUser(Long userId, List<RoleType> roleTypes) {
+        UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND));
+
+        List<RoleType> newRoles = new ArrayList<>(entity.getRoles());
+
+        for (RoleType roleType : roleTypes) {
+            newRoles.remove(roleType);
+        }
+
+        entity.updateRoles(newRoles);
+
+        return User.fromEntity(userRepository.save(entity));
     }
 
     // 이메일 중복확인

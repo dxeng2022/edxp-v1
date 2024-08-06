@@ -1,10 +1,12 @@
 package com.edxp.user.dto;
 
+import com.edxp._core.constant.RoleType;
 import com.edxp.user.entity.UserEntity;
 import lombok.*;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Builder
 @Getter
@@ -20,7 +22,7 @@ public class User implements Serializable {
     private String birth;
     private String organization;
     private String job;
-    private String role;
+    private List<RoleType> roles;
     private Timestamp registeredAt;
     private Timestamp updatedAt;
     private Timestamp deletedAt;
@@ -35,7 +37,7 @@ public class User implements Serializable {
             String birth,
             String organization,
             String job,
-            String role,
+            List<RoleType> roles,
             Timestamp registeredAt,
             Timestamp updatedAt,
             Timestamp deletedAt
@@ -50,7 +52,7 @@ public class User implements Serializable {
                 birth,
                 organization,
                 job,
-                role,
+                roles,
                 registeredAt,
                 updatedAt,
                 deletedAt
@@ -68,7 +70,7 @@ public class User implements Serializable {
                 entity.getBirth(),
                 entity.getOrganization(),
                 entity.getJob(),
-                entity.getRole(),
+                entity.getRoles(),
                 entity.getRegisteredAt(),
                 entity.getUpdatedAt(),
                 entity.getDeletedAt()
