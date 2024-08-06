@@ -30,7 +30,7 @@ public class SwaggerConfig {
     @Profile({"dev"})
     public OpenAPI customOpenAPIDev() {
         Server server = new Server();
-        server.setUrl("http://54.180.127.223:8080");
+        server.setUrl("http://54.180.127.223");
         server.setDescription("Dev");
 
         return new OpenAPI()
