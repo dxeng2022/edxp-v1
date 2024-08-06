@@ -42,7 +42,7 @@ public class FileController {
     // 파일 및 폴더리스트
     @GetMapping
     public CommonResponse<List<FileListResponse>> getFileList(
-            @RequestParam(required = false) String currentPath,
+            @RequestParam String currentPath,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         List<FileListResponse> files = fileService.getFiles(principal.getUser().getId(), currentPath);
@@ -62,7 +62,7 @@ public class FileController {
     // 전체 용량 확인
     @GetMapping("/get-volume")
     public CommonResponse<FileVolumeResponse> getVolume(
-            @RequestParam(required = false) String currentPath,
+            @RequestParam String currentPath,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         FileVolumeResponse response = fileService.getVolume(principal.getUser().getId(), currentPath);

@@ -29,6 +29,7 @@ import com.edxp.s3file.dto.response.FileVolumeResponse;
 import com.edxp.user.dto.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -76,7 +78,8 @@ public class FileService {
     @Value("${file.location}")
     private String location;
 
-    private final static long MAX_UPLOAD_VOLUME = 251658240; // 30 MB
+    private final static long MAX_UPLOAD_VOLUME = 30 * MB; // 30 MB
+    private final static long MAX_UPLOAD_CHARGED_VOLUME = 100 * MB; // 30 MB
 
     /**
      * [ 파일 및 폴더 리스트 불러오기 ]
@@ -91,6 +94,7 @@ public class FileService {
     @Transactional(readOnly = true)
     public List<FileListResponse> getFiles(Long userId, String currentPath) {
         log.debug("path : {}", currentPath);
+        requestPathValidation(currentPath);
 
         ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, currentPath);
         listObjectsRequest.setDelimiter("/");
@@ -174,6 +178,7 @@ public class FileService {
     @Transactional(readOnly = true)
     public FileVolumeResponse getVolume(Long userId, String currentPath) {
         log.debug("folderPath : {}", currentPath);
+        requestPathValidation(currentPath);
 
         ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, currentPath);
         ObjectListing s3Objects;
@@ -225,6 +230,7 @@ public class FileService {
      */
     @Transactional
     public void uploadFile(User user, FileUploadRequest request) {
+        requestPathValidation(request.getCurrentPath());
         uploadFileNumberValidation(request);
         uploadVolumeValidation(user, request);
 
@@ -245,41 +251,6 @@ public class FileService {
                 throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, file.getOriginalFilename() + " upload is failed.");
             }
         });
-    }
-
-    private void duplicateFilenameValidation(String filePath) {
-        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
-        if (isObjectExist) {
-            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
-        }
-    }
-
-    private void uploadFileNumberValidation(FileUploadRequest request) {
-        if (request.getFiles().size() > 5) {
-            throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
-        }
-    }
-
-    private void uploadVolumeValidation(User user, FileUploadRequest request) {
-        final long storageVolume = getVolume(user.getId(), request.getCurrentPath()).getOriginalVolume();
-        final List<MultipartFile> files = request.getFiles();
-
-        long uploadVolume = 0;
-        for (MultipartFile file : files) {
-            uploadVolume += file.getSize();
-        }
-
-        log.debug("storage: {}, upload: {}", storageVolume, uploadVolume);
-
-        if (!user.isUserCharged()) {
-            if (storageVolume + uploadVolume > 30 * MB) {
-                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
-            }
-        } else {
-            if (storageVolume + uploadVolume > 100 * MB) {
-                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
-            }
-        }
     }
 
     /**
@@ -586,7 +557,7 @@ public class FileService {
         return listObjectsRequest;
     }
 
-    // 파일 이름 중복 validation
+    // 파일 중복 validation
     private boolean isFileNameDuplicated(long userId, String saveFileName) {
         boolean isDuplicated = false;
 
@@ -604,6 +575,58 @@ public class FileService {
         }
 
         return isDuplicated;
+    }
+
+    // 파일 경로 validation
+    private void requestPathValidation(String path) {
+        if (ObjectUtils.isEmpty(path)) {
+            throw new EdxpApplicationException(ErrorCode.INVALID_PATH);
+        }
+
+        String[] parts = path.split("/");
+        String firstFolder = parts.length > 0 ? parts[0] : "";
+
+        if (!Set.of("draw", "sheet", "doc", "doc_risk").contains(firstFolder)) {
+            throw new EdxpApplicationException(ErrorCode.INVALID_PATH);
+        }
+    }
+
+    // 파일 이름 중복 validation
+    private void duplicateFilenameValidation(String filePath) {
+        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
+        if (isObjectExist) {
+            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+        }
+    }
+
+    // 업로드 파일 갯수 validation
+    private void uploadFileNumberValidation(FileUploadRequest request) {
+        if (request.getFiles().size() > 5) {
+            throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
+        }
+    }
+
+    // 업로드 스토리지용량 validation
+    private void uploadVolumeValidation(User user, FileUploadRequest request) {
+        final long storageVolume = getVolume(user.getId(), request.getCurrentPath()).getOriginalVolume();
+        final List<MultipartFile> files = request.getFiles();
+
+        long uploadVolume = 0;
+        for (MultipartFile file : files) {
+            uploadVolume += file.getSize();
+        }
+
+        log.debug("storage: {}, upload: {}", storageVolume, uploadVolume);
+
+        if (!user.isUserCharged()) {
+            if (storageVolume + uploadVolume > MAX_UPLOAD_VOLUME) {
+                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
+            }
+        } else {
+            if (storageVolume + uploadVolume > MAX_UPLOAD_CHARGED_VOLUME) {
+                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
+            }
+        }
     }
 
     // 파일 압축 내부 메소드
