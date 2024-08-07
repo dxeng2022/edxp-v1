@@ -10,12 +10,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalControllerAdvice {
     @ExceptionHandler(EdxpApplicationException.class)
     public ResponseEntity<?> applicationHandler(EdxpApplicationException e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String stackTrace = sw.toString();
+
         log.debug("Occurs at {}:{}", e.getStackTrace()[0].getClassName(), e.getStackTrace()[0].getLineNumber());
+        log.debug("Stack Trace >>> {}", stackTrace);
 
         return ResponseEntity.status(e.getErrorCode().getStatus())
                 .body(CommonResponse.error(e.getErrorCode().name(), e.getMessage()));
