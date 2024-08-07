@@ -1,4 +1,4 @@
-package com.edxp.user.service;
+package com.edxp.user.business;
 
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
@@ -21,7 +21,7 @@ import java.util.Base64;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class UserLoginService {
+public class UserLoginBusiness {
     private final AuthenticationManager authenticationManager;
 
     // RSA generator
@@ -40,6 +40,7 @@ public class UserLoginService {
         }
     }
 
+    // 암호키 복호화
     public String decryptRSAKey(PrivateKey privateKey, String securedValue) {
         String decryptedValue;
         try {
@@ -56,6 +57,7 @@ public class UserLoginService {
         return decryptedValue;
     }
 
+    // RSA 로그인 진행
     public void login(PrivateKey privatekey, UserLoginRequest loginRequest) {
         String decPassword = decryptRSAKey(privatekey, loginRequest.getPassword());
 

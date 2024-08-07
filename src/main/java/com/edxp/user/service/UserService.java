@@ -1,36 +1,27 @@
 package com.edxp.user.service;
 
 import com.edxp._core.common.providor.EmailSenderProvidor;
-import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.constant.RoleType;
 import com.edxp._core.handler.exception.EdxpApplicationException;
-import com.edxp.session.dto.SessionInfo;
-import com.edxp.session.dto.response.SessionInfoResponse;
+import com.edxp.user.converter.UserConverter;
 import com.edxp.user.dto.User;
 import com.edxp.user.dto.request.UserChangeRequest;
 import com.edxp.user.dto.request.UserCheckRequest;
 import com.edxp.user.dto.request.UserFindRequest;
 import com.edxp.user.dto.request.UserSignUpRequest;
-import com.edxp.user.dto.response.UserFindResponse;
 import com.edxp.user.entity.UserEntity;
 import com.edxp.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.edxp._core.common.utils.CreateKeyUtil.createPwKey;
 
@@ -39,90 +30,113 @@ import static com.edxp._core.common.utils.CreateKeyUtil.createPwKey;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final UserMailAuthCodeService userMailAuthCodeService;
+    private final UserConverter userConverter;
+
     private final EmailSenderProvidor emailSenderProvidor;
-    private final UserAuthService userAuthService;
-
     private final BCryptPasswordEncoder encoder;
-    private final JdbcTemplate jdbcTemplate;
 
-    // 전체 로그인 리스트 확인
-    @Transactional(readOnly = true)
-    public List<SessionInfoResponse> getCurrentUsers() {
-        // Spring Session JDBC 를 사용하여 현재 로그인한 사용자 정보를 조회하는 쿼리를 작성합니다.
-        String query = "SELECT * FROM SPRING_SESSION";
-
-        // 쿼리를 실행하여 로그인한 사용자 목록을 가져옵니다.
-        return jdbcTemplate.query(query, (rs, rowNum) -> {
-            SessionInfo sessionInfo = SessionInfo.builder()
-                    .sessionId(rs.getString("session_id"))
-                    .username(rs.getString("principal_name"))
-                    .creationTime(rs.getLong("creation_time"))
-                    .expiryTime(rs.getLong("expiry_time"))
-                    .build();
-            return SessionInfoResponse.from(sessionInfo);
-        });
-    }
-
-    // 유저 세션 정보 확인
-    @Transactional(readOnly = true)
-    public SessionInfoResponse getCurrentUser(String username) {
-        String query = "SELECT * FROM SPRING_SESSION WHERE PRINCIPAL_NAME = ?";
-
-        RowMapper<SessionInfo> rowMapper = (rs, rowNum) ->
-                SessionInfo.builder()
-                        .sessionId(rs.getString("session_id"))
-                        .username(rs.getString("principal_name"))
-                        .creationTime(rs.getLong("creation_time"))
-                        .expiryTime(rs.getLong("expiry_time"))
-                        .build();
-
-        SessionInfo sessionInfo;
-        try {
-            sessionInfo = jdbcTemplate.queryForObject(query, rowMapper, username);
-        } catch (EmptyResultDataAccessException e) {
-            sessionInfo = null;
-        }
-
-        if (sessionInfo != null) return SessionInfoResponse.from(sessionInfo);
-        return new SessionInfoResponse();
-    }
-
-    // 회원가입
+    // 회원 가입
     @Transactional
-    public void createUser(UserSignUpRequest request) {
-        userRepository.save(UserEntity.of(
-                request.getUsername(),
-                encoder.encode(request.getPassword()),
-                request.getName(),
-                request.getPhone(),
-                request.getGender(),
-                request.getBirth(),
-                request.getOrganization(),
-                request.getJob()
-        ));
+    public User createUser(UserSignUpRequest request) {
+        final UserEntity entity = userConverter.toEntity(request, encoder);
 
-        userAuthService.removeAuthCode(request.getUsername());
+        userRepository.save(entity);
+        userMailAuthCodeService.removeAuthCode(request.getUsername());
+
+        return User.fromEntity(entity);
     }
 
     // 회원정보 변경
     @Transactional
-    public User updateUser(Long userId, UserChangeRequest request, PrincipalDetails principal) {
-        UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
+    public User updateUser(User user, UserChangeRequest request) {
+        UserEntity entity = userRepository.findById(user.getId()).orElseThrow(() ->
                 new EdxpApplicationException(ErrorCode.USER_NOT_FOUND));
 
-        if (request.getNewPassword() != null) {
-            entity.setPassword(encoder.encode(request.getNewPassword()));
-        }
-        if (request.getPhone() != null) {
-            entity.setPhone(request.getPhone());
+        String encPassword = null;
+        if (!ObjectUtils.isEmpty(request.getNewPassword())) {
+            encPassword = encoder.encode(request.getNewPassword());
         }
 
-        principal.setUser(User.fromEntity(entity));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Authentication updatedAuthentication = new UsernamePasswordAuthenticationToken(principal, authentication.getCredentials(), principal.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(updatedAuthentication);
+        entity.updateUserInfo(encPassword, request.getPhone());
 
-        return principal.getUser();
+        final UserEntity saveEntity = userRepository.save(entity);
+
+        return User.fromEntity(saveEntity);
+    }
+
+    // 이메일 중복확인
+    @Transactional(readOnly = true)
+    public void checkDuplicated(UserCheckRequest request) {
+        userRepository.findByUsername(request.getUsername()).ifPresent(it -> {
+            throw new EdxpApplicationException(ErrorCode.DUPLICATED_USER_NAME, String.format("%s is duplicated", request.getUsername()));
+        });
+    }
+
+    // 이메일 찾기
+    @Transactional(readOnly = true)
+    public String findMail(UserFindRequest request) {
+        UserEntity entity = userRepository.findByNameAndPhoneAndBirth(request.getName(), request.getPhone(), request.getBirth()).orElseThrow(() ->
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        return entity.getUsername();
+    }
+
+    // 비밀번호 찾기
+    @Transactional
+    public void findPw(UserFindRequest request) {
+        UserEntity userEntity = userRepository.findByUsernameAndNameAndPhoneAndBirth(request.getUsername(), request.getName(), request.getPhone(), request.getBirth()).orElseThrow(() ->
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        String rawPassword = createPwKey();
+        boolean isSentEmail = emailSenderProvidor.sendEmailWithNewPassword(request.getUsername(), rawPassword);
+
+        if (isSentEmail) {
+            log.debug("초기화된 비밀번호: {}", rawPassword);
+            String encPassword = encoder.encode(rawPassword);
+            userEntity.updatePassword(encPassword);
+        } else {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Sending mail is failed");
+        }
+    }
+
+    // 회원 탈퇴
+    @Transactional
+    public void deleteUser(Long userId) {
+        UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        entity.updateUsername(entity.getUsername() + "_deleted");
+        entity.updateDeletedAt();
+    }
+
+    // 전체 유저 찾기
+    @Transactional(readOnly = true)
+    public List<User> users() {
+        return userRepository.findAll().stream().map(User::fromEntity).collect(Collectors.toList());
+    }
+
+    // 유저 비밀번호 초기화
+    @Transactional
+    public void resetUserPw(Long userId) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() ->
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        String rawPassword = createPwKey();
+
+        boolean isSentEmail = emailSenderProvidor.sendEmailWithNewPassword(userEntity.getUsername(), rawPassword);
+
+        if (!isSentEmail) {
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Sending mail is failed");
+        }
+
+        String encPassword = encoder.encode(rawPassword);
+        log.debug("초기화된 비밀번호: {}", rawPassword);
+        userEntity.updatePassword(encPassword);
     }
 
     // 유저 권한 추가
@@ -131,15 +145,15 @@ public class UserService {
         UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
                 new EdxpApplicationException(ErrorCode.USER_NOT_FOUND));
 
-        List<RoleType> roles = entity.getRoles();
+        List<RoleType> newRoles = entity.getRoles();
 
         for (RoleType roleType : roleTypes) {
-            if (!roles.contains(roleType)) {
-                roles.add(roleType);
+            if (!newRoles.contains(roleType)) {
+                newRoles.add(roleType);
             }
         }
 
-        entity.updateRoles(roles);
+        entity.updateRoles(newRoles);
 
         return User.fromEntity(userRepository.save(entity));
     }
@@ -159,49 +173,5 @@ public class UserService {
         entity.updateRoles(newRoles);
 
         return User.fromEntity(userRepository.save(entity));
-    }
-
-    // 이메일 중복확인
-    @Transactional(readOnly = true)
-    public void checkDuplicated(UserCheckRequest request) {
-        userRepository.findByUsername(request.getUsername()).ifPresent(it -> {
-            throw new EdxpApplicationException(ErrorCode.DUPLICATED_USER_NAME, String.format("%s is duplicated", request.getUsername()));
-        });
-    }
-
-    // 이메일 찾기
-    @Transactional(readOnly = true)
-    public UserFindResponse findMail(UserFindRequest request) {
-        UserEntity entity = userRepository.findByNameAndPhoneAndBirth(request.getName(), request.getPhone(), request.getBirth()).orElseThrow(() ->
-                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
-        );
-        return new UserFindResponse(entity.getUsername());
-    }
-
-    // 비밀번호 찾기
-    @Transactional
-    public void findPw(UserFindRequest request) {
-        UserEntity userEntity = userRepository.findByUsernameAndNameAndPhoneAndBirth(request.getUsername(), request.getName(), request.getPhone(), request.getBirth()).orElseThrow(() ->
-                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
-        );
-        String rawPassword = createPwKey();
-        boolean isSentEmail = emailSenderProvidor.sendEmailWithNewPassword(request.getUsername(), rawPassword);
-        if (isSentEmail) {
-            log.debug("초기화된 비밀번호: {}", rawPassword);
-            String encPassword = encoder.encode(rawPassword);
-            userEntity.setPassword(encPassword);
-        } else {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Sending mail is failed");
-        }
-    }
-
-    // 회원 탈퇴
-    @Transactional
-    public void deleteUser(Long userId) {
-        UserEntity entity = userRepository.findById(userId).orElseThrow(() ->
-                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
-        );
-        entity.setUsername(entity.getUsername() + "_deleted");
-        entity.setDeletedAt(Timestamp.from(Instant.now()));
     }
 }

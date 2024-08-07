@@ -6,7 +6,7 @@ import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.user.dto.request.UserLoginRequest;
 import com.edxp.user.dto.response.UserRSAResponse;
-import com.edxp.user.service.UserLoginService;
+import com.edxp.user.business.UserLoginBusiness;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,7 +20,7 @@ import java.security.PrivateKey;
 @RequiredArgsConstructor
 @RestController
 public class UserLoginController {
-    private final UserLoginService userLoginService;
+    private final UserLoginBusiness userLoginBusiness;
 
     // 로그인 여부 확인하기
     @CrossOrigin
@@ -31,19 +31,21 @@ public class UserLoginController {
         return CommonResponse.success(true);
     }
 
+    // 공개키 발행
     @GetMapping("/public-key")
     public CommonResponse<UserRSAResponse> getKeys(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        UserRSAResponse response = userLoginService.getRSAKeys();
+        UserRSAResponse response = userLoginBusiness.getRSAKeys();
         session.setAttribute("_RSA_WEB_Key_", response.getPrivateKey());
         return CommonResponse.success(response);
     }
 
+    // RAS 로그인 진행
     @PostMapping("/log")
     public CommonResponse<Void> getLog(HttpServletRequest request, @RequestBody UserLoginRequest loginRequest) {
         HttpSession session = request.getSession();
         PrivateKey privateKey = (PrivateKey) session.getAttribute("_RSA_WEB_Key_");
-        userLoginService.login(privateKey, loginRequest);
+        userLoginBusiness.login(privateKey, loginRequest);
         session.removeAttribute("_RSA_WEB_Key_");
 
         return CommonResponse.success();
