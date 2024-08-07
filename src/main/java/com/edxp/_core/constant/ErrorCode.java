@@ -17,6 +17,8 @@ public enum ErrorCode {
     DUPLICATED_FILE_NAME(HttpStatus.CONFLICT, "Filename is duplicated"),
     MAX_FILE_UPLOADED(HttpStatus.INTERNAL_SERVER_ERROR, "Files are max uploaded"),
     OVER_VOLUME_UPLOADED(HttpStatus.INTERNAL_SERVER_ERROR, "File is over storage volume"),
+    OVER_PARSING_COUNT(HttpStatus.BAD_REQUEST, "Parsing count is over"),
+    OVER_EXTRACT_COUNT(HttpStatus.BAD_REQUEST, "Extract count is over"),
     ALREADY_EXTRACTED(HttpStatus.BAD_REQUEST, "Already extracted"),
     ALREADY_DELETED(HttpStatus.BAD_REQUEST, "Already deleted"),
 

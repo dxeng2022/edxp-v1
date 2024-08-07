@@ -6,10 +6,12 @@ import com.edxp._core.constant.ErrorCode;
 import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.order.doc.business.OrderDocBusiness;
 import com.edxp.order.doc.dto.request.*;
+import com.edxp.order.doc.dto.response.OrderDocCountResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
 import com.edxp.order.doc.dto.response.OrderDocVisualListResponse;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -47,6 +49,38 @@ public class OrderDocController {
         return CommonResponse.success(response);
     }
 
+    // 파싱 카운트 조회
+    @GetMapping("/parse-count")
+    public CommonResponse<OrderDocCountResponse> getParsingCount(
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        final OrderDocCountResponse response = orderDocBusiness.getParsingCount(principal.getUser());
+
+        return CommonResponse.success(response);
+    }
+
+    // 분석 카운트 조회
+    @GetMapping("/analysis-count")
+    public CommonResponse<OrderDocCountResponse> getExtractCount(
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        final OrderDocCountResponse response = orderDocBusiness.getExtractCount(principal.getUser());
+
+        return CommonResponse.success(response);
+    }
+
+    /**
+     * [ 클라우드 파싱 순서 ]
+     * <br/>
+     * 1. pdf 다운 (/parser-pdf)
+     * 2. 클라우드 파싱 요청 (/parser)
+     * 3. 임시파일 삭제 (/parser-delete)
+     *<br/>
+     * [ 로컬 파싱 순서 ]
+     *<br/>
+     * 1. 로컬 파싱 요청 (/parser-loc)
+     */
+
     // 분석용 pdf 요청
     @CrossOrigin
     @PostMapping("/parser-pdf")
@@ -54,7 +88,7 @@ public class OrderDocController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseRequest request
     ) {
-        Map<String, FileSystemResource> response = orderDocBusiness.parseDown(principal.getUser().getId(), request);
+        Map<String, FileSystemResource> response = orderDocBusiness.parseDown(principal.getUser(), request);
 
         String filePath = null;
         for (String key : response.keySet()) filePath = key;

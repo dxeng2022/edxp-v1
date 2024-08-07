@@ -4,6 +4,7 @@ import com.edxp._core.common.annotation.Converter;
 import com.edxp._core.common.utils.DateUtil;
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp.order.doc.dto.request.OrderDocRequest;
+import com.edxp.order.doc.dto.response.OrderDocCountResponse;
 import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.entity.OrderDocEntity;
 import org.springframework.data.domain.Page;
@@ -59,5 +60,21 @@ public class OrderDocConverter {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(responseList, entities.getPageable(), entities.getTotalElements());
+    }
+
+    public OrderDocCountResponse toParsingResponse(int userCount, long count) {
+
+        return OrderDocCountResponse.builder()
+                .userParsingCount(userCount)
+                .parsingCount(count)
+                .build();
+    }
+
+    public OrderDocCountResponse toExtractResponse(int userCount, long count) {
+
+        return OrderDocCountResponse.builder()
+                .userExtractCount(userCount)
+                .extractCount(count)
+                .build();
     }
 }
