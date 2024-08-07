@@ -13,11 +13,11 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-public class UserAuthService {
+public class UserMailAuthCodeService {
     private final ScheduledExecutorService scheduler;
     private final HashMap<String, String> authCodes;
 
-    public UserAuthService() {
+    public UserMailAuthCodeService() {
         authCodes = new HashMap<>();
         scheduler = Executors.newScheduledThreadPool(1);
     }

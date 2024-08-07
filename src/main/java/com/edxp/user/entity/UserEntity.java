@@ -3,11 +3,19 @@ package com.edxp.user.entity;
 import com.edxp._core.constant.RoleType;
 import com.edxp.user.converter.RoleTypeListConverter;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.Where;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -24,15 +32,15 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter @Column(unique = true, nullable = false) private String username;
+    @Column(unique = true, nullable = false) private String username;
 
-    @Setter @Column(nullable = false) private String password;
-    @Setter @Column(nullable = false) private String name;
-    @Setter @Column(nullable = false) private String phone;
-    @Setter @Column(nullable = false) private String gender;
-    @Setter @Column(nullable = false) private String birth;
-    @Setter @Column private String organization;
-    @Setter @Column private String job;
+    @Column(nullable = false) private String password;
+    @Column(nullable = false) private String name;
+    @Column(nullable = false) private String phone;
+    @Column(nullable = false) private String gender;
+    @Column(nullable = false) private String birth;
+    @Column private String organization;
+    @Column private String job;
 
     @Convert(converter = RoleTypeListConverter.class)
     @Column(nullable = false)
@@ -40,7 +48,7 @@ public class UserEntity {
 
     private Timestamp registeredAt;
     private Timestamp updatedAt;
-    @Setter private Timestamp deletedAt;
+    private Timestamp deletedAt;
 
     protected UserEntity() {
     }
@@ -69,6 +77,28 @@ public class UserEntity {
         this.roles.add(RoleType.USER);
     }
 
+    public void updateUsername(String username) {
+        this.username = username;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    private void updatePhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void updateUserInfo(String encPassword, String phone) {
+        if (!ObjectUtils.isEmpty(encPassword)) {
+            updatePassword(encPassword);
+        }
+
+        if (!ObjectUtils.isEmpty(phone)) {
+            updatePhone(phone);
+        }
+    }
+
     public void updateRoles(List<RoleType> roles) {
         this.roles = roles;
     }
@@ -83,6 +113,10 @@ public class UserEntity {
         this.updatedAt = Timestamp.from(Instant.now());
     }
 
+    public void updateDeletedAt() {
+        this.deletedAt = Timestamp.from(Instant.now());
+    }
+
     public static UserEntity of(
             String username,
             String password,
@@ -95,6 +129,7 @@ public class UserEntity {
     ) {
         UserEntity userEntity = new UserEntity(username, password, name, phone, gender, birth, organization, job);
         userEntity.setRoleUser();
+
         return userEntity;
     }
 }
