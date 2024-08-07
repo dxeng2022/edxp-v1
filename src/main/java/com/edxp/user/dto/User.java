@@ -27,6 +27,13 @@ public class User implements Serializable {
     private Timestamp updatedAt;
     private Timestamp deletedAt;
 
+    public boolean isUserCharged() {
+
+        return this.roles.contains(RoleType.USER_DRAW) ||
+                this.roles.contains(RoleType.USER_SHEET) ||
+                this.roles.contains(RoleType.USER_DOC);
+    }
+
     public static User of(
             Long id,
             String username,
