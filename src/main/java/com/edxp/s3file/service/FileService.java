@@ -78,8 +78,12 @@ public class FileService {
     @Value("${file.location}")
     private String location;
 
+    private final static int MAX_UPLOAD_FILES = 5; // 업로드 파일 한 번에 최대 5개
     private final static long MAX_UPLOAD_VOLUME = 30 * MB; // 30 MB
-    private final static long MAX_UPLOAD_CHARGED_VOLUME = 100 * MB; // 30 MB
+    private final static long MAX_UPLOAD_CHARGED_VOLUME = 300 * MB; // 300 MB
+    private static final Set<String> UPLOAD_FOLDER_LIST = Set.of( // 업로드 가능한 폴더 리스트
+            "draw", "sheet", "doc", "doc_risk"
+    );
 
     /**
      * [ 파일 및 폴더 리스트 불러오기 ]
@@ -248,7 +252,7 @@ public class FileService {
 
                 amazonS3Client.putObject(bucket, String.valueOf(filePath), file.getInputStream(), metadata);
             } catch (IOException e) {
-                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, file.getOriginalFilename() + " upload is failed.");
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, String.format("%s upload is failed", file.getOriginalFilename()));
             }
         });
     }
@@ -305,7 +309,7 @@ public class FileService {
                 }
                 return;
             } catch (Exception ex) {
-                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed");
             }
         }
 
@@ -353,7 +357,7 @@ public class FileService {
             log.info("compressing to zip file...");
             addFolderToZip(zipOut, localDirectory + "/" + userPath + request.getCurrentPath());
         } catch (Exception e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed");
         } finally {
             // (5) 로컬 디렉토리 삭제
             FileUtil.remove(localDirectory);
@@ -398,7 +402,7 @@ public class FileService {
 
             return file;
         } catch (InterruptedException e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed.");
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File download is failed");
         } catch (AmazonS3Exception e) {
             throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
         }
@@ -469,7 +473,7 @@ public class FileService {
                 }
             } catch (Exception e) {
                 allPassed.set(false);
-                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, path + " delete is failed.");
+                throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, String.format("%s delete is failed", path));
             }
             allPassed.set(true);
         });
@@ -506,13 +510,13 @@ public class FileService {
         boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(s3Path));
 
         if (!isObjectExist) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "file is not exist");
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "File is not exist");
         }
 
         try {
             amazonS3Client.deleteObject(bucket, String.valueOf(s3Path));
         } catch (Exception e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "delete is failed");
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Delete is failed");
         }
     }
 
@@ -544,7 +548,7 @@ public class FileService {
         try {
             amazonS3Client.deleteObject(bucket, sourceKey);
         } catch (Exception e) {
-            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "delete is failed in update.");
+            throw new EdxpApplicationException(ErrorCode.INTERNAL_SERVER_ERROR, "Delete is failed in update");
         }
     }
 
@@ -555,78 +559,6 @@ public class FileService {
         listObjectsRequest.setPrefix("dxeng" + "/" + location + "/" + "user_" + String.format("%06d", userId) + "/" + currentPath);
         
         return listObjectsRequest;
-    }
-
-    // 파일 중복 validation
-    private boolean isFileNameDuplicated(long userId, String saveFileName) {
-        boolean isDuplicated = false;
-
-        ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, "doc/");
-        listObjectsRequest.setDelimiter("/");
-        ObjectListing s3Objects;
-
-        s3Objects = amazonS3Client.listObjects(listObjectsRequest);
-        for (S3ObjectSummary objectSummary : s3Objects.getObjectSummaries()) {
-            String objectKey = objectSummary.getKey().substring(objectSummary.getKey().lastIndexOf("/") + 1);
-            if (objectKey.contains(saveFileName + ":")) {
-                isDuplicated = true;
-                break;
-            }
-        }
-
-        return isDuplicated;
-    }
-
-    // 파일 경로 validation
-    private void requestPathValidation(String path) {
-        if (ObjectUtils.isEmpty(path)) {
-            throw new EdxpApplicationException(ErrorCode.INVALID_PATH);
-        }
-
-        String[] parts = path.split("/");
-        String firstFolder = parts.length > 0 ? parts[0] : "";
-
-        if (!Set.of("draw", "sheet", "doc", "doc_risk").contains(firstFolder)) {
-            throw new EdxpApplicationException(ErrorCode.INVALID_PATH);
-        }
-    }
-
-    // 파일 이름 중복 validation
-    private void duplicateFilenameValidation(String filePath) {
-        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
-        if (isObjectExist) {
-            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
-        }
-    }
-
-    // 업로드 파일 갯수 validation
-    private void uploadFileNumberValidation(FileUploadRequest request) {
-        if (request.getFiles().size() > 5) {
-            throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
-        }
-    }
-
-    // 업로드 스토리지용량 validation
-    private void uploadVolumeValidation(User user, FileUploadRequest request) {
-        final long storageVolume = getVolume(user.getId(), request.getCurrentPath()).getOriginalVolume();
-        final List<MultipartFile> files = request.getFiles();
-
-        long uploadVolume = 0;
-        for (MultipartFile file : files) {
-            uploadVolume += file.getSize();
-        }
-
-        log.debug("storage: {}, upload: {}", storageVolume, uploadVolume);
-
-        if (!user.isUserCharged()) {
-            if (storageVolume + uploadVolume > MAX_UPLOAD_VOLUME) {
-                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
-            }
-        } else {
-            if (storageVolume + uploadVolume > MAX_UPLOAD_CHARGED_VOLUME) {
-                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
-            }
-        }
     }
 
     // 파일 압축 내부 메소드
@@ -660,5 +592,88 @@ public class FileService {
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    /**
+     * == Validations ==
+     */
+
+    // 파일 중복 validation
+    private boolean isFileNameDuplicated(long userId, String saveFileName) {
+        boolean isDuplicated = false;
+
+        ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, "doc/");
+        listObjectsRequest.setDelimiter("/");
+        ObjectListing s3Objects;
+
+        s3Objects = amazonS3Client.listObjects(listObjectsRequest);
+        for (S3ObjectSummary objectSummary : s3Objects.getObjectSummaries()) {
+            String objectKey = objectSummary.getKey().substring(objectSummary.getKey().lastIndexOf("/") + 1);
+            if (objectKey.contains(saveFileName + ":")) {
+                isDuplicated = true;
+                break;
+            }
+        }
+
+        return isDuplicated;
+    }
+
+    // 파일 경로 validation
+    private void requestPathValidation(String path) {
+        if (ObjectUtils.isEmpty(path)) {
+            throw new EdxpApplicationException(ErrorCode.INVALID_PATH, "Path is empty");
+        }
+
+        char lastChar = path.charAt(path.length() - 1);
+        if (lastChar != '/') {
+            throw new EdxpApplicationException(ErrorCode.INVALID_PATH, "It is not folder");
+        }
+
+        final String rootPath = path.substring(0, path.indexOf("/"));
+
+        if (!UPLOAD_FOLDER_LIST.contains(rootPath)) {
+            throw new EdxpApplicationException(ErrorCode.INVALID_PATH);
+        }
+    }
+
+    // 파일 이름 중복 validation
+    private void duplicateFilenameValidation(String filePath) {
+        boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
+        if (isObjectExist) {
+            throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+        }
+    }
+
+    // 업로드 파일 갯수 validation
+    private void uploadFileNumberValidation(FileUploadRequest request) {
+        if (request.getFiles().size() > MAX_UPLOAD_FILES) {
+            throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED, String.format("Max file upload is %d", MAX_UPLOAD_FILES));
+        }
+    }
+
+    // 업로드 스토리지용량 validation
+    private void uploadVolumeValidation(User user, FileUploadRequest request) {
+        final String rootPath = request.getCurrentPath().substring(0, request.getCurrentPath().indexOf("/") + 1);
+        log.debug("rootPath: {}", rootPath);
+
+        final long storageVolume = getVolume(user.getId(), rootPath).getOriginalVolume();
+        final List<MultipartFile> files = request.getFiles();
+
+        long uploadVolume = 0;
+        for (MultipartFile file : files) {
+            uploadVolume += file.getSize();
+        }
+
+        log.debug("storage: {}, upload: {}", storageVolume, uploadVolume);
+
+        if (!user.isUserCharged()) {
+            if (storageVolume + uploadVolume > MAX_UPLOAD_VOLUME) {
+                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
+            }
+        } else {
+            if (storageVolume + uploadVolume > MAX_UPLOAD_CHARGED_VOLUME) {
+                throw new EdxpApplicationException(ErrorCode.OVER_VOLUME_UPLOADED);
+            }
+        }
     }
 }
