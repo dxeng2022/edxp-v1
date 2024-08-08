@@ -173,18 +173,18 @@ public class FileService {
     /**
      * [ 폴더 용량 불러오기 ]
      *
-     * @param userId      user id signed in
+     * @param user user signed in
      * @param currentPath current path
      * @return FileVolumeResponse – volume, originalVolume
      * @apiNote AWS S3 에서 전체 정보를 불러와 용량을 모두 더한 후에 전체 용량을 반환하는 API
      * @since 2023.07.19
      */
     @Transactional(readOnly = true)
-    public FileVolumeResponse getVolume(Long userId, String currentPath) {
+    public FileVolumeResponse getVolume(User user, String currentPath) {
         log.debug("folderPath : {}", currentPath);
         requestPathValidation(currentPath);
 
-        ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, currentPath);
+        ListObjectsRequest listObjectsRequest = getListObjectsRequest(user.getId(), currentPath);
         ObjectListing s3Objects;
 
         List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
@@ -196,7 +196,12 @@ public class FileService {
             listObjectsRequest.setMarker(s3Objects.getNextMarker());
         } while (s3Objects.isTruncated());
 
-        return FileVolumeResponse.from(s3ObjectSummaries);
+        long userVolume = MAX_UPLOAD_VOLUME;
+        if (user.isUserCharged()) {
+            userVolume = MAX_UPLOAD_CHARGED_VOLUME;
+        }
+
+        return FileVolumeResponse.from(s3ObjectSummaries, userVolume);
     }
 
     /**
@@ -493,7 +498,7 @@ public class FileService {
         String sourceKey = String.valueOf(getPath(user.getId(), "doc_risk").append("/").append(fileName));
         String destinationKey = String.valueOf(getPath(user.getId(), "doc").append("/").append(saveFileName).append("$").append(fileName));
 
-        final long docVolume = getVolume(user.getId(), "doc/").getOriginalVolume();
+        final long docVolume = getVolume(user, "doc/").getOriginalVolume();
 
         updateS3Object(user, sourceKey, destinationKey, docVolume);
     }
@@ -631,7 +636,7 @@ public class FileService {
         final String rootPath = request.getCurrentPath().substring(0, request.getCurrentPath().indexOf("/") + 1);
         log.debug("rootPath: {}", rootPath);
 
-        final long storageVolume = getVolume(user.getId(), rootPath).getOriginalVolume();
+        final long storageVolume = getVolume(user, rootPath).getOriginalVolume();
         final List<MultipartFile> files = request.getFiles();
 
         long uploadVolume = 0;

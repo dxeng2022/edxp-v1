@@ -71,7 +71,7 @@ public class FileController {
             @RequestParam String currentPath,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        FileVolumeResponse response = fileService.getVolume(principal.getUser().getId(), currentPath);
+        FileVolumeResponse response = fileService.getVolume(principal.getUser(), currentPath);
 
         return CommonResponse.success(response);
     }
