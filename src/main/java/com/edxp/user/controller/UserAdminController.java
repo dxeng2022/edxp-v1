@@ -3,7 +3,6 @@ package com.edxp.user.controller;
 import com.edxp._core.common.response.CommonResponse;
 import com.edxp.user.business.UserAdminBusiness;
 import com.edxp.user.dto.response.AdminUserResponse;
-import com.edxp.user.dto.response.UserInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -47,8 +46,8 @@ public class UserAdminController {
     @Operation(summary = "유저 관리자 권한 부여", description = "해당 유저에 관리자 권한을 부여합니다.")
     @CrossOrigin
     @PutMapping("/{userId}/role-admin")
-    public CommonResponse<UserInfoResponse> addAdminRole(@PathVariable Long userId) {
-        final UserInfoResponse response = userAdminBusiness.addAdminRoleToUser(userId);
+    public CommonResponse<AdminUserResponse> addAdminRole(@PathVariable Long userId) {
+        final AdminUserResponse response = userAdminBusiness.addAdminRoleToUser(userId);
 
         return CommonResponse.success(response);
     }
@@ -56,8 +55,8 @@ public class UserAdminController {
     @Operation(summary = "유저 모듈 권한 부여", description = "해당 유저에 모듈 사용 권한을 부여합니다.")
     @CrossOrigin
     @PutMapping("/{userId}/role-all")
-    public CommonResponse<UserInfoResponse> addAllModuleRole(@PathVariable Long userId) {
-        final UserInfoResponse response = userAdminBusiness.addAllModuleRoleToUser(userId);
+    public CommonResponse<AdminUserResponse> addAllModuleRole(@PathVariable Long userId) {
+        final AdminUserResponse response = userAdminBusiness.addAllModuleRoleToUser(userId);
 
         return CommonResponse.success(response);
     }
@@ -65,8 +64,8 @@ public class UserAdminController {
     @Operation(summary = "유저 관리자 권한 삭제", description = "해당 유저의 관리자 권한을 삭제합니다.")
     @CrossOrigin
     @DeleteMapping("/{userId}/role-admin")
-    public CommonResponse<UserInfoResponse> deleteAdminRole(@PathVariable Long userId) {
-        final UserInfoResponse response = userAdminBusiness.removeAdminRoleFromUser(userId);
+    public CommonResponse<AdminUserResponse> deleteAdminRole(@PathVariable Long userId) {
+        final AdminUserResponse response = userAdminBusiness.removeAdminRoleFromUser(userId);
 
         return CommonResponse.success(response);
     }
@@ -74,8 +73,8 @@ public class UserAdminController {
     @Operation(summary = "유저 모듈 권한 삭제", description = "해당 유저의 모듈 사용 권한을 삭제합니다.")
     @CrossOrigin
     @DeleteMapping("/{userId}/role-all")
-    public CommonResponse<UserInfoResponse> deleteAllModuleRole(@PathVariable Long userId) {
-        final UserInfoResponse response = userAdminBusiness.removeAllModuleRoleFromUser(userId);
+    public CommonResponse<AdminUserResponse> deleteAllModuleRole(@PathVariable Long userId) {
+        final AdminUserResponse response = userAdminBusiness.removeAllModuleRoleFromUser(userId);
 
         return CommonResponse.success(response);
     }

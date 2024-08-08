@@ -5,7 +5,6 @@ import com.edxp._core.constant.RoleType;
 import com.edxp.user.converter.UserConverter;
 import com.edxp.user.dto.User;
 import com.edxp.user.dto.response.AdminUserResponse;
-import com.edxp.user.dto.response.UserInfoResponse;
 import com.edxp.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 @Business
 public class UserAdminBusiness {
     private final UserService userService;
-    private final UserConverter userConverter;
 
     /**
      * [ 전체 사용자 조회 ]
@@ -47,10 +45,10 @@ public class UserAdminBusiness {
      * @return 수정된 유저정보
      * @since 24.08.06
      */
-    public UserInfoResponse addAdminRoleToUser(Long userId) {
+    public AdminUserResponse addAdminRoleToUser(Long userId) {
         final User user = userService.addRolesToUser(userId, List.of(RoleType.ADMIN));
 
-        return userConverter.toResponse(user);
+        return UserConverter.toAdminResponse(user);
     }
 
     /**
@@ -60,10 +58,10 @@ public class UserAdminBusiness {
      * @return 수정된 유저정보
      * @since 24.08.06
      */
-    public UserInfoResponse addAllModuleRoleToUser(Long userId) {
+    public AdminUserResponse addAllModuleRoleToUser(Long userId) {
         final User user = userService.addRolesToUser(userId, List.of(RoleType.USER_DRAW, RoleType.USER_SHEET, RoleType.USER_DOC));
 
-        return userConverter.toResponse(user);
+        return UserConverter.toAdminResponse(user);
     }
 
     /**
@@ -73,10 +71,10 @@ public class UserAdminBusiness {
      * @return 수정된 유저정보
      * @since 24.08.06
      */
-    public UserInfoResponse removeAdminRoleFromUser(Long userId) {
+    public AdminUserResponse removeAdminRoleFromUser(Long userId) {
         final User user = userService.removeRolesFromUser(userId, List.of(RoleType.ADMIN));
 
-        return userConverter.toResponse(user);
+        return UserConverter.toAdminResponse(user);
     }
 
     /**
@@ -86,10 +84,10 @@ public class UserAdminBusiness {
      * @return 수정된 유저정보
      * @since 24.08.06
      */
-    public UserInfoResponse removeAllModuleRoleFromUser(Long userId) {
+    public AdminUserResponse removeAllModuleRoleFromUser(Long userId) {
         final User user = userService.removeRolesFromUser(userId, List.of(RoleType.USER_DRAW, RoleType.USER_SHEET, RoleType.USER_DOC));
 
-        return userConverter.toResponse(user);
+        return UserConverter.toAdminResponse(user);
     }
 
     /**
