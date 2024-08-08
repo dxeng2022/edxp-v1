@@ -32,8 +32,15 @@ public class GlobalControllerAdvice {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> applicationHandler(RuntimeException e) {
-        log.debug("Occurs at {}:{}", e.getStackTrace()[0].getClassName(), e.getStackTrace()[0].getLineNumber());
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String stackTrace = sw.toString();
+
         String message = !ObjectUtils.isEmpty(e.getMessage()) ? e.getMessage() : "";
+
+        log.debug("Occurs at {}:{}", e.getStackTrace()[0].getClassName(), e.getStackTrace()[0].getLineNumber());
+        log.debug("Stack Trace >>> {}", stackTrace);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(CommonResponse.error(ErrorCode.INTERNAL_SERVER_ERROR.name(), message));

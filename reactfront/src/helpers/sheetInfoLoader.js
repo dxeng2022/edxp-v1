@@ -1,3 +1,5 @@
+import axios from "axios";
+
 class SheetPage {
   /**
    * @property {number} page_num - 페이지 번호
@@ -127,8 +129,9 @@ export class SheetInfoManager {
   }
 
   async #load_sheet_info_json(project_folder) {
-    const response = await fetch(project_folder);
-    return response.json();
+    const response = await axios.get(project_folder);
+
+    return response.data;
   }
 
   /**

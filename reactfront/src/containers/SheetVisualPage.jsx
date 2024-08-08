@@ -7,9 +7,9 @@ import { SheetInfoManager } from "../helpers/sheetInfoLoader";
 const SheetVisualPage = () => {
   let PAGE = 4;
   let imgSrc =
-    "http://localhost:8080/proxy-image/?imageKey=sheetimg/4_rebuilt_img.png";
+    "http://54.180.127.233/proxy/sheet-image/?imageKey=Datasheet_004/4_rebuilt_img.png";
   let projectFolder =
-    "http://localhost:8080/proxy-image/v2?jsonKey=sheetjson/sheet_info.json";
+    "http://54.180.127.233/proxy/sheet-data/?jsonKey=Datasheet_004/sheet_info.json";
 
   useEffect(() => {
     const initialize = async () => {
