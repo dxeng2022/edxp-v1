@@ -1,12 +1,15 @@
 package com.edxp.user.controller;
 
 import com.edxp._core.common.response.CommonResponse;
+import com.edxp._core.config.auth.PrincipalDetails;
 import com.edxp.user.business.UserAdminBusiness;
 import com.edxp.user.dto.response.AdminUserResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,11 +28,13 @@ import java.util.List;
 public class UserAdminController {
     private final UserAdminBusiness userAdminBusiness;
 
-    @Operation(summary = "전체 유저 조회", description = "회원가입한 전체 유저를 조회합니다.")
+    @Operation(summary = "전체 유저 조회", description = "회원가입한 전체 유저를 조회합니다. (본인은 리스트에서 제외됩니다.)")
     @CrossOrigin
     @GetMapping
-    public CommonResponse<List<AdminUserResponse>> getUsers() {
-        final List<AdminUserResponse> response = userAdminBusiness.getUsers();
+    public CommonResponse<List<AdminUserResponse>> getUsers(
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal
+    ) {
+        final List<AdminUserResponse> response = userAdminBusiness.getUsers(principal.getUser());
 
         return CommonResponse.success(response);
     }

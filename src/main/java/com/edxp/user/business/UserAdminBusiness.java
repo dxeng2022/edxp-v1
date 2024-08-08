@@ -22,9 +22,11 @@ public class UserAdminBusiness {
      * @return 전체 사용자 리스트
      * @since 24.08.07
      */
-    public List<AdminUserResponse> getUsers() {
+    public List<AdminUserResponse> getUsers(User user) {
 
-        return userService.users().stream().map(UserConverter::toAdminResponse)
+        return userService.users().stream()
+                .filter(it -> !it.getId().equals(user.getId()))
+                .map(UserConverter::toAdminResponse)
                 .collect(Collectors.toList());
     }
 
