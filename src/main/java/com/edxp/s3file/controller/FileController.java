@@ -123,7 +123,7 @@ public class FileController {
             @RequestBody FileUpdateRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        fileService.updateFile(request, principal.getUser().getId());
+        fileService.updateFile(principal.getUser(), request);
 
         return CommonResponse.success();
     }

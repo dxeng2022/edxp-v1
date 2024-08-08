@@ -234,9 +234,9 @@ public class FileService {
      */
     @Transactional
     public void uploadFile(User user, FileUploadRequest request) {
-        requestPathValidation(request.getCurrentPath());
-        uploadFileNumberValidation(request);
-        uploadVolumeValidation(user, request);
+        requestPathValidation(request.getCurrentPath()); // 경로 확인
+        uploadFileNumberValidation(request); // 파일 개수 확인
+        uploadVolumeValidation(user, request); // 용량 확인
 
         request.getFiles().forEach(file -> {
             try {
@@ -411,20 +411,20 @@ public class FileService {
     /**
      * [ 파일 이름 변경 및 업데이트 ]
      *
+     * @param user  user signed in
      * @param request currentPath, currentName, updateName, extension
-     * @param userId  user id signed in
      * @apiNote 파일 이름을 변경하는 API
      * @since 2023.08.02
      */
     @Transactional
-    public void updateFile(FileUpdateRequest request, Long userId) {
-        StringBuilder path = getPath(userId, request.getCurrentPath());
+    public void updateFile(User user, FileUpdateRequest request) {
+        StringBuilder path = getPath(user.getId(), request.getCurrentPath());
         log.debug("path : {}", path);
 
         String sourceKey = path + request.getCurrentName();
         String destinationKey = path + request.getUpdateName() + "." + request.getExtension();
 
-        updateS3Object(sourceKey, destinationKey, 0L);
+        updateS3Object(user, sourceKey, destinationKey, 0L);
     }
 
     /**
@@ -484,23 +484,18 @@ public class FileService {
     /**
      * [ 임시파일 저장 ]
      *
-     * @param userId user id is signed in
+     * @param user user is signed in
      * @param saveFileName filename to change
      * @param fileName original file key
      */
     @Transactional
-    public void moveFile(Long userId, String saveFileName, String fileName) {
-        // 목적지 용량 확인
-        final long docVolume = getVolume(userId, "doc").getOriginalVolume();
-        if (docVolume > MAX_UPLOAD_VOLUME) throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
+    public void moveFile(User user, String saveFileName, String fileName) {
+        String sourceKey = String.valueOf(getPath(user.getId(), "doc_risk").append("/").append(fileName));
+        String destinationKey = String.valueOf(getPath(user.getId(), "doc").append("/").append(saveFileName).append("$").append(fileName));
 
-        // 목적지 이름 확인
-        if(isFileNameDuplicated(userId, saveFileName)) throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
+        final long docVolume = getVolume(user.getId(), "doc/").getOriginalVolume();
 
-        String sourceKey = String.valueOf(getPath(userId, "doc_risk").append("/").append(fileName));
-        String destinationKey = String.valueOf(getPath(userId, "doc").append("/").append(saveFileName).append("$").append(fileName));
-
-        updateS3Object(sourceKey, destinationKey, docVolume);
+        updateS3Object(user, sourceKey, destinationKey, docVolume);
     }
 
     // 분석용 파일 삭제
@@ -529,18 +524,18 @@ public class FileService {
     }
 
     // 파일 변경 내부 메소드
-    private void updateS3Object(String sourceKey, String destinationKey, Long destinationVolume) {
+    private void updateS3Object(User user, String sourceKey, String destinationKey, long volume) {
         // 파일 확인
         boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, sourceKey);
-        boolean isNewObjectExist = amazonS3Client.doesObjectExist(bucket, destinationKey);
-
-        if (isNewObjectExist) throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
         if (!isObjectExist) throw new EdxpApplicationException(ErrorCode.FILE_NOT_FOUND);
+
+        // 파일 중복 확인
+        duplicateFilenameValidation(destinationKey);
 
         // 용량 확인
         ObjectMetadata sourceMetadata = amazonS3Client.getObjectMetadata(new GetObjectMetadataRequest(bucket, sourceKey));
         long sourceSize = sourceMetadata.getContentLength();
-        if(destinationVolume + sourceSize > MAX_UPLOAD_VOLUME) throw new EdxpApplicationException(ErrorCode.MAX_FILE_UPLOADED);
+        checkVolume(user, volume, sourceSize);
 
         CopyObjectRequest copyObjectsRequest = new CopyObjectRequest(bucket, sourceKey, bucket, destinationKey);
         amazonS3Client.copyObject(copyObjectsRequest);
@@ -597,27 +592,6 @@ public class FileService {
     /**
      * == Validations ==
      */
-
-    // 파일 중복 validation
-    private boolean isFileNameDuplicated(long userId, String saveFileName) {
-        boolean isDuplicated = false;
-
-        ListObjectsRequest listObjectsRequest = getListObjectsRequest(userId, "doc/");
-        listObjectsRequest.setDelimiter("/");
-        ObjectListing s3Objects;
-
-        s3Objects = amazonS3Client.listObjects(listObjectsRequest);
-        for (S3ObjectSummary objectSummary : s3Objects.getObjectSummaries()) {
-            String objectKey = objectSummary.getKey().substring(objectSummary.getKey().lastIndexOf("/") + 1);
-            if (objectKey.contains(saveFileName + ":")) {
-                isDuplicated = true;
-                break;
-            }
-        }
-
-        return isDuplicated;
-    }
-
     // 파일 경로 validation
     private void requestPathValidation(String path) {
         if (ObjectUtils.isEmpty(path)) {
@@ -639,6 +613,7 @@ public class FileService {
     // 파일 이름 중복 validation
     private void duplicateFilenameValidation(String filePath) {
         boolean isObjectExist = amazonS3Client.doesObjectExist(bucket, String.valueOf(filePath));
+
         if (isObjectExist) {
             throw new EdxpApplicationException(ErrorCode.DUPLICATED_FILE_NAME);
         }
@@ -664,6 +639,11 @@ public class FileService {
             uploadVolume += file.getSize();
         }
 
+        checkVolume(user, storageVolume, uploadVolume);
+    }
+
+    // 용량 확인 메소드
+    private void checkVolume(User user, long storageVolume, long uploadVolume) {
         log.debug("storage: {}, upload: {}", storageVolume, uploadVolume);
 
         if (!user.isUserCharged()) {

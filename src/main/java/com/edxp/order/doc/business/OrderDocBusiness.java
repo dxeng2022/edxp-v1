@@ -443,12 +443,12 @@ public class OrderDocBusiness {
     /**
      * [ 임시파일 저장 ]
      *
-     * @param userId user id signed in
+     * @param user user signed in
      * @param request saveFileName, fileName
      * @since 24-05-10
      */
-    public void saveResult(Long userId, OrderDocVisualSaveRequest request) {
-        fileService.moveFile(userId, request.getSaveFileName(), request.getFileName());
+    public void saveResult(User user, OrderDocVisualSaveRequest request) {
+        fileService.moveFile(user, request.getSaveFileName(), request.getFileName());
     }
 
     /**

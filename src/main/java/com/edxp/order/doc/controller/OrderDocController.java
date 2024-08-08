@@ -11,7 +11,9 @@ import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
 import com.edxp.order.doc.dto.response.OrderDocVisualListResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -30,6 +32,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "4. [문서 분석 모듈]", description = "문서 분석 모듈 관련 기능입니다.")
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/doc")
@@ -37,11 +40,11 @@ import java.util.Map;
 public class OrderDocController {
     private final OrderDocBusiness orderDocBusiness;
 
-    // 주문 내용 조회
+    @Operation(summary = "문서 분석 이력 조회", description = "문서 분석을 진행한 이력을 조회합니다.")
     @CrossOrigin
     @GetMapping
     public CommonResponse<?> getOrderDocList(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @PageableDefault(size = 50, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         final Page<OrderDocResponse> response = orderDocBusiness.getOrderListWithPage(principal.getUser().getId(), pageable);
@@ -49,7 +52,7 @@ public class OrderDocController {
         return CommonResponse.success(response);
     }
 
-    // 파싱 카운트 조회
+    @Operation(summary = "문서 파싱 횟수", description = "문서 파싱을 진행한 횟수를 조회합니다.")
     @GetMapping("/parse-count")
     public CommonResponse<OrderDocCountResponse> getParsingCount(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal
@@ -59,7 +62,7 @@ public class OrderDocController {
         return CommonResponse.success(response);
     }
 
-    // 분석 카운트 조회
+    @Operation(summary = "문서 분석 횟수", description = "문서 분석을 진행한 횟수를 조회합니다.")
     @GetMapping("/analysis-count")
     public CommonResponse<OrderDocCountResponse> getExtractCount(
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal
@@ -81,11 +84,11 @@ public class OrderDocController {
      * 1. 로컬 파싱 요청 (/parser-loc)
      */
 
-    // 분석용 pdf 요청
+    @Operation(summary = "1) 파싱 pdf 다운로드", description = "클라우드 파싱 진행을 위해 pdf 를 다운로드 합니다.")
     @CrossOrigin
     @PostMapping("/parser-pdf")
     public ResponseEntity<FileSystemResource> getParsePdf(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseRequest request
     ) {
         Map<String, FileSystemResource> response = orderDocBusiness.parseDown(principal.getUser(), request);
@@ -99,11 +102,11 @@ public class OrderDocController {
                 .body(response.get(filePath));
     }
 
-    // 클라우드 파싱 요청
+    @Operation(summary = "2) 클라우드 파싱 진행", description = "pdf 다운로드 후 클라우드 파싱을 진행 합니다.")
     @CrossOrigin
     @PostMapping("/parser")
     public CommonResponse<OrderDocParseResponse> parseCloud(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseRequest request
     ) throws IOException {
         OrderDocParseResponse response = orderDocBusiness.parseExecute(principal.getUser(), request);
@@ -111,11 +114,11 @@ public class OrderDocController {
         return CommonResponse.success(response);
     }
 
-    // 로컬 파싱 요청
+    @Operation(summary = "로컬 파싱 진행", description = "로컬에서 pdf 를 전달받아 파싱을 진행합니다.")
     @CrossOrigin
     @PostMapping("/parser-loc")
     public CommonResponse<OrderDocParseResponse> parseLocal(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @RequestParam("file") MultipartFile file
     ) throws IOException {
         if (file == null) throw new EdxpApplicationException(ErrorCode.FILE_NOT_ATTACHED);
@@ -125,11 +128,11 @@ public class OrderDocController {
         return CommonResponse.success(response);
     }
 
-    // 문서 업데이트
+    @Operation(summary = "파싱 문서 편집", description = "편집을 진행한 문서로 업데이트 합니다.")
     @CrossOrigin
     @PutMapping
     public CommonResponse<Object> documentUpdate(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocParseUpdateRequest request
     ) {
         final Object response = orderDocBusiness.documentUpdate(principal.getUser(), request);
@@ -137,11 +140,11 @@ public class OrderDocController {
         return CommonResponse.success(response);
     }
 
-    // 분석 요청
+    @Operation(summary = "문서 분석 요청", description = "위험 문장 분석을 진행합니다.")
     @CrossOrigin
     @PostMapping("/analysis")
     public CommonResponse<OrderDocRiskResponse> requestAnalysis(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocRiskRequest request
     ) throws IOException {
         final OrderDocRiskResponse response = orderDocBusiness.analysis(principal.getUser(), request);
@@ -149,32 +152,32 @@ public class OrderDocController {
         return CommonResponse.success(response);
     }
 
-    // 분석 요청
+    @Operation(summary = "문서 분석 요청 (대용량)", description = "문장수가 많은 문서의 위험 문장 분석을 진행합니다.")
     @CrossOrigin
     @GetMapping("/analysis-event")
     public SseEmitter requestAnalysis2(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @RequestParam String filename
     ) {
         return orderDocBusiness.analysisEmitter(principal.getUser(), filename);
     }
 
-    // 시각화 파일 리스트 요청
+    @Operation(summary = "임시문서함 리스트 요청", description = "임시 문서함의 리스트를 요청합니다.")
     @CrossOrigin
     @GetMapping("/visual-list")
     public CommonResponse<List<OrderDocVisualListResponse>> getVisualList(
-            @AuthenticationPrincipal PrincipalDetails principal
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal
     ) {
         final List<OrderDocVisualListResponse> response = orderDocBusiness.visualList(principal.getUser().getId());
 
         return CommonResponse.success(response);
     }
 
-    // 영구문서 시각화용 pdf 전달 api
+    @Operation(summary = "시각화 pdf 요청", description = "영구 저장한 분석결과 파일의 pdf 를 불러옵니다.")
     @CrossOrigin
     @PostMapping("/visual-pdf")
     public ResponseEntity<FileSystemResource> getVisualPdf(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocVisualRequest request
     ) {
         Map<String, FileSystemResource> response = orderDocBusiness.visualDown(principal.getUser().getId(), request);
@@ -188,17 +191,17 @@ public class OrderDocController {
                 .body(response.get(filePath));
     }
 
-    // 시각화 요청
+    @Operation(summary = "클라우드 시각화 요청", description = "클라우드에 있는 분석 결과의 시각화를 진행합니다.")
     @CrossOrigin
     @PostMapping("/visual")
     public CommonResponse<OrderDocRiskResponse> requestAnalysisVisualization(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocRiskRequest request
     ) throws IOException {
         return CommonResponse.success(orderDocBusiness.visualization(principal.getUser().getId(), request));
     }
 
-    // 로컬 시각화 요청
+    @Operation(summary = "로컬 시각화 요청", description = "로컬에 있는 분석 결과의 시각화를 진행합니다.")
     @CrossOrigin
     @PostMapping("/visual-loc")
     public CommonResponse<OrderDocRiskResponse> visualLocal(
@@ -211,23 +214,23 @@ public class OrderDocController {
         return CommonResponse.success(response);
     }
 
-    // 임시문서 -> 클라우드 저장 (수정할 이름 + key 이동, 용량체크 필요)
+    @Operation(summary = "임시 파일 저장", description = "임시문서함에 있는 결과파일을 클라우드로 이동합니다.")
     @CrossOrigin
     @PutMapping("/visual-save")
     public CommonResponse<Void> saveTempResultFile(
-            @AuthenticationPrincipal PrincipalDetails principal,
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal,
             @RequestBody OrderDocVisualSaveRequest request
     ) {
-        orderDocBusiness.saveResult(principal.getUser().getId(), request);
+        orderDocBusiness.saveResult(principal.getUser(), request);
 
         return CommonResponse.success();
     }
 
-    // 임시 파일 삭제
+    @Operation(summary = "3) 로컬 임시 파일 삭제", description = "로컬에 다운로드한 임시파일을 삭제합니다.")
     @CrossOrigin
     @DeleteMapping("/parser-delete")
     public CommonResponse<Void> deleteFile(
-            @AuthenticationPrincipal PrincipalDetails principal
+            @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principal
     ) {
         orderDocBusiness.deleteResult(principal.getUser().getId());
 

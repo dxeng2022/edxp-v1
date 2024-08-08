@@ -10,7 +10,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not founded"),
     DUPLICATED_USER_NAME(HttpStatus.CONFLICT, "Username is duplicated"),
     INVALID_AUTH_CODE(HttpStatus.BAD_REQUEST, "Auth code is invalid"),
-    USER_NOT_LOGIN(HttpStatus.UNAUTHORIZED, "User not login"),
+    USER_NOT_LOGIN(HttpStatus.UNAUTHORIZED, "User is not login"),
     INVALID_PATH(HttpStatus.BAD_REQUEST, "Path is invalid"),
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "File is not founded"),
     FILE_NOT_ATTACHED(HttpStatus.INTERNAL_SERVER_ERROR, "File is not attached"),
