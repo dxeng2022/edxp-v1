@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-@Tag(name = "3. [데이터 관리]", description = "클라우드 데이터 관리 기능입니다.")
+@Tag(name = "2-1. [데이터 관리]", description = "클라우드 데이터 관리 기능입니다.")
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/file")

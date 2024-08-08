@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@Tag(name = "4. [문서 분석 모듈]", description = "문서 분석 모듈 관련 기능입니다.")
+@Tag(name = "3. [문서 분석 모듈]", description = "문서 분석 모듈 관련 기능입니다.")
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/doc")

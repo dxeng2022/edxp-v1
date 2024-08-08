@@ -7,6 +7,8 @@ import com.edxp._core.handler.exception.EdxpApplicationException;
 import com.edxp.user.dto.request.UserLoginRequest;
 import com.edxp.user.dto.response.UserRSAResponse;
 import com.edxp.user.business.UserLoginBusiness;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,13 +18,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.PrivateKey;
 
+@Tag(name = "1-3. [사용자 - 로그인]", description = "사용자 RSA 로그인 관련 기능입니다.")
 @Slf4j
 @RequiredArgsConstructor
 @RestController
 public class UserLoginController {
     private final UserLoginBusiness userLoginBusiness;
 
-    // 로그인 여부 확인하기
+    @Operation(summary = "로그인 여부 확인", description = "사용자가 로그인 중인지 확인합니다.")
     @CrossOrigin
     @GetMapping("/isLogin")
     public CommonResponse<Boolean> isUserLogin(@AuthenticationPrincipal PrincipalDetails principal) {
@@ -31,7 +34,7 @@ public class UserLoginController {
         return CommonResponse.success(true);
     }
 
-    // 공개키 발행
+    @Operation(summary = "공개키 발행", description = "RSA 로그인을 위해 공개키 발행을 요청합니다.")
     @GetMapping("/public-key")
     public CommonResponse<UserRSAResponse> getKeys(HttpServletRequest request) {
         HttpSession session = request.getSession();
@@ -40,7 +43,7 @@ public class UserLoginController {
         return CommonResponse.success(response);
     }
 
-    // RAS 로그인 진행
+    @Operation(summary = "RSA 로그인", description = "RSA 암호키로 로그인을 진행합니다.")
     @PostMapping("/log")
     public CommonResponse<Void> getLog(HttpServletRequest request, @RequestBody UserLoginRequest loginRequest) {
         HttpSession session = request.getSession();

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "2. [관리자 - 사용자 관리]", description = "관리자가 사용자 정보를 관리합니다.")
+@Tag(name = "1-2. [관리자 - 사용자 관리]", description = "관리자가 사용자 정보를 관리하는 기능입니다.")
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/admin/v1/user")

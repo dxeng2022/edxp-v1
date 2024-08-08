@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@Tag(name = "1. [사용자]", description = "로그인, 회원가입, 사용자 정보, 회원 탈퇴 등 사용자 관련 기능입니다.")
+@Tag(name = "1-1. [사용자]", description = "로그인, 회원가입, 사용자 정보, 회원 탈퇴 등 사용자 관련 기능입니다.")
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user")
