@@ -4,9 +4,17 @@ import com.edxp._core.common.annotation.Business;
 import com.edxp._core.common.utils.FileUtil;
 import com.edxp._core.common.utils.SortUtil;
 import com.edxp._core.constant.ErrorCode;
+import com.edxp._core.constant.RoleType;
 import com.edxp._core.handler.exception.EdxpApplicationException;
+import com.edxp._core.model.StandardDate;
 import com.edxp.order.doc.converter.OrderDocConverter;
-import com.edxp.order.doc.dto.request.*;
+import com.edxp.order.doc.dto.request.OrderDocParseRequest;
+import com.edxp.order.doc.dto.request.OrderDocParseUpdateRequest;
+import com.edxp.order.doc.dto.request.OrderDocRequest;
+import com.edxp.order.doc.dto.request.OrderDocRiskRequest;
+import com.edxp.order.doc.dto.request.OrderDocVisualRequest;
+import com.edxp.order.doc.dto.request.OrderDocVisualSaveRequest;
+import com.edxp.order.doc.dto.response.OrderDocCountResponse;
 import com.edxp.order.doc.dto.response.OrderDocParseResponse;
 import com.edxp.order.doc.dto.response.OrderDocResponse;
 import com.edxp.order.doc.dto.response.OrderDocRiskResponse;
@@ -49,6 +57,7 @@ import java.util.stream.Collectors;
 import static com.edxp._core.common.client.ModelClient.executeModelClient;
 import static com.edxp._core.common.converter.FileConverter.convertFileToMultipartFile;
 import static com.edxp._core.common.converter.FileConverter.convertMultipartFileToResource;
+import static com.edxp._core.common.utils.DateUtil.getStandardDate;
 
 
 @Slf4j
@@ -69,6 +78,11 @@ public class OrderDocBusiness {
     @Value("${file.path}")
     private String downloadFolder;
 
+    private static final int BASIC_PARSING_COUNT = 10;
+    private static final int CHARGED_PARSING_COUNT = 50;
+    private static final int BASIC_EXTRACT_COUNT = 3;
+    private static final int CHARGED_EXTRACT_COUNT = 15;
+
     /**
      * [ 주문 내용 조회 ]
      *
@@ -83,15 +97,58 @@ public class OrderDocBusiness {
     }
 
     /**
-     * [ 미리보기용 pdf 다윤요청 ]
+     * [ 파싱 카운트 조회 ]
      *
-     * @param userId  log in user id
+     * @param user 로그인 유저
+     * @return 파싱 카운트
+     * @since 24.08.07
+     */
+    public OrderDocCountResponse getParsingCount(User user) {
+        final StandardDate standardDate = getStandardDate();
+
+        int userParsingCount = BASIC_PARSING_COUNT;
+        if (user.getRoles().contains(RoleType.USER_DOC)) {
+            userParsingCount = CHARGED_PARSING_COUNT;
+        }
+
+        long parsingCount = orderDocService.getParsingCount(user, standardDate);
+
+        return orderDocConverter.toParsingResponse(userParsingCount, parsingCount);
+    }
+
+    /**
+     * [ 독소조항 분석 카운트 ]
+     *
+     * @param user 로그인 사용자
+     * @return 분석 카운트
+     * @since 24.08.07
+     */
+    public OrderDocCountResponse getExtractCount(User user) {
+        final StandardDate standardDate = getStandardDate();
+
+        int userExtractCount = BASIC_EXTRACT_COUNT;
+        if (user.getRoles().contains(RoleType.USER_DOC)) {
+            userExtractCount = CHARGED_EXTRACT_COUNT;
+        }
+
+        long extractCount = orderDocService.getExtractCount(user, standardDate);
+
+        return orderDocConverter.toExtractResponse(userExtractCount, extractCount);
+    }
+
+    /**
+     * [ 미리보기용 pdf 다운요청 ]
+     *
+     * @param user  log in user
      * @param request file path
      * @return response map(filepath, pdf file)
      * @since 24.02.28
      */
-    public Map<String, FileSystemResource> parseDown(Long userId, OrderDocParseRequest request) {
-        File file = fileService.downloadAnalysisFile(userId, request.getFilePath(), "doc");
+    public Map<String, FileSystemResource> parseDown(User user, OrderDocParseRequest request) {
+        // 파싱 카운트 측정
+        parsingCountValidation(user);
+
+        File file = fileService.downloadAnalysisFile(user.getId(), request.getFilePath(), "doc");
         String filePath = request.getFilePath();
 
         return Map.of(filePath, new FileSystemResource(file));
@@ -107,6 +164,9 @@ public class OrderDocBusiness {
      * @since 24.02.28
      */
     public OrderDocParseResponse parseExecute(User user, OrderDocParseRequest request) throws IOException {
+        // 파싱 카운트 측정
+        parsingCountValidation(user);
+
         StringBuilder userPath = getUserPath(user.getId());
         String folderPath = downloadFolder + "/" + userPath + "/" + request.getFilePath();
         final int pathIndex = request.getFilePath().lastIndexOf("/");
@@ -128,6 +188,9 @@ public class OrderDocBusiness {
      * @since 2024.02.27
      */
     public OrderDocParseResponse parse(User user, String originalFilePath, MultipartFile file) throws IOException {
+        // 파싱 카운트 측정
+        parsingCountValidation(user);
+
         // 모델 실행
         MultiValueMap<String, Object> requestMap = new LinkedMultiValueMap<>();
         requestMap.add("file", convertMultipartFileToResource(file));
@@ -211,6 +274,9 @@ public class OrderDocBusiness {
      * @return SseEmitter
      */
     public SseEmitter analysisEmitter(User user, String filename) {
+        // 분석 카운트 측정
+        extractCountValidation(user);
+
         Duration waitTime = Duration.ofHours(1);
         SseEmitter emitter = new SseEmitter(waitTime.toMillis());
 
@@ -251,6 +317,9 @@ public class OrderDocBusiness {
      * @since 24.02.28
      */
     public OrderDocRiskResponse analysis(User user, OrderDocRiskRequest request) throws IOException {
+        // 분석 카운트 측정
+        extractCountValidation(user);
+
         File parsedFile = fileService.downloadAnalysisFile(user.getId(), request.getFileName(), "doc_risk");
 
         // 모델 실행
@@ -374,12 +443,12 @@ public class OrderDocBusiness {
     /**
      * [ 임시파일 저장 ]
      *
-     * @param userId user id signed in
+     * @param user user signed in
      * @param request saveFileName, fileName
      * @since 24-05-10
      */
-    public void saveResult(Long userId, OrderDocVisualSaveRequest request) {
-        fileService.moveFile(userId, request.getSaveFileName(), request.getFileName());
+    public void saveResult(User user, OrderDocVisualSaveRequest request) {
+        fileService.moveFile(user, request.getSaveFileName(), request.getFileName());
     }
 
     /**
@@ -414,5 +483,27 @@ public class OrderDocBusiness {
         String contentDispositionHeader = response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION);
         ContentDisposition contentDisposition = ContentDisposition.parse(Objects.requireNonNull(contentDispositionHeader));
         return contentDisposition.getFilename();
+    }
+
+    /**
+     * == Validations ==
+     */
+
+    // 파싱 카운트 validation
+    private void parsingCountValidation(User user) {
+        final OrderDocCountResponse count = getParsingCount(user);
+
+        if (count.getUserParsingCount() - count.getParsingCount() <= 0) {
+            throw new EdxpApplicationException(ErrorCode.OVER_PARSING_COUNT);
+        }
+    }
+
+    // 분석 카운트 validation
+    private void extractCountValidation(User user) {
+        final OrderDocCountResponse count = getExtractCount(user);
+
+        if (count.getUserExtractCount() - count.getExtractCount() <= 0) {
+            throw new EdxpApplicationException(ErrorCode.OVER_EXTRACT_COUNT);
+        }
     }
 }

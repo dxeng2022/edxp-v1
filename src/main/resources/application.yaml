@@ -104,6 +104,7 @@ logging:
         s3file: debug
         session: debug
         user: debug
+        _core.handler.exception: debug
 
 ---
 
@@ -140,6 +141,7 @@ logging:
         s3file: debug
         session: debug
         user: debug
+        _core.handler.exception: debug
 
 server:
   ssl:

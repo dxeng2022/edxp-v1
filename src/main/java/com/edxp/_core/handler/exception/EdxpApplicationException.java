@@ -7,8 +7,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class EdxpApplicationException extends RuntimeException {
-    private ErrorCode errorCode;
-    private String message;
+    private final ErrorCode errorCode;
+    private final String message;
 
     public EdxpApplicationException(ErrorCode errorCode) {
         this.errorCode = errorCode;
@@ -20,6 +20,7 @@ public class EdxpApplicationException extends RuntimeException {
         if (message == null) {
             return errorCode.getMessage();
         }
-        return String.format("%s. %s", errorCode.getMessage(), message);
+
+        return String.format("%s. %s.", errorCode.getMessage(), message);
     }
 }
