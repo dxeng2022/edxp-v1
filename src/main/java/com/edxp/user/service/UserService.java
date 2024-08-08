@@ -116,7 +116,18 @@ public class UserService {
     // 전체 유저 찾기
     @Transactional(readOnly = true)
     public List<User> users() {
+
         return userRepository.findAll().stream().map(User::fromEntity).collect(Collectors.toList());
+    }
+
+    // 유저 1명 조회
+    @Transactional(readOnly = true)
+    public User getUser(Long userId) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() ->
+                new EdxpApplicationException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        return User.fromEntity(userEntity);
     }
 
     // 유저 비밀번호 초기화
