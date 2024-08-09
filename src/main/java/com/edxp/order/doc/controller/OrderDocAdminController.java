@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "3-1. [문서 분석 모듈 - 관리자]", description = "관리자의 문서 분석 모듈 관련 기능입니다.")
+@Tag(name = "3-2. [문서 분석 모듈 - 관리자]", description = "관리자의 문서 분석 모듈 관련 기능입니다.")
 @RequiredArgsConstructor
 @RequestMapping("/admin/v1/doc")
 @RestController
