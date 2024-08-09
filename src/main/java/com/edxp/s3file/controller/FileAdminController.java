@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "2-1. [관리자 - 데이터 관리]", description = "관리자의 사용자 클라우드 데이터를 관리하는 기능입니다.")
+@Tag(name = "2-2. [관리자 - 데이터 관리]", description = "관리자의 사용자 클라우드 데이터를 관리하는 기능입니다.")
 @RequiredArgsConstructor
 @RequestMapping("/admin/v1/file")
 @RestController
